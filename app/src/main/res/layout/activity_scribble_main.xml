@@ -17,15 +17,28 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="1"/>
+            android:id="@+id/undo_button"
+            android:text="undo"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="2"/>
+            android:id="@+id/fullscreen_button"
+            android:text="fullscreen"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="3"/>
+            android:id="@+id/drawtool_button"
+            android:text="Free"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/zoom_in_button"
+            android:text="zoom 1.0"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/more_button"
+            android:text="more"/>
     </LinearLayout>
 
     <uk.org.platitudes.scribble.ScribbleView
@@ -34,20 +47,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
-
-    <!--ImageView
-        android:id="@+id/main_content"
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        /-->
-
-    <TextView
-        android:text="@string/hello_world"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="40sp"
-        android:layout_centerHorizontal="true"/>
-
 
 </LinearLayout>
