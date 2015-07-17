@@ -14,6 +14,7 @@ import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.FreehandDrawItem;
+import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
 
 public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
@@ -45,6 +46,8 @@ public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.On
         DrawItem result = null;
         if (mDrawToolButton.getText().equals("free")) {
             result = new FreehandDrawItem(event, scribbleView);
+        } else if (mDrawToolButton.getText().equals("line")) {
+            result = new LineDrawItem(event, scribbleView);
         } else if (mDrawToolButton.getText().equals("scroll")) {
             result = new ScrollItem(event, scribbleView);
         }

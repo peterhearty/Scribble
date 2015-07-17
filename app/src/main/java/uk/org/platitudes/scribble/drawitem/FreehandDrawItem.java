@@ -12,8 +12,6 @@ import android.view.MotionEvent;
 import java.util.ArrayList;
 
 import uk.org.platitudes.scribble.ScribbleView;
-import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
-import uk.org.platitudes.scribble.drawitem.DrawItem;
 
 public class FreehandDrawItem implements DrawItem {
 

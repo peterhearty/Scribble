@@ -5,12 +5,10 @@ package uk.org.platitudes.scribble;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Button;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
-import uk.org.platitudes.scribble.buttonhandler.FullScreenButtonHandler;
+import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.UndoButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 
@@ -25,8 +23,8 @@ public class ScribbleMainActivity extends Activity {
         setContentView(R.layout.activity_scribble_main);
         mMainView = (ScribbleView) findViewById(R.id.main_content);
 
-        Button b = (Button) findViewById(R.id.fullscreen_button);
-        b.setOnClickListener(new FullScreenButtonHandler());
+        Button b = (Button) findViewById(R.id.more_button);
+        b.setOnClickListener(new MoreButtonHandler(b));
 
         b = (Button) findViewById(R.id.undo_button);
         b.setOnClickListener(new UndoButtonHandler(mMainView, b));

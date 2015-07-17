@@ -23,12 +23,35 @@ import uk.org.platitudes.scribble.drawitem.DrawItem;
  */
 public class ScribbleView extends View {
 
+    /**
+     * The draw list, the list of DrawItems on this page.
+     */
     private ArrayList<DrawItem> mDrawItems;
+
+    /**
+     * Items get moved from the draw list to here when undo is pressed.
+     * They move the oppoiste way on redo.
+     */
     private ArrayList<DrawItem> mUndoList;
+
+    /**
+     * The current DrawItem. Created on a DOWN event based on the current
+     * draw tool selection. Moved to the draw item list when an UP, or a new
+     * DOWN is received.
+     */
     private DrawItem mCurrentItem;
 
+    /**
+     * Coords of all DrawItems are based on a zoom value of 1.0 (no zoom).
+     * The screen displays a window on the DrawItems, starting at this
+     * member variable.
+     */
     private PointF mScrollOffset;
 
+    /**
+     * We need the DrawToolButtonHandler because it knows what type of
+     * draw tool has ben selected.
+     */
     private DrawToolButtonHandler mDrawToolButtonHandler;
 
 
@@ -113,19 +136,6 @@ public class ScribbleView extends View {
             default :
                 return super.onTouchEvent(event);
         }
-
-//        final int historySize = event.getHistorySize();
-//        final int pointerCount = event.getPointerCount();
-//        for (int h = 0; h < historySize; h++) {
-//            System.out.printf("At time %d:", event.getHistoricalEventTime(h));
-//            for (int p = 0; p < pointerCount; p++) {
-//                Log.d("onTouchEvent", "" + event.getPointerId(p) + " " + event.getHistoricalX(p, h) + " " + event.getHistoricalY(p, h));
-//            }
-//        }
-//        System.out.printf("At time %d:", event.getEventTime());
-//        for (int p = 0; p < pointerCount; p++) {
-//            Log.d("onTouchEvent", ""+event.getPointerId(p)+" "+event.getX(p)+" "+event.getY(p));
-//        }
 
         invalidate();
         return true;

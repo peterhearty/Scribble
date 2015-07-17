@@ -19,7 +19,7 @@ public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClick
     }
 
     private void setButtonText () {
-        String newButtonText = Float.toString(sZoom);
+        String newButtonText = "zoom "+Float.toString(sZoom);
         mButton.setText(newButtonText);
     }
 
@@ -41,6 +41,7 @@ public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClick
     public boolean onLongClick(View v) {
         sZoom = 1.0f;
         setButtonText();
+        mScribbleView.setmScrollOffset(0f, 0f);
         mScribbleView.invalidate();
         return true;
     }
