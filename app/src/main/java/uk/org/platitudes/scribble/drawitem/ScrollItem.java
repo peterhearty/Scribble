@@ -7,6 +7,10 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.view.MotionEvent;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 
@@ -32,10 +36,11 @@ public class ScrollItem implements DrawItem {
     /**
      * Do nothing methods.
      */
-    @Override
     public void draw(Canvas c, ScribbleView scribbleView) {}
-    @Override
     public void handleUpEvent(MotionEvent event, ScribbleView scribbleView) {}
+    public void saveToFile (DataOutputStream dos, int version) throws IOException {}
+    public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {return this;}
+
 
     @Override
     public void handleMoveEvent(MotionEvent event, ScribbleView scribbleView) {

@@ -3,20 +3,30 @@
  */
 package uk.org.platitudes.scribble.buttonhandler;
 
+import android.content.Context;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.PopupMenu;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 import uk.org.platitudes.scribble.R;
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 
 public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
+    private static final String DATAFILE = "currentDataFile";
     private Button mMoreButton;
+    private ScribbleMainActivity mActivity;
 
-    public MoreButtonHandler (Button b) {
+    public MoreButtonHandler (Button b, ScribbleMainActivity sma) {
         mMoreButton = b;
+        mActivity = sma;
     }
 
 
@@ -54,7 +64,30 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
         CharSequence menuTitle = item.getTitle();
         if (menuTitle.equals("fullscreen")) {
             overrideVisibilitychanges ();
+        } else if (menuTitle.equals("save")) {
+            try {
+                FileOutputStream fos = mMoreButton.getContext().openFileOutput(DATAFILE, Context.MODE_PRIVATE);
+                DataOutputStream dos = new DataOutputStream(fos);
+                mActivity.saveEverything(dos);
+                dos.close();
+                fos.close();
+            } catch (Exception e) {
+                ScribbleMainActivity.makeToast("onMenuItemClick "+e);
+            }
+        } else if (menuTitle.equals("open")) {
+            try {
+                FileInputStream fis = mMoreButton.getContext().openFileInput(DATAFILE);
+                DataInputStream dis = new DataInputStream(fis);
+                mActivity.readeverything(dis);
+                dis.close();
+                fis.close();
+                mActivity.getmMainView().invalidate();
+            } catch (Exception e) {
+                ScribbleMainActivity.makeToast("onMenuItemClick "+e);
+            }
+
         }
+
         return true;
     }
 

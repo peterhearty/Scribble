@@ -6,17 +6,24 @@ package uk.org.platitudes.scribble;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PointF;
+import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.drawitem.FreehandDrawItem;
+import uk.org.platitudes.scribble.drawitem.ItemList;
+import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 
 /**
  * Provides the main drawing view.
@@ -26,13 +33,13 @@ public class ScribbleView extends View {
     /**
      * The draw list, the list of DrawItems on this page.
      */
-    private ArrayList<DrawItem> mDrawItems;
+    private ItemList mDrawItems;
 
     /**
      * Items get moved from the draw list to here when undo is pressed.
      * They move the oppoiste way on redo.
      */
-    private ArrayList<DrawItem> mUndoList;
+    private ItemList mUndoList;
 
     /**
      * The current DrawItem. Created on a DOWN event based on the current
@@ -67,30 +74,35 @@ public class ScribbleView extends View {
 
 
     private void setup () {
-        mDrawItems = new ArrayList<>();
-        mUndoList = new ArrayList<>();
+        mDrawItems = new ItemList();
+        mUndoList = new ItemList();
         mScrollOffset = new PointF(0f, 0f);
     }
 
+    public void saveEverything (DataOutputStream dos, int version) throws IOException {
+        dos.writeFloat(mScrollOffset.x);
+        dos.writeFloat(mScrollOffset.y);
+        mDrawItems.write(dos, version);
+        mUndoList.write(dos, version);
+    }
+
+    public void readEverything (DataInputStream dis, int version) throws IOException {
+        mScrollOffset = new PointF();
+        mScrollOffset.x = dis.readFloat();
+        mScrollOffset.y = dis.readFloat();
+
+        mDrawItems = new ItemList(dis, version);
+        mUndoList = new ItemList(dis, version);
+    }
+
+
     public void undo () {
-        int numItems = mDrawItems.size();
-
-        if (numItems==0) return;
-
-        DrawItem last = mDrawItems.remove(numItems - 1);
-        mUndoList.add(last);
-
+        mDrawItems.moveLastTo(mUndoList);
         invalidate();
     }
 
     public void redo () {
-        int numItems = mUndoList.size();
-
-        if (numItems==0) return;
-
-        DrawItem last = mUndoList.remove(numItems - 1);
-        mDrawItems.add(last);
-
+        mUndoList.moveLastTo(mDrawItems);
         invalidate();
 
     }
@@ -167,9 +179,7 @@ public class ScribbleView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-        for (DrawItem d : mDrawItems) {
-            d.draw(canvas, this);
-        }
+        mDrawItems.onDraw(canvas, this);
         if (mCurrentItem != null) {
             mCurrentItem.draw(canvas, this);
         }

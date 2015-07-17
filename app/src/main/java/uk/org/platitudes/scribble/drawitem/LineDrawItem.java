@@ -9,8 +9,12 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.view.MotionEvent;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 
 /**
@@ -23,10 +27,14 @@ public class LineDrawItem  implements DrawItem {
     private Paint mPpaint;
 
     public LineDrawItem (MotionEvent event, ScribbleView scribbleView) {
+        createPaint();
+        handleMoveEvent(event, scribbleView);
+    }
+
+    private void createPaint () {
         mPpaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPpaint.setColor(Color.BLACK);
         mPpaint.setStrokeWidth(5f);
-        handleMoveEvent(event, scribbleView);
     }
 
     @Override
@@ -57,6 +65,36 @@ public class LineDrawItem  implements DrawItem {
 
     public void handleUpEvent (MotionEvent event, ScribbleView scribbleView) {
         scribbleView.addItem(this);
+    }
+
+    /**
+     * Constructor to read data from file.
+     */
+    public LineDrawItem (DataInputStream dis, int version) {
+        createPaint();
+        mStartPoint = new PointF();
+        mEndPoint = new PointF();
+        try {
+            readFromFile(dis, version);
+        } catch (IOException e) {
+            ScribbleMainActivity.makeToast("Error reading LineDrawItem "+e);
+        }
+    }
+
+    public void saveToFile (DataOutputStream dos, int version) throws IOException {
+        dos.writeByte(LINE);
+        dos.writeFloat(mStartPoint.x);
+        dos.writeFloat(mStartPoint.y);
+        dos.writeFloat(mEndPoint.x);
+        dos.writeFloat(mEndPoint.y);
+    }
+
+    public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {
+        mStartPoint.x = dis.readFloat();
+        mStartPoint.y = dis.readFloat();
+        mEndPoint.x = dis.readFloat();
+        mEndPoint.y = dis.readFloat();
+        return this;
     }
 
 }
