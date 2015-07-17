@@ -25,7 +25,7 @@ public class FreehandDrawItem implements DrawItem {
         mPpaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPpaint.setColor(Color.BLACK);
         mPpaint.setStrokeWidth(5f);
-        handleTouchEvent(event, scribbleView);
+        handleMoveEvent(event, scribbleView);
     }
 
     @Override
@@ -49,12 +49,16 @@ public class FreehandDrawItem implements DrawItem {
     }
 
     @Override
-    public void handleTouchEvent(MotionEvent event, ScribbleView scribbleView) {
+    public void handleMoveEvent(MotionEvent event, ScribbleView scribbleView) {
         final int historySize = event.getHistorySize();
         for (int h = 0; h < historySize; h++) {
             addPoint(event.getHistoricalX(h),  event.getHistoricalY(h), scribbleView);
         }
         addPoint(event.getX(), event.getY(), scribbleView);
 
+    }
+
+    public void handleUpEvent (MotionEvent event, ScribbleView scribbleView) {
+        scribbleView.addItem(this);
     }
 }

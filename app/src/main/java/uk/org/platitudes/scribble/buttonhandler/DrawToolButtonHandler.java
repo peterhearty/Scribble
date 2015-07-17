@@ -3,8 +3,14 @@
  */
 package uk.org.platitudes.scribble.buttonhandler;
 
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+
+import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.drawitem.FreehandDrawItem;
+import uk.org.platitudes.scribble.drawitem.ScrollItem;
 
 public class DrawToolButtonHandler implements View.OnClickListener {
 
@@ -37,11 +43,14 @@ public class DrawToolButtonHandler implements View.OnClickListener {
         }
     }
 
-    public boolean isFree () {
-        if (mDrawToolButton == null) return false;
-        boolean result = false;
+    public DrawItem generateDrawItem (MotionEvent event, ScribbleView scribbleView) {
+        if (mDrawToolButton == null) return null;
+
+        DrawItem result = null;
         if (mDrawToolButton.getText().equals(buttonTexts[FREE])) {
-            result = true;
+            result = new FreehandDrawItem(event, scribbleView);
+        } else if (mDrawToolButton.getText().equals(buttonTexts[SCROLL])) {
+            result = new ScrollItem(event, scribbleView);
         }
         return result;
     }

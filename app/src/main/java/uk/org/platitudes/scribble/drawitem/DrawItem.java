@@ -11,7 +11,13 @@ import uk.org.platitudes.scribble.ScribbleView;
 
 public interface DrawItem {
 
-    public void draw (Canvas c, ScribbleView scribbleView);
-    public void handleTouchEvent (MotionEvent event, ScribbleView scribbleView);
+    void draw (Canvas c, ScribbleView scribbleView);
+    void handleMoveEvent (MotionEvent event, ScribbleView scribbleView);
+
+    /**
+     * Note that the event passed might not actuallly be an UP event. ScribbleView calls this
+     * on a new DOWN event when an item is still being created.
+     */
+    void handleUpEvent (MotionEvent event, ScribbleView scribbleView);
 
 }

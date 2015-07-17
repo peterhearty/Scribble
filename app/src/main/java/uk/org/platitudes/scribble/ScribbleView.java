@@ -11,14 +11,12 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 
 import java.util.ArrayList;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
-import uk.org.platitudes.scribble.drawitem.FreehandDrawItem;
 
 /**
  * Provides the main drawing view.
@@ -28,6 +26,7 @@ public class ScribbleView extends View {
     private ArrayList<DrawItem> mDrawItems;
     private ArrayList<DrawItem> mUndoList;
     private DrawItem mCurrentItem;
+
     private PointF mScrollOffset;
 
     private DrawToolButtonHandler mDrawToolButtonHandler;
@@ -73,6 +72,10 @@ public class ScribbleView extends View {
 
     }
 
+    public void addItem (DrawItem item) {
+        mDrawItems.add(item);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event){
 
@@ -82,25 +85,22 @@ public class ScribbleView extends View {
         switch(action) {
             case (MotionEvent.ACTION_DOWN) :
                 if (mCurrentItem != null) {
-                    mDrawItems.add(mCurrentItem);
+                    // no UP event received - pretend we got one
+                    mCurrentItem.handleUpEvent(event, this);
+                    mCurrentItem = null;
                 }
                 if (mDrawToolButtonHandler != null) {
-                    if (mDrawToolButtonHandler.isFree()) {
-                        mCurrentItem = new FreehandDrawItem(event, this);
-                    }
+                    mCurrentItem = mDrawToolButtonHandler.generateDrawItem(event, this);
                 }
                 break;
             case (MotionEvent.ACTION_MOVE) :
                 if (mCurrentItem != null) {
-                    mCurrentItem.handleTouchEvent(event, this);
-                } else {
-                    // no item being drawn, check for scroll movement
-
+                    mCurrentItem.handleMoveEvent(event, this);
                 }
                 break;
             case (MotionEvent.ACTION_UP) :
                 if (mCurrentItem != null) {
-                    mDrawItems.add(mCurrentItem);
+                    mCurrentItem.handleUpEvent(event, this);
                     mCurrentItem = null;
                 }
                 break;
@@ -166,6 +166,13 @@ public class ScribbleView extends View {
     }
 
     public void setmDrawToolButtonHandler(DrawToolButtonHandler dtbh) {this.mDrawToolButtonHandler = dtbh;}
+    public PointF getmScrollOffset() {return mScrollOffset;}
+    public void setmScrollOffset(PointF mScrollOffset) {this.mScrollOffset = mScrollOffset;}
+    public void setmScrollOffset(float x,float y) {
+        mScrollOffset.x = x;
+        mScrollOffset.y = y;
+    }
+
 
 
 }
