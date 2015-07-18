@@ -18,6 +18,7 @@ public interface DrawItem {
     public static final byte LINE = 100;
     public static final byte FREEHAND = 101;
     public static final byte TEXT = 102;
+    public static final byte COMPRESSED_FREEHAND = 103;
 
 
     void draw (Canvas c, ScribbleView scribbleView);

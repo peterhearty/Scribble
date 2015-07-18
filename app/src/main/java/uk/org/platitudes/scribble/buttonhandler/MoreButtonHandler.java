@@ -3,6 +3,8 @@
  */
 package uk.org.platitudes.scribble.buttonhandler;
 
+import android.app.backup.BackupManager;
+import android.app.backup.RestoreObserver;
 import android.content.Context;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,9 +20,9 @@ import java.io.FileOutputStream;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 
-public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+public class MoreButtonHandler extends RestoreObserver implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
-    private static final String DATAFILE = "currentDataFile";
+    public static final String DATAFILE = "currentDataFile";
     private Button mMoreButton;
     private ScribbleMainActivity mActivity;
 
@@ -86,9 +88,27 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
                 ScribbleMainActivity.makeToast("onMenuItemClick "+e);
             }
 
+        }  else if (menuTitle.equals("exit")) {
+            ScribbleMainActivity.mainActivity.finish();
+        } else if (menuTitle.equals("backup")) {
+            BackupManager bm = new BackupManager(mActivity.getmMainView().getContext());
+            bm.dataChanged();
+        } else if (menuTitle.equals("restore")) {
+            BackupManager bm = new BackupManager(mActivity.getmMainView().getContext());
+            bm.requestRestore(this);
         }
 
         return true;
+    }
+
+    public void onUpdate(int nowBeingRestored, String currentPackage) {
+        ScribbleMainActivity.makeToast("Restoring "+currentPackage);
+    }
+    public void restoreFinished(int error) {
+        ScribbleMainActivity.makeToast("Restore finished");
+    }
+    public void restoreStarting(int numPackages) {
+        ScribbleMainActivity.makeToast("Restore starting");
     }
 
 }

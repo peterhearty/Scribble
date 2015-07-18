@@ -24,6 +24,8 @@ import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 public class ScribbleMainActivity extends Activity {
 
     private ScribbleView mMainView;
+    private Button mDrawToolButton;
+    private ZoomButtonHandler mZoomButtonHandler;
     public static ScribbleMainActivity mainActivity;
     public static final int FILE_FORMAT_VERSION = 1000;
 
@@ -42,13 +44,14 @@ public class ScribbleMainActivity extends Activity {
         b = (Button) findViewById(R.id.undo_button);
         b.setOnClickListener(new UndoButtonHandler(mMainView, b));
 
-        b = (Button) findViewById(R.id.drawtool_button);
-        DrawToolButtonHandler dtbh = new DrawToolButtonHandler(b);
-        b.setOnClickListener(dtbh);
+        mDrawToolButton = (Button) findViewById(R.id.drawtool_button);
+        DrawToolButtonHandler dtbh = new DrawToolButtonHandler(mDrawToolButton);
+        mDrawToolButton.setOnClickListener(dtbh);
         mMainView.setmDrawToolButtonHandler(dtbh);
 
         b = (Button) findViewById(R.id.zoom_in_button);
-        b.setOnClickListener(new ZoomButtonHandler(mMainView, b));
+        mZoomButtonHandler = new ZoomButtonHandler(mMainView, b);
+        b.setOnClickListener(mZoomButtonHandler);
 
         if (savedInstanceState != null) {
             readState(savedInstanceState);
@@ -74,9 +77,15 @@ public class ScribbleMainActivity extends Activity {
         mMainView.readEverything(dis, fileFormatVersion);
     }
 
+    private static final String EVERYTHING_KEY = "everything";
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+        outState.putFloat("zoom", ZoomButtonHandler.getsZoom());
+        outState.putCharSequence("drawTool", mDrawToolButton.getText());
+
         // Used to save dynamic data, e.g. when the screen is turned round.
         // Different from onPause, which gets called when a process is being put in the background
         // and might not come back.
@@ -88,7 +97,7 @@ public class ScribbleMainActivity extends Activity {
         try {
             saveEverything(dos);
             byte[] bytes = baos.toByteArray();
-            outState.putByteArray("everything", bytes);
+            outState.putByteArray(EVERYTHING_KEY, bytes);
             dos.close();
             baos.close();
         } catch (Exception e) {
@@ -97,11 +106,16 @@ public class ScribbleMainActivity extends Activity {
     }
 
     private void readState (Bundle savedInstanceState) {
-        byte[] bytes = savedInstanceState.getByteArray("everything");
+        mZoomButtonHandler.setsZoom(savedInstanceState.getFloat("zoom"));
+        mDrawToolButton.setText(savedInstanceState.getCharSequence("drawTool", "free"));
+
+        byte[] bytes = savedInstanceState.getByteArray(EVERYTHING_KEY);
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         DataInputStream dis = new DataInputStream(bais);
         try {
             readeverything(dis);
+            dis.close();
+            bais.close();
         } catch (Exception e) {
             makeToast("readState " + e);
         }

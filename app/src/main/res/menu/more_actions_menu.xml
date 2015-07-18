@@ -2,7 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="open" />
     <item android:title="save" />
+    <item android:title="backup" />
+    <item android:title="restore" />
     <item android:title="export" />
     <item android:title="fullscreen" />
     <item android:title="about" />
+    <item android:title="exit" />
 </menu>

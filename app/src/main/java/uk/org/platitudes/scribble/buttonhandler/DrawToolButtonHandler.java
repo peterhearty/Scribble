@@ -13,6 +13,7 @@ import android.widget.PopupMenu;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.drawitem.FreehandCompressedDrawItem;
 import uk.org.platitudes.scribble.drawitem.FreehandDrawItem;
 import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;

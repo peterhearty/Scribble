@@ -52,6 +52,18 @@ public class FreehandDrawItem implements DrawItem {
     private void addPoint (float x, float y, ScribbleView scribbleView) {
         float storedX = scribbleView.screenXtoStored(x);
         float storedY = scribbleView.screenYtoStored(y);
+
+        // Check to see if very close to last point, if so, don't add it.
+        int size = mPoints.size();
+        if (size > 0) {
+            PointF lastPoint = mPoints.get(size-1);
+            float diffX = Math.abs(lastPoint.x - storedX);
+            float diffY = Math.abs(lastPoint.y - storedY);
+            if (diffX < 0.01 && diffY < 0.01) {
+                //TODO get screen size to fiz min diff
+                return;
+            }
+        }
         PointF p = new PointF (storedX, storedY);
         mPoints.add(p);
     }
@@ -84,8 +96,9 @@ public class FreehandDrawItem implements DrawItem {
 
     public void saveToFile (DataOutputStream dos, int version) throws IOException {
         dos.writeByte(FREEHAND);
-        dos.writeInt(mPoints.size());
-        for (int i=0; i<mPoints.size(); i++) {
+        int num = mPoints.size();
+        dos.writeInt(num);
+        for (int i=0; i<num; i++) {
             PointF p = mPoints.get(i);
             dos.writeFloat(p.x);
             dos.writeFloat(p.y);

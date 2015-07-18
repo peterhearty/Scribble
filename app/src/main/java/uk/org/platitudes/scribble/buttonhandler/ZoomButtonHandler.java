@@ -35,7 +35,10 @@ public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClick
     }
 
     public static float getsZoom() {return sZoom;}
-    public static void setsZoom(float sZoom) {ZoomButtonHandler.sZoom = sZoom;}
+    public void setsZoom(float sZoom) {
+        ZoomButtonHandler.sZoom = sZoom;
+        setButtonText ();
+    }
 
     @Override
     public boolean onLongClick(View v) {
