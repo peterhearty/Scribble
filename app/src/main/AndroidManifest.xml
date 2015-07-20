@@ -11,7 +11,9 @@
         android:backupAgent="BackupToGoogle"
         android:theme="@style/AppTheme" >
         <!-- registered with https://developer.android.com/google/backup/signup.html?csw=1 -->
-        <meta-data android:name="com.google.android.backup.api_key" android:value="AEdPqrEAAAAIJ5IPboorj3D2zQBIk2iYcLF3i_rTZwIn0nYvPg" />
+        <meta-data
+            android:name="com.google.android.backup.api_key"
+            android:value="AEdPqrEAAAAIJ5IPboorj3D2zQBIk2iYcLF3i_rTZwIn0nYvPg" />
         <activity
             android:name=".ScribbleMainActivity"
             android:label="@string/app_name" >

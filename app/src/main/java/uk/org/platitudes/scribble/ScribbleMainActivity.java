@@ -68,7 +68,6 @@ public class ScribbleMainActivity extends Activity {
 
     public void saveEverything (DataOutputStream dos) throws IOException {
         dos.writeInt(FILE_FORMAT_VERSION);
-        // TODO have to save and restore button states
         mMainView.saveEverything(dos, FILE_FORMAT_VERSION);
     }
 

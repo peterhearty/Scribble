@@ -46,7 +46,7 @@ public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.On
 
         DrawItem result = null;
         if (mDrawToolButton.getText().equals("free")) {
-            result = new FreehandDrawItem(event, scribbleView);
+            result = new FreehandCompressedDrawItem(event, scribbleView);
         } else if (mDrawToolButton.getText().equals("line")) {
             result = new LineDrawItem(event, scribbleView);
         } else if (mDrawToolButton.getText().equals("scroll")) {

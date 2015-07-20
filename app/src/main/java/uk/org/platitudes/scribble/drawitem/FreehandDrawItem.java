@@ -9,10 +9,14 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.view.MotionEvent;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
@@ -33,8 +37,6 @@ public class FreehandDrawItem implements DrawItem {
         mPpaint.setColor(Color.BLACK);
         mPpaint.setStrokeWidth(5f);
     }
-
-
 
     @Override
     public void draw(Canvas c, ScribbleView scribbleView) {
@@ -94,15 +96,74 @@ public class FreehandDrawItem implements DrawItem {
         }
     }
 
+    private void compressData (DataOutputStream dos, int version) throws IOException {
+        int numPoints = mPoints.size();
+        FreeCompressContext xs = new FreeCompressContext(mPoints.get(0).x, numPoints*2);
+        FreeCompressContext ys = new FreeCompressContext(mPoints.get(0).y, numPoints*2);
+        for (int i=1; i<numPoints; i++) {
+            PointF p = mPoints.get(i);
+            xs.writeDelta(p.x);
+            ys.writeDelta(p.y);
+        }
+        xs.writeData(dos);
+        ys.writeData(dos);
+    }
+
+    private void compressedWrite () throws IOException {
+        int num = mPoints.size();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(num*8);
+        DataOutputStream dos = new DataOutputStream(baos);
+        for (int i=0; i<num; i++) {
+            PointF p = mPoints.get(i);
+            dos.writeFloat(p.x);
+        }
+        for (int i=0; i<num; i++) {
+            PointF p = mPoints.get(i);
+            dos.writeFloat(p.y);
+        }
+        dos.close();
+
+        byte[] data = baos.toByteArray();
+        baos.close();
+
+        ByteArrayOutputStream compressedBaos = new ByteArrayOutputStream(data.length);
+        DeflaterOutputStream def = new DeflaterOutputStream(compressedBaos);
+        def.write(data, 0, data.length);
+        def.close();
+
+        byte[] compressedData = compressedBaos.toByteArray();
+        // Size for a 479 point curve was 2812 for xs mized wwith ys,
+        // 2741 for xs followed by ys. Uncompressed 479x8 = 3832.
+        compressedBaos.close();
+
+        ByteArrayInputStream compressedBais = new ByteArrayInputStream(compressedData);
+        InflaterInputStream inf = new InflaterInputStream(compressedBais);
+        byte[] inflatedData = new byte[num*8];
+        inf.read(inflatedData, 0, inflatedData.length);
+        inf.close();
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(inflatedData);
+        DataInputStream dis = new DataInputStream(bais);
+        PointF[] points = new PointF[num];
+        for (int i=0; i<num; i++) {
+            PointF p = new PointF();
+            p.x = dis.readFloat();
+            points[i] = p;
+        }
+        for (int i=0; i<num; i++) {
+            PointF p = points[i];
+            p.y = dis.readFloat();
+        }
+        dis.close();
+        bais.close();
+
+    }
+
     public void saveToFile (DataOutputStream dos, int version) throws IOException {
         dos.writeByte(FREEHAND);
         int num = mPoints.size();
         dos.writeInt(num);
-        for (int i=0; i<num; i++) {
-            PointF p = mPoints.get(i);
-            dos.writeFloat(p.x);
-            dos.writeFloat(p.y);
-        }
+        compressData(dos, version);
     }
 
     public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {
@@ -110,10 +171,10 @@ public class FreehandDrawItem implements DrawItem {
         mPoints = new ArrayList<>(numPoints);
         for (int i=0; i<numPoints; i++) {
             PointF p = new PointF();
-            p.x = dis.readFloat();
-            p.y = dis.readFloat();
             mPoints.add(p);
         }
+        FreeCompressContext xs = new FreeCompressContext(dis, mPoints, false);
+        FreeCompressContext ys = new FreeCompressContext(dis, mPoints, true);
         return this;
     }
 

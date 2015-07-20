@@ -15,27 +15,121 @@ import uk.org.platitudes.scribble.ScribbleView;
 
 /**
  */
-public class FreehandCompressedDrawItem implements  DrawItem{
+public class FreehandCompressedDrawItem implements  DrawItem {
 
-    private float mBaseX;
-    private float mBaseY;
-    private byte[] mDeltaX;
-    private byte[] mDeltaY;
-    private float mLastX;
-    private float mLastY;
+    public class floatAndDeltas {
+        float mStart;
+        byte[] mDeltas;
+        float mLastCalculated;
+        int mNextFreeDelta;
+        int mCurExponent;
+        float mCurMultiplier;
+        int mPointer;
+
+        public void write (DataOutputStream dos) throws IOException {
+            dos.writeFloat(mStart);
+            dos.writeInt(mNextFreeDelta);
+            dos.write(mDeltas, 0, mNextFreeDelta);
+        }
+        public void read (DataInputStream dis) throws IOException {
+            mStart = dis.readFloat();
+            mNextFreeDelta = dis.readInt();
+            mDeltas = new byte[mNextFreeDelta];
+            dis.read(mDeltas, 0, mNextFreeDelta);
+        }
+
+        private void addPoint (float f) {
+            float dx = f - mLastCalculated;
+            if (f != 0 && Math.abs(dx/f) < 0.0001) {
+                // less than 0.01% change, ignore
+                dx = 0;
+            }
+            int exp = 0;
+            if (dx != 0 ) {
+                // get in range [-126,126]
+                while (Math.abs(dx) > 126) {
+                    exp++;
+                    dx /= 10;
+                }
+                while (Math.abs(dx) < 10) {
+                    exp--;
+                    dx *= 10;
+                }
+                while (exp > mCurExponent) {
+                    addByte((byte) 127);
+                    mCurExponent++;
+                    mCurMultiplier *= 10;
+                }
+                while (exp < mCurExponent) {
+                    addByte((byte) -127);
+                    mCurExponent--;
+                    mCurMultiplier /= 10;
+                }
+            }
+            byte byteDelta = (byte)Math.round(dx);// ROUND
+            addByte(byteDelta);
+            mLastCalculated = mLastCalculated + byteDelta * mCurMultiplier;
+        }
+
+        public floatAndDeltas () {
+            mDeltas = new byte[100];
+            mCurExponent = 0;
+            mCurMultiplier = 1;
+        }
+
+        public float firstFloat () {
+            mPointer=0;
+            mCurMultiplier=1;
+            mLastCalculated = mStart;
+            return mStart;
+        }
+
+        public float nextFloat () {
+            byte b = mDeltas[mPointer++];
+            while (b==127) {
+                mCurMultiplier *= 10;
+                b = mDeltas[mPointer++];
+            }
+            while (b==-127) {
+                mCurMultiplier /= 10;
+                b = mDeltas[mPointer++];
+            }
+            float result = mLastCalculated + b * mCurMultiplier;
+            mLastCalculated = result;
+            return result;
+        }
+
+        private void checkArraySize () {
+            if (mNextFreeDelta < mDeltas.length) return;
+
+            byte[] newArray = new byte[mNextFreeDelta*2];
+            System.arraycopy(mDeltas, 0, newArray, 0, mNextFreeDelta);
+            mDeltas = newArray;
+            return;
+        }
+
+        public void addByte (byte b) {
+            checkArraySize ();
+            mDeltas[mNextFreeDelta++] = b;
+        }
+    }
+
+    private floatAndDeltas x;
+    private floatAndDeltas y;
     private int numPoints;
-
     private Paint mPpaint;
 
     public FreehandCompressedDrawItem (MotionEvent event, ScribbleView scribbleView) {
         createPaint();
-        mDeltaX = new byte[100];
-        mDeltaY = new byte[100];
+        x = new floatAndDeltas();
+        y = new floatAndDeltas();
         handleMoveEvent(event, scribbleView);
     }
 
     public FreehandCompressedDrawItem(DataInputStream dis, int version) throws IOException {
         createPaint();
+        x = new floatAndDeltas();
+        y = new floatAndDeltas();
         readFromFile(dis, version);
     }
 
@@ -45,99 +139,75 @@ public class FreehandCompressedDrawItem implements  DrawItem{
         mPpaint.setStrokeWidth(5f);
     }
 
-    private float deltaToFloat (byte b, float f) {
-//        float r = b*f;
-//        r = r/ 1000;
-//        r = r+f;
-        float r = b+f;
-        return r;
-    }
-
     @Override
     public void draw(Canvas c, ScribbleView scribbleView) {
-        float x = mBaseX;
-        float y = mBaseY;
-        for (int i=0; i<numPoints-1; i++) {
-            float nextX = deltaToFloat(mDeltaX[i], x);
-            float nextY = deltaToFloat(mDeltaY[i], y);
+        try {
+            float x_val = x.firstFloat();
+            float y_val = y.firstFloat();
+            float startX = scribbleView.storedXtoScreen(x_val);
+            float startY = scribbleView.storedYtoScreen(y_val);
 
-            float startX = scribbleView.storedXtoScreen(x);
-            float startY = scribbleView.storedYtoScreen(y);
-            float endX   = scribbleView.storedXtoScreen(nextX);
-            float endY   = scribbleView.storedYtoScreen(nextY);
-            c.drawLine(startX, startY, endX, endY, mPpaint);
+            for (int i=0; i<numPoints-1; i++) {
+                float nextX = x.nextFloat();
+                float nextY = y.nextFloat();
 
-            x = nextX;
-            y = nextY;
+                float endX   = scribbleView.storedXtoScreen(nextX);
+                float endY   = scribbleView.storedYtoScreen(nextY);
+                c.drawLine(startX, startY, endX, endY, mPpaint);
+
+                startX = endX;
+                startY = endY;
+            }
+
+        } catch (Exception e) {
+            String s = e.toString();
         }
 
     }
 
-    private byte[] checkArraySize (byte[] old, int reqSize) {
-        if (old.length > reqSize) return old;
+    float lastX,lastY;
 
-        byte[] newArray = new byte[reqSize*2];
-        System.arraycopy(old, 0, newArray, 0, reqSize-1);
-        return newArray;
-    }
-
-    private void addPoint (float x, float y, ScribbleView scribbleView) {
-        float storedX = scribbleView.screenXtoStored(x);
-        float storedY = scribbleView.screenYtoStored(y);
+    private void addPoint (float x_val, float y_val, ScribbleView scribbleView) {
+        float storedX = scribbleView.screenXtoStored(x_val);
+        float storedY = scribbleView.screenYtoStored(y_val);
 
         if (numPoints == 0) {
             // This is the first point in the curve
-            mBaseX = mLastX = storedX;
-            mBaseY = mLastY = storedY;
+            x.mStart = x.mLastCalculated = storedX;
+            y.mStart = y.mLastCalculated = storedY;
+            lastX = x_val;
+            lastY = y_val;
             numPoints = 1;
             return;
         }
 
-        // Calculate difference as 0.1% from last point added
-//        float dx = (storedX - mLastX)/mLastX*1000;
-//        float dy = (storedY - mLastY)/mLastY*1000;
-        float dx = storedX - mLastX;
-        float dy = storedY - mLastY;
-        float absdx = Math.abs(dx);
-        float absdy = Math.abs(dy);
-
-        // Ignore tiny changes
-        if (absdx< 1 && absdy < 1) {
+        if (lastX == x_val && lastY == y_val) {
+            // Ignore duplicate points
             return;
         }
 
-        if (absdx > 127 || absdy > 127) {
-            // Point is too far away from last point to encode in 0.1% values
-            // Invent new point
-            // TODO add intermediate point
-            if (dx < -127) dx = -127;
-            if (dx > 127) dx = 127;
-            if (dy < -127) dy = -127;
-            if (dy > 127) dy = 127;
-        }
+        lastX = x_val;
+        lastY = y_val;
 
-        mDeltaX = checkArraySize (mDeltaX, numPoints);
-        mDeltaY = checkArraySize (mDeltaY, numPoints);
-
-        mDeltaX[numPoints-1] = (byte)dx;
-        mDeltaY[numPoints-1] = (byte)dy;
-
-        float xx = deltaToFloat(mDeltaX[numPoints-1], mLastX);
-        float yy = deltaToFloat(mDeltaY[numPoints-1], mLastY);
+        x.addPoint(storedX);
+        y.addPoint(storedY);
 
         numPoints++;
-        mLastX = storedX;
-        mLastY = storedY;
     }
 
 
     @Override
     public void handleMoveEvent(MotionEvent event, ScribbleView scribbleView) {
-        final int historySize = event.getHistorySize();
-        for (int h = 0; h < historySize; h++) {
-            addPoint(event.getHistoricalX(h), event.getHistoricalY(h), scribbleView);
+        try {
+            final int historySize = event.getHistorySize();
+            for (int h = 0; h < historySize; h++) {
+                addPoint(event.getHistoricalX(h), event.getHistoricalY(h), scribbleView);
+            }
+            addPoint(event.getX(), event.getY(), scribbleView);
+
+        } catch (Exception e) {
+            String s = e.toString();
         }
-        addPoint(event.getX(), event.getY(), scribbleView);
 
     }
 
@@ -150,25 +220,15 @@ public class FreehandCompressedDrawItem implements  DrawItem{
     public void saveToFile(DataOutputStream dos, int version) throws IOException {
         dos.writeByte(COMPRESSED_FREEHAND);
         dos.writeInt(numPoints);
-        dos.writeFloat(mBaseX);
-        dos.writeFloat(mBaseY);
-        dos.writeFloat(mLastX); // don't really need lastx lasty
-        dos.writeFloat(mLastY);
-        dos.write(mDeltaX, 0, numPoints - 1);
-        dos.write(mDeltaY,0,numPoints-1);
+        x.write(dos);
+        y.write(dos);
     }
 
     @Override
     public DrawItem readFromFile(DataInputStream dis, int version) throws IOException {
         numPoints = dis.readInt();
-        mBaseX = dis.readFloat();
-        mBaseY = dis.readFloat();
-        mLastX = dis.readFloat();
-        mLastY = dis.readFloat();
-        mDeltaX = new byte[numPoints];
-        mDeltaY = new byte[numPoints];
-        dis.read(mDeltaX,0,numPoints-1);
-        dis.read(mDeltaY,0,numPoints-1);
+        x.read(dis);
+        y.read(dis);
 
         return null;
     }
