@@ -46,6 +46,9 @@ public class ItemList {
                 case DrawItem.LINE:
                     item = new LineDrawItem(dis, version);
                     break;
+                case DrawItem.TEXT:
+                    item = new TextItem(dis, version);
+                    break;
                 case DrawItem.COMPRESSED_FREEHAND:
                     item = new FreehandCompressedDrawItem(dis, version);
                     break;

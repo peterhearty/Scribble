@@ -4,7 +4,6 @@
 package uk.org.platitudes.scribble.drawitem;
 
 import android.graphics.Canvas;
-import android.graphics.PointF;
 import android.view.MotionEvent;
 
 import java.io.DataInputStream;
@@ -15,10 +14,10 @@ import uk.org.platitudes.scribble.ScribbleView;
 
 public interface DrawItem {
 
-    public static final byte LINE = 100;
-    public static final byte FREEHAND = 101;
-    public static final byte TEXT = 102;
-    public static final byte COMPRESSED_FREEHAND = 103;
+    static byte LINE = 100;
+    static byte FREEHAND = 101;
+    static byte TEXT = 102;
+    static byte COMPRESSED_FREEHAND = 103;
 
 
     void draw (Canvas c, ScribbleView scribbleView);
