@@ -9,6 +9,7 @@
         <EditText
             android:id="@+id/edit_text_box"
             android:inputType="textMultiLine"
+            android:singleLine="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lines="4"

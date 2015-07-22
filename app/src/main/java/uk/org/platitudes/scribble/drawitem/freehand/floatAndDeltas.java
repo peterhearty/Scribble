@@ -1,7 +1,7 @@
 /**
  * This source code is not owned by anybody. You can can do what you like with it.
  */
-package uk.org.platitudes.scribble.drawitem;
+package uk.org.platitudes.scribble.drawitem.freehand;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -92,6 +92,11 @@ public class floatAndDeltas {
      */
     private int mPointer;
 
+    /**
+     * Used to store the min and max values. Needed when being selected.
+     */
+    public float min, max;
+
 
     public floatAndDeltas() {
         mDeltas = new byte[100];
@@ -100,9 +105,24 @@ public class floatAndDeltas {
         firstPointAdded = false;
     }
 
+    private void checkMinMax () {
+        if (mLastCalculated < min) {
+            min = mLastCalculated;
+        }
+        if (mLastCalculated > max) {
+            max = mLastCalculated;
+        }
+    }
+
+    public void moveStart (float delta) {
+        mStart += delta;
+        // min and max get adjusted when next draw takes place and nextFloat
+        // gets repeatedly called
+    }
+
     public void addPoint(float f) {
         if (!firstPointAdded) {
-            mStart = mLastCalculated = f;
+            min = max = mStart = mLastCalculated = f;
             firstPointAdded = true;
             return;
         }
@@ -137,6 +157,7 @@ public class floatAndDeltas {
         byte byteDelta = (byte) Math.round(dx);// ROUND
         addByte(byteDelta);
         mLastCalculated = mLastCalculated + byteDelta * mCurrentMultiplier;
+        checkMinMax ();
     }
 
     private void checkArraySize() {
@@ -166,6 +187,9 @@ public class floatAndDeltas {
         //noinspection ResultOfMethodCallIgnored
         dis.read(mDeltas, 0, mNextFreeDelta);
         firstPointAdded = true;
+
+        // Calc min, max
+        min = max = firstFloat();
     }
 
     public float firstFloat() {
@@ -187,6 +211,8 @@ public class floatAndDeltas {
         }
         float result = mLastCalculated + b * mCurrentMultiplier;
         mLastCalculated = result;
+        // Every draw causes min max to recalculate - handles movements and reads from disk
+        checkMinMax();
         return result;
     }
 

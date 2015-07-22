@@ -10,16 +10,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.PopupMenu;
 
-import uk.org.platitudes.scribble.EditTextDialog;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
-import uk.org.platitudes.scribble.drawitem.FreehandCompressedDrawItem;
-import uk.org.platitudes.scribble.drawitem.FreehandDrawItem;
+import uk.org.platitudes.scribble.drawitem.SelectItem;
+import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
 import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
-import uk.org.platitudes.scribble.drawitem.TextItem;
+import uk.org.platitudes.scribble.drawitem.text.TextItem;
 
 public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
@@ -55,7 +54,7 @@ public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.On
         } else if (mDrawToolButton.getText().equals("text")) {
             result = new TextItem(event, scribbleView);
         } else if (mDrawToolButton.getText().equals("select")) {
-            ScribbleMainActivity.makeToast("Select something");
+            result = new SelectItem(event, scribbleView);
         } else if (mDrawToolButton.getText().equals("scroll")) {
             result = new ScrollItem(event, scribbleView);
         }

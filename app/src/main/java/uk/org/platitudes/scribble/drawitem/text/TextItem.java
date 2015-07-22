@@ -1,22 +1,23 @@
 /**
  * This source code is not owned by anybody. You can can do what you like with it.
  */
-package uk.org.platitudes.scribble.drawitem;
+package uk.org.platitudes.scribble.drawitem.text;
 
-import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.view.MotionEvent;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import uk.org.platitudes.scribble.EditTextDialog;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
+import uk.org.platitudes.scribble.drawitem.DrawItem;
 
 /**
  */
@@ -25,14 +26,9 @@ public class TextItem implements DrawItem {
     private float mStartX;
     private float mStartY;
     private String mText;
+    private Rect bounds = new Rect();
     private Paint mPaint;
-
-    public TextItem (float x, float y, String s) {
-        mStartX = x;
-        mStartY = y;
-        mText = s;
-        createPaint();
-    }
+    private boolean selected;
 
     public TextItem (MotionEvent event, ScribbleView scribbleView) {
 
@@ -43,6 +39,7 @@ public class TextItem implements DrawItem {
 
         createPaint();
         mText = "";
+        bounds = new Rect();
 
         EditTextDialog dialog = new EditTextDialog();
         dialog.setTextItem(this);
@@ -89,12 +86,44 @@ public class TextItem implements DrawItem {
     public DrawItem readFromFile(DataInputStream dis, int version) throws IOException {
         mStartX = dis.readFloat();
         mStartY = dis.readFloat();
-        mText = dis.readUTF();
+        String s = dis.readUTF();
+        setmText(s);
         return null;
     }
 
+    @Override
+    public boolean toggleSelected(PointF p) {
+        float minX = mStartX-FUZZY;
+        float maxX = mStartX+bounds.right+FUZZY;
+        float minY = mStartY-FUZZY;
+        float maxY = mStartY+bounds.bottom+FUZZY;
+        boolean selectChanged = false;
+        if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
+            selectChanged = true;
+            if (selected) {
+                selected = false;
+                mPaint.setColor(Color.BLACK);
+            } else {
+                selected = true;
+                mPaint.setColor(Color.RED);
+            }
+        }
+        return selectChanged;
+    }
 
+    public boolean isSelected() {return selected;}
     public String getmText() {return mText;}
-    public void setmText(String mText) {this.mText = mText;}
+
+    public void setmText(String mText) {
+        this.mText = mText;
+        mPaint.setTextSize(30f);
+        mPaint.getTextBounds(mText, 0, mText.length(), bounds);
+    }
+
+    public void move(float deltaX, float deltaY) {
+        mStartX += deltaX;
+        mStartY += deltaY;
+    }
+
 
 }

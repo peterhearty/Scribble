@@ -6,7 +6,6 @@ package uk.org.platitudes.scribble;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PointF;
-import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -16,14 +15,11 @@ import android.view.View;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
-import uk.org.platitudes.scribble.drawitem.FreehandDrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
-import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 
 /**
  * Provides the main drawing view.
@@ -125,6 +121,7 @@ public class ScribbleView extends View {
                     mCurrentItem = null;
                 }
                 if (mDrawToolButtonHandler != null) {
+                    // The draw tool button knows what type of draw tool is currently selected
                     mCurrentItem = mDrawToolButtonHandler.generateDrawItem(event, this);
                 }
                 break;
@@ -185,6 +182,7 @@ public class ScribbleView extends View {
         }
     }
 
+    public ItemList getmDrawItems() {return mDrawItems;}
     public void setmDrawToolButtonHandler(DrawToolButtonHandler dtbh) {this.mDrawToolButtonHandler = dtbh;}
     public PointF getmScrollOffset() {return mScrollOffset;}
     public void setmScrollOffset(PointF mScrollOffset) {this.mScrollOffset = mScrollOffset;}

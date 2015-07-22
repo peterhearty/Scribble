@@ -25,6 +25,7 @@ public class LineDrawItem  implements DrawItem {
     private PointF mStartPoint;
     private PointF mEndPoint;
     private Paint mPpaint;
+    boolean selected;
 
     public LineDrawItem (MotionEvent event, ScribbleView scribbleView) {
         createPaint();
@@ -96,5 +97,36 @@ public class LineDrawItem  implements DrawItem {
         mEndPoint.y = dis.readFloat();
         return this;
     }
+
+    @Override
+    public boolean toggleSelected(PointF p) {
+        float minX = Math.min(mStartPoint.x, mEndPoint.x)-FUZZY;
+        float maxX = Math.max(mStartPoint.x, mEndPoint.x)+FUZZY;
+        float minY = Math.min(mStartPoint.y, mEndPoint.y)-FUZZY;
+        float maxY = Math.max(mStartPoint.y, mEndPoint.y)+FUZZY;
+        boolean selectChanged = false;
+        if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
+            selectChanged = true;
+            if (selected) {
+                selected = false;
+                mPpaint.setColor(Color.BLACK);
+            } else {
+                selected = true;
+                mPpaint.setColor(Color.RED);
+            }
+        }
+        return selectChanged;
+    }
+
+    public void move(float deltaX, float deltaY) {
+        mStartPoint.x += deltaX;
+        mStartPoint.y += deltaY;
+        mEndPoint.x += deltaX;
+        mEndPoint.y += deltaY;
+    }
+
+
+    public boolean isSelected() {return selected;}
+
 
 }

@@ -40,6 +40,9 @@ public class ScrollItem implements DrawItem {
     public void handleUpEvent(MotionEvent event, ScribbleView scribbleView) {}
     public void saveToFile (DataOutputStream dos, int version) throws IOException {}
     public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {return this;}
+    public boolean toggleSelected(PointF p) {return false;}
+    public boolean isSelected() {return false;}
+    public void move(float deltaX, float deltaY) {}
 
 
     @Override

@@ -1,11 +1,12 @@
 /**
  * This source code is not owned by anybody. You can can do what you like with it.
  */
-package uk.org.platitudes.scribble.drawitem;
+package uk.org.platitudes.scribble.drawitem.freehand;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.view.MotionEvent;
 
 import java.io.DataInputStream;
@@ -13,20 +14,23 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.drawitem.freehand.floatAndDeltas;
 
 /**
  * Freehand drawing tool.
  *
  * Currently assumes that coordinates are stored as floatAndDeltas, but nothing in the class
- * assumes this. We could abstract the coordinates as an interface and have multiple storage
+ * depends this. We could abstract the coordinates as an interface and have multiple storage
  * options.
  */
-public class FreehandCompressedDrawItem implements  DrawItem {
+public class FreehandCompressedDrawItem implements DrawItem {
 
     private floatAndDeltas x;
     private floatAndDeltas y;
     private int numPoints;
     private Paint mPpaint;
+    private boolean selected;
     private float lastX,lastY;
 
 
@@ -129,4 +133,30 @@ public class FreehandCompressedDrawItem implements  DrawItem {
 
         return null;
     }
+
+    @Override
+    public boolean toggleSelected(PointF p) {
+        float minX = x.min-FUZZY;
+        float maxX = x.max+FUZZY;
+        float minY = y.min-FUZZY;
+        float maxY = y.max+FUZZY;
+        if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
+            if (selected) {
+                selected = false;
+                mPpaint.setColor(Color.BLACK);
+            } else {
+                selected = true;
+                mPpaint.setColor(Color.RED);
+            }
+        }
+        return selected;
+    }
+
+    public void move(float deltaX, float deltaY) {
+        x.moveStart(deltaX);
+        y.moveStart(deltaY);
+    }
+
+    public boolean isSelected() {return selected;}
+
 }

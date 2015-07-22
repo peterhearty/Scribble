@@ -1,4 +1,4 @@
-package uk.org.platitudes.scribble;
+package uk.org.platitudes.scribble.drawitem.text;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,7 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
-import uk.org.platitudes.scribble.drawitem.TextItem;
+import uk.org.platitudes.scribble.R;
+import uk.org.platitudes.scribble.drawitem.text.TextItem;
 
 /**
  * See Android/Sdk/docs/guide/topics/ui/dialogs.html

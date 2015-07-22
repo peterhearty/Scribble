@@ -1,16 +1,26 @@
 /**
  * This source code is not owned by anybody. You can can do what you like with it.
  */
-package uk.org.platitudes.scribble.drawitem;
+package uk.org.platitudes.scribble.drawitem.freehand.oldstuff;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PointF;
+import android.view.MotionEvent;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
+import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.drawitem.DrawItem;
 
 /**
  * Compresses Freehand drawings coordinates before saving them and expands them after reading them.
