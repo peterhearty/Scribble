@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 
@@ -22,6 +23,8 @@ public class ScrollItem extends DrawItem {
 
     private float mStartX, mStartY;
     private float mStartOffsetX, mStartOffsetY;
+    private float mstartZoom;
+    private float mStartYdiff;
 
     public ScrollItem (MotionEvent event, ScribbleView scribbleView) {
         super (event, scribbleView);
@@ -30,11 +33,22 @@ public class ScrollItem extends DrawItem {
         PointF scrollOffset = scribbleView.getmScrollOffset();
         mStartOffsetX = scrollOffset.x;
         mStartOffsetY = scrollOffset.y;
+
+        mstartZoom = ZoomButtonHandler.getsZoom();
+        if (event.getPointerCount() == 2) {
+            mStartYdiff = Math.abs(event.getY(0) - event.getY(1));
+        }
     }
 
 
     @Override
     public void handleMoveEvent(MotionEvent event) {
+        if (event.getPointerCount() == 2) {
+            float curYdiff = Math.abs(event.getY(0) - event.getY(1));
+            float newZoom = curYdiff / mStartYdiff * mstartZoom;
+            ScribbleMainActivity.mainActivity.getmZoomButtonHandler().setsZoom(newZoom);
+        }
+
         // If the DOWN event happened at 40,40 and the MOVE
         // happens at 100,100 then the distance moved is 60,60.
         float deltaX = event.getX()-mStartX;

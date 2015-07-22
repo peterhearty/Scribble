@@ -121,6 +121,8 @@ public class ScribbleMainActivity extends Activity {
     }
 
     public ScribbleView getmMainView() {return mMainView;}
+    public ZoomButtonHandler getmZoomButtonHandler() {return mZoomButtonHandler;}
+
 
 
 }

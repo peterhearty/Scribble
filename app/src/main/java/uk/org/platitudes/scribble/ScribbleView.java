@@ -20,6 +20,7 @@ import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
+import uk.org.platitudes.scribble.drawitem.ScrollItem;
 
 /**
  * Provides the main drawing view.
@@ -117,6 +118,14 @@ public class ScribbleView extends View {
     public boolean onTouchEvent(MotionEvent event){
 
         int action = MotionEventCompat.getActionMasked(event);
+
+        int pointerCount = event.getPointerCount();
+        if (pointerCount == 2 && mCurrentItem != null && !(mCurrentItem instanceof ScrollItem)) {
+            mCurrentItem.handleUpEvent(event);
+            mCurrentItem = new ScrollItem(event, this);
+            return true;
+            // TODO don't need the scroll menu any more
+        }
 
 //        Log.d("onTouchEvent", event.toString());
         switch(action) {

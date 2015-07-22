@@ -58,6 +58,7 @@ public class ItemList {
                     break;
                 default:
                     ScribbleMainActivity.makeToast("Error reading data file");
+                    return;
             }
             if (item != null)
                 mList.add(item);
