@@ -87,18 +87,24 @@ public class ScribbleView extends View {
         mScrollOffset.x = dis.readFloat();
         mScrollOffset.y = dis.readFloat();
 
-        mDrawItems = new ItemList(dis, version);
-        mUndoList = new ItemList(dis, version);
+        mDrawItems = new ItemList(dis, version, this);
+        mUndoList = new ItemList(dis, version, this);
     }
 
 
     public void undo () {
-        mDrawItems.moveLastTo(mUndoList);
+        DrawItem movedItem = mDrawItems.moveLastTo(mUndoList);
+        if (movedItem != null) {
+            movedItem.undo();
+        }
         invalidate();
     }
 
     public void redo () {
-        mUndoList.moveLastTo(mDrawItems);
+        DrawItem movedItem = mUndoList.moveLastTo(mDrawItems);
+        if (movedItem != null) {
+            movedItem.redo();
+        }
         invalidate();
 
     }
@@ -117,7 +123,7 @@ public class ScribbleView extends View {
             case (MotionEvent.ACTION_DOWN) :
                 if (mCurrentItem != null) {
                     // no UP event received - pretend we got one
-                    mCurrentItem.handleUpEvent(event, this);
+                    mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;
                 }
                 if (mDrawToolButtonHandler != null) {
@@ -127,12 +133,12 @@ public class ScribbleView extends View {
                 break;
             case (MotionEvent.ACTION_MOVE) :
                 if (mCurrentItem != null) {
-                    mCurrentItem.handleMoveEvent(event, this);
+                    mCurrentItem.handleMoveEvent(event);
                 }
                 break;
             case (MotionEvent.ACTION_UP) :
                 if (mCurrentItem != null) {
-                    mCurrentItem.handleUpEvent(event, this);
+                    mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;
                 }
                 break;
@@ -176,9 +182,9 @@ public class ScribbleView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-        mDrawItems.onDraw(canvas, this);
+        mDrawItems.onDraw(canvas);
         if (mCurrentItem != null) {
-            mCurrentItem.draw(canvas, this);
+            mCurrentItem.draw(canvas);
         }
     }
 

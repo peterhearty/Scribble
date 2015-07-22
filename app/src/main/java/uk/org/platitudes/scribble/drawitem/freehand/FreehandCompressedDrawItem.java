@@ -24,50 +24,42 @@ import uk.org.platitudes.scribble.drawitem.freehand.floatAndDeltas;
  * depends this. We could abstract the coordinates as an interface and have multiple storage
  * options.
  */
-public class FreehandCompressedDrawItem implements DrawItem {
+public class FreehandCompressedDrawItem extends DrawItem {
 
     private floatAndDeltas x;
     private floatAndDeltas y;
     private int numPoints;
-    private Paint mPpaint;
-    private boolean selected;
     private float lastX,lastY;
 
 
     public FreehandCompressedDrawItem (MotionEvent event, ScribbleView scribbleView) {
-        createPaint();
+        super(event, scribbleView);
         x = new floatAndDeltas();
         y = new floatAndDeltas();
-        handleMoveEvent(event, scribbleView);
+        handleMoveEvent(event);
     }
 
-    public FreehandCompressedDrawItem(DataInputStream dis, int version) throws IOException {
-        createPaint();
+    public FreehandCompressedDrawItem(DataInputStream dis, int version, ScribbleView scribbleView) throws IOException {
+        super(null, scribbleView);
         x = new floatAndDeltas();
         y = new floatAndDeltas();
         readFromFile(dis, version);
     }
 
-    private void createPaint () {
-        mPpaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPpaint.setColor(Color.BLACK);
-        mPpaint.setStrokeWidth(5f);
-    }
-
     @Override
-    public void draw(Canvas c, ScribbleView scribbleView) {
+    public void draw(Canvas c) {
         float x_val = x.firstFloat();
         float y_val = y.firstFloat();
-        float startX = scribbleView.storedXtoScreen(x_val);
-        float startY = scribbleView.storedYtoScreen(y_val);
+        float startX = mScribbleView.storedXtoScreen(x_val);
+        float startY = mScribbleView.storedYtoScreen(y_val);
 
         for (int i=0; i<numPoints-1; i++) {
             float nextX = x.nextFloat();
             float nextY = y.nextFloat();
 
-            float endX   = scribbleView.storedXtoScreen(nextX);
-            float endY   = scribbleView.storedYtoScreen(nextY);
-            c.drawLine(startX, startY, endX, endY, mPpaint);
+            float endX   = mScribbleView.storedXtoScreen(nextX);
+            float endY   = mScribbleView.storedYtoScreen(nextY);
+            c.drawLine(startX, startY, endX, endY, mPaint);
 
             startX = endX;
             startY = endY;
@@ -104,17 +96,17 @@ public class FreehandCompressedDrawItem implements DrawItem {
 
 
     @Override
-    public void handleMoveEvent(MotionEvent event, ScribbleView scribbleView) {
+    public void handleMoveEvent(MotionEvent event) {
         final int historySize = event.getHistorySize();
         for (int h = 0; h < historySize; h++) {
-            addPoint(event.getHistoricalX(h), event.getHistoricalY(h), scribbleView);
+            addPoint(event.getHistoricalX(h), event.getHistoricalY(h), mScribbleView);
         }
-        addPoint(event.getX(), event.getY(), scribbleView);
+        addPoint(event.getX(), event.getY(), mScribbleView);
     }
 
     @Override
-    public void handleUpEvent(MotionEvent event, ScribbleView scribbleView) {
-        scribbleView.addItem(this);
+    public void handleUpEvent(MotionEvent event) {
+        mScribbleView.addItem(this);
     }
 
     @Override
@@ -135,28 +127,20 @@ public class FreehandCompressedDrawItem implements DrawItem {
     }
 
     @Override
-    public boolean toggleSelected(PointF p) {
+    public boolean selectItem(PointF p) {
         float minX = x.min-FUZZY;
         float maxX = x.max+FUZZY;
         float minY = y.min-FUZZY;
         float maxY = y.max+FUZZY;
         if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
-            if (selected) {
-                selected = false;
-                mPpaint.setColor(Color.BLACK);
-            } else {
-                selected = true;
-                mPpaint.setColor(Color.RED);
-            }
+            mSelected = true;
+            mPaint.setColor(Color.RED);
         }
-        return selected;
+        return mSelected;
     }
 
     public void move(float deltaX, float deltaY) {
         x.moveStart(deltaX);
         y.moveStart(deltaY);
     }
-
-    public boolean isSelected() {return selected;}
-
 }

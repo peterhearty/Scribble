@@ -20,32 +20,24 @@ import uk.org.platitudes.scribble.ScribbleView;
 /**
  * Draws a straight line.
  */
-public class LineDrawItem  implements DrawItem {
+public class LineDrawItem  extends DrawItem {
 
     private PointF mStartPoint;
     private PointF mEndPoint;
-    private Paint mPpaint;
-    boolean selected;
 
     public LineDrawItem (MotionEvent event, ScribbleView scribbleView) {
-        createPaint();
-        handleMoveEvent(event, scribbleView);
-    }
-
-    private void createPaint () {
-        mPpaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPpaint.setColor(Color.BLACK);
-        mPpaint.setStrokeWidth(5f);
+        super(event, scribbleView);
+        handleMoveEvent(event);
     }
 
     @Override
-    public void draw(Canvas c, ScribbleView scribbleView) {
+    public void draw(Canvas c) {
         if (mStartPoint == null || mEndPoint == null) return;
-        float startX = scribbleView.storedXtoScreen(mStartPoint.x);
-        float startY = scribbleView.storedYtoScreen(mStartPoint.y);
-        float endX   = scribbleView.storedXtoScreen(mEndPoint.x);
-        float endY   = scribbleView.storedYtoScreen(mEndPoint.y);
-        c.drawLine(startX, startY, endX, endY, mPpaint);
+        float startX = mScribbleView.storedXtoScreen(mStartPoint.x);
+        float startY = mScribbleView.storedYtoScreen(mStartPoint.y);
+        float endX   = mScribbleView.storedXtoScreen(mEndPoint.x);
+        float endY   = mScribbleView.storedYtoScreen(mEndPoint.y);
+        c.drawLine(startX, startY, endX, endY, mPaint);
     }
 
     private void addPoint (float x, float y, ScribbleView scribbleView) {
@@ -59,20 +51,20 @@ public class LineDrawItem  implements DrawItem {
     }
 
     @Override
-    public void handleMoveEvent(MotionEvent event, ScribbleView scribbleView) {
-        addPoint(event.getX(), event.getY(), scribbleView);
+    public void handleMoveEvent(MotionEvent event) {
+        addPoint(event.getX(), event.getY(), mScribbleView);
 
     }
 
-    public void handleUpEvent (MotionEvent event, ScribbleView scribbleView) {
-        scribbleView.addItem(this);
+    public void handleUpEvent (MotionEvent event) {
+        mScribbleView.addItem(this);
     }
 
     /**
      * Constructor to read data from file.
      */
-    public LineDrawItem (DataInputStream dis, int version) {
-        createPaint();
+    public LineDrawItem (DataInputStream dis, int version, ScribbleView sv) {
+        super(null, sv);
         mStartPoint = new PointF();
         mEndPoint = new PointF();
         try {
@@ -99,23 +91,16 @@ public class LineDrawItem  implements DrawItem {
     }
 
     @Override
-    public boolean toggleSelected(PointF p) {
+    public boolean selectItem(PointF p) {
         float minX = Math.min(mStartPoint.x, mEndPoint.x)-FUZZY;
         float maxX = Math.max(mStartPoint.x, mEndPoint.x)+FUZZY;
         float minY = Math.min(mStartPoint.y, mEndPoint.y)-FUZZY;
         float maxY = Math.max(mStartPoint.y, mEndPoint.y)+FUZZY;
-        boolean selectChanged = false;
         if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
-            selectChanged = true;
-            if (selected) {
-                selected = false;
-                mPpaint.setColor(Color.BLACK);
-            } else {
-                selected = true;
-                mPpaint.setColor(Color.RED);
-            }
+            mSelected = true;
+            mPaint.setColor(Color.RED);
         }
-        return selectChanged;
+        return mSelected;
     }
 
     public void move(float deltaX, float deltaY) {
@@ -124,9 +109,5 @@ public class LineDrawItem  implements DrawItem {
         mEndPoint.x += deltaX;
         mEndPoint.y += deltaY;
     }
-
-
-    public boolean isSelected() {return selected;}
-
 
 }

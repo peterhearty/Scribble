@@ -4,6 +4,8 @@
 package uk.org.platitudes.scribble.drawitem;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PointF;
 import android.view.MotionEvent;
 
@@ -13,48 +15,75 @@ import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleView;
 
-public interface DrawItem {
+public abstract class DrawItem {
 
     /**
      * DrawItem types used when saving to a DataOutputStream.
      */
-    static byte LINE = 100;
-    static byte FREEHAND = 101;
-    static byte TEXT = 102;
-    static byte COMPRESSED_FREEHAND = 103;
+    public final static byte LINE = 100;
+    public final static byte FREEHAND = 101;
+    public final static byte TEXT = 102;
+    public final static byte COMPRESSED_FREEHAND = 103;
 
     /**
      * Used during selection to allow some imprecision in selecting DrawItems.
      * It's up to each individual DrawItem whether ot use this or not.
      */
-    static float FUZZY = 5.0f;
+    public static final float FUZZY = 5.0f;
+
+    protected Paint mPaint;
+    protected ScribbleView mScribbleView;
+    protected boolean mSelected;
+
+    public DrawItem (MotionEvent event, ScribbleView scribbleView) {
+        mScribbleView = scribbleView;
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setColor(Color.BLACK);
+        mPaint.setStrokeWidth(5f);
+        mSelected = false;
+    }
 
 
-    void draw (Canvas c, ScribbleView scribbleView);
-    void handleMoveEvent (MotionEvent event, ScribbleView scribbleView);
+    public void draw (Canvas c) {}
+    public void handleMoveEvent (MotionEvent event) {}
 
     /**
      * Note that the event passed might not actuallly be an UP event. ScribbleView calls this
      * on a new DOWN event when an item is still being created.
      */
-    void handleUpEvent (MotionEvent event, ScribbleView scribbleView);
+    public void handleUpEvent (MotionEvent event) {};
 
-    void saveToFile (DataOutputStream dos, int version) throws IOException;
+    public void saveToFile (DataOutputStream dos, int version) throws IOException {};
 
-    DrawItem readFromFile (DataInputStream dis, int version) throws IOException;
+    public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {return null;};
 
     /**
      * Tests a DrawItem's stored coordinates against the given point to see if
-     * the item should be selected/deselcted. The supplied point will already be converted
+     * the item should be selected. The supplied point will already be converted
      * to stored coordinates from screen coordinates. i.e. The screen offset and
-     * zoom factor will already have been removed.
+     * zoom factor will already have been removed. If the DrawItem can be selected
+     * by the supplied point then its status will change to selected and it may
+     * change its onscreen appearance.
      *
      * @param p     The stored coordinate point to test.
-     * @return      true if the DrawItem has changed its selection status.
+     * @return      true if the DrawItem has been selected by the call.
      */
-    boolean toggleSelected(PointF p);
+    public boolean selectItem(PointF p) {return false;};
 
-    boolean isSelected();
+    public void deselectItem () {
+        mSelected = false;
+        mPaint.setColor(Color.BLACK);
+    }
 
-    void move (float deltaX, float deltaY);
+    public boolean isSelected() {return mSelected;};
+
+    public void move (float deltaX, float deltaY){};
+
+    /**
+     * Most DrawItems simply get moved from the list of DrawItems to the undo list,
+     * or the other way around. Some, such as MoveItem, are not drawing items
+     * themselves but must perform an operation as they move between lists.
+     */
+    public void undo () {}
+    public void redo () {}
 }

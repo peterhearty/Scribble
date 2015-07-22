@@ -23,8 +23,6 @@ public class ItemList {
 
     private ArrayList<DrawItem> mList;
 
-    private DrawItem mLastSelected;
-
     public ItemList () {
         mList = new ArrayList<>();
     }
@@ -33,13 +31,13 @@ public class ItemList {
         mList.add(item);
     }
 
-    public void onDraw (Canvas c, ScribbleView v) {
+    public void onDraw (Canvas c) {
         for (DrawItem d : mList) {
-            d.draw(c, v);
+            d.draw(c);
         }
     }
 
-    public ItemList (DataInputStream dis, int version) throws IOException {
+    public ItemList (DataInputStream dis, int version, ScribbleView scribbleView) throws IOException {
         int numItems = dis.readInt();
         mList = new ArrayList<>(numItems+20);
         for (int i=0; i<numItems; i++) {
@@ -47,16 +45,16 @@ public class ItemList {
             byte itemType = dis.readByte();
             switch (itemType) {
                 case DrawItem.FREEHAND:
-                    item = new FreehandDrawItem(dis, version);
+                    item = new FreehandDrawItem(dis, version, scribbleView);
                     break;
                 case DrawItem.LINE:
-                    item = new LineDrawItem(dis, version);
+                    item = new LineDrawItem(dis, version, scribbleView);
                     break;
                 case DrawItem.TEXT:
-                    item = new TextItem(dis, version);
+                    item = new TextItem(dis, version, scribbleView);
                     break;
                 case DrawItem.COMPRESSED_FREEHAND:
-                    item = new FreehandCompressedDrawItem(dis, version);
+                    item = new FreehandCompressedDrawItem(dis, version, scribbleView);
                     break;
                 default:
                     ScribbleMainActivity.makeToast("Error reading data file");
@@ -84,25 +82,19 @@ public class ItemList {
     }
 
 
-    public int toggleSelected(PointF selectionPoint, boolean allowMultiple) {
-        int changeCount = 0;
+    public DrawItem findFirstSelectedItem (PointF selectionPoint) {
+        DrawItem result = null;
         // We scan the list from the end backwards.
         // Most likely to want to adjust the most recently added item.
         for (int i=mList.size()-1; i >= 0; i--) {
             DrawItem d = mList.get(i);
-            boolean selectionChanged = d.toggleSelected(selectionPoint);
-            if (selectionChanged) {
-                if (d.isSelected()) {
-                    mLastSelected = d;
-                }
-                changeCount++;
-                if (!allowMultiple)
-                    break;
+            boolean selected = d.selectItem(selectionPoint);
+            if (selected) {
+                result = d;
+                break;
             }
         }
-        return changeCount;
+        return result;
     }
-
-    public DrawItem getmLastSelected() {return mLastSelected;}
 
 }

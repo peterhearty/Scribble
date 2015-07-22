@@ -11,10 +11,9 @@ import android.widget.Button;
 import android.widget.PopupMenu;
 
 import uk.org.platitudes.scribble.R;
-import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
-import uk.org.platitudes.scribble.drawitem.SelectItem;
+import uk.org.platitudes.scribble.drawitem.MoveItem;
 import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
 import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
@@ -53,8 +52,8 @@ public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.On
             result = new LineDrawItem(event, scribbleView);
         } else if (mDrawToolButton.getText().equals("text")) {
             result = new TextItem(event, scribbleView);
-        } else if (mDrawToolButton.getText().equals("select")) {
-            result = new SelectItem(event, scribbleView);
+        } else if (mDrawToolButton.getText().equals("move")) {
+            result = new MoveItem(event, scribbleView);
         } else if (mDrawToolButton.getText().equals("scroll")) {
             result = new ScrollItem(event, scribbleView);
         }

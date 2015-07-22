@@ -116,6 +116,7 @@ public class floatAndDeltas {
 
     public void moveStart (float delta) {
         mStart += delta;
+        min = max = mStart;
         // min and max get adjusted when next draw takes place and nextFloat
         // gets repeatedly called
     }

@@ -21,23 +21,25 @@ import uk.org.platitudes.scribble.drawitem.DrawItem;
 
 /**
  */
-public class TextItem implements DrawItem {
+public class TextItem extends DrawItem {
 
+    private float mTextSize;
     private float mStartX;
     private float mStartY;
     private String mText;
     private Rect bounds = new Rect();
-    private Paint mPaint;
-    private boolean selected;
 
     public TextItem (MotionEvent event, ScribbleView scribbleView) {
+        super (event, scribbleView);
+
+        mTextSize = 40f;
+        mPaint.setTextSize(mTextSize);
 
         float screenX = event.getX();
         float screenY = event.getY();
         mStartX = scribbleView.screenXtoStored(screenX);
         mStartY = scribbleView.screenYtoStored(screenY);
 
-        createPaint();
         mText = "";
         bounds = new Rect();
 
@@ -48,26 +50,16 @@ public class TextItem implements DrawItem {
         scribbleView.addItem(this);
     }
 
-    private void createPaint () {
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setColor(Color.BLACK);
-        mPaint.setStrokeWidth(5f);
-        mPaint.setTextSize(20f);
-    }
-
 
     @Override
-    public void draw(Canvas c, ScribbleView scribbleView) {
-        float screenX = scribbleView.storedXtoScreen(mStartX);
-        float screenY = scribbleView.storedYtoScreen(mStartY);
+    public void draw(Canvas c) {
+        float screenX = mScribbleView.storedXtoScreen(mStartX);
+        float screenY = mScribbleView.storedYtoScreen(mStartY);
 
         float zoom = ZoomButtonHandler.getsZoom();
-        mPaint.setTextSize(30 * zoom);
+        mPaint.setTextSize(mTextSize * zoom);
         c.drawText(mText, screenX, screenY, mPaint);
     }
-
-    public void handleMoveEvent(MotionEvent event, ScribbleView scribbleView) {}
-    public void handleUpEvent(MotionEvent event, ScribbleView scribbleView) {}
 
     @Override
     public void saveToFile(DataOutputStream dos, int version) throws IOException {
@@ -77,13 +69,17 @@ public class TextItem implements DrawItem {
         dos.writeUTF(mText);
     }
 
-    public TextItem (DataInputStream dis, int version) throws IOException {
-        createPaint();
+    public TextItem (DataInputStream dis, int version, ScribbleView sv) throws IOException {
+        super(null, sv);
+        mTextSize = 40f;
+        mPaint.setTextSize(mTextSize);
+
         readFromFile(dis, version);
     }
 
     @Override
     public DrawItem readFromFile(DataInputStream dis, int version) throws IOException {
+        mTextSize = 40f;
         mStartX = dis.readFloat();
         mStartY = dis.readFloat();
         String s = dis.readUTF();
@@ -92,31 +88,23 @@ public class TextItem implements DrawItem {
     }
 
     @Override
-    public boolean toggleSelected(PointF p) {
+    public boolean selectItem(PointF p) {
         float minX = mStartX-FUZZY;
         float maxX = mStartX+bounds.right+FUZZY;
         float minY = mStartY-FUZZY;
         float maxY = mStartY+bounds.bottom+FUZZY;
         boolean selectChanged = false;
         if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
-            selectChanged = true;
-            if (selected) {
-                selected = false;
-                mPaint.setColor(Color.BLACK);
-            } else {
-                selected = true;
-                mPaint.setColor(Color.RED);
-            }
+            mSelected = true;
+            mPaint.setColor(Color.RED);
         }
-        return selectChanged;
+        return mSelected;
     }
-
-    public boolean isSelected() {return selected;}
     public String getmText() {return mText;}
 
     public void setmText(String mText) {
         this.mText = mText;
-        mPaint.setTextSize(30f);
+        mPaint.setTextSize(mTextSize);
         mPaint.getTextBounds(mText, 0, mText.length(), bounds);
     }
 
