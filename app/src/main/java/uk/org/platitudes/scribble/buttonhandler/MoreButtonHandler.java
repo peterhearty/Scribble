@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
+import uk.org.platitudes.scribble.file.FileChooser;
 
 public class MoreButtonHandler extends RestoreObserver implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
@@ -76,6 +77,9 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
             } catch (Exception e) {
                 ScribbleMainActivity.makeToast("onMenuItemClick "+e);
             }
+        } else if (menuTitle.equals("file")) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
         } else if (menuTitle.equals("open")) {
             try {
                 FileInputStream fis = mMoreButton.getContext().openFileInput(DATAFILE);

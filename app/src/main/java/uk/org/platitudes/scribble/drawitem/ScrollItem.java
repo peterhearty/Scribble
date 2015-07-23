@@ -45,8 +45,11 @@ public class ScrollItem extends DrawItem {
     public void handleMoveEvent(MotionEvent event) {
         if (event.getPointerCount() == 2) {
             float curYdiff = Math.abs(event.getY(0) - event.getY(1));
-            float newZoom = curYdiff / mStartYdiff * mstartZoom;
-            ScribbleMainActivity.mainActivity.getmZoomButtonHandler().setsZoom(newZoom);
+            int viewHeight = mScribbleView.getHeight();
+            if (Math.abs(curYdiff-mStartYdiff) > viewHeight/30) {
+                float newZoom = curYdiff / mStartYdiff * mstartZoom;
+                ScribbleMainActivity.mainActivity.getmZoomButtonHandler().setsZoom(newZoom);
+            }
         }
 
         // If the DOWN event happened at 40,40 and the MOVE
