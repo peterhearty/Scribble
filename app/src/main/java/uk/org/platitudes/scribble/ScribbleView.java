@@ -6,6 +6,7 @@ package uk.org.platitudes.scribble;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PointF;
+import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -115,7 +116,7 @@ public class ScribbleView extends View {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event){
+    public boolean onTouchEvent(@NonNull MotionEvent event){
 
         int action = MotionEventCompat.getActionMasked(event);
 
@@ -124,7 +125,6 @@ public class ScribbleView extends View {
             mCurrentItem.handleUpEvent(event);
             mCurrentItem = new ScrollItem(event, this);
             return true;
-            // TODO don't need the scroll menu any more
         }
 
 //        Log.d("onTouchEvent", event.toString());

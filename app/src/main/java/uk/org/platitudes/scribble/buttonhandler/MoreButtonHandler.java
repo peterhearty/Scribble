@@ -14,6 +14,7 @@ import android.widget.PopupMenu;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
@@ -80,6 +81,7 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
         } else if (menuTitle.equals("file")) {
             FileChooser fileChooser = new FileChooser();
             fileChooser.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
+            File f = fileChooser.getFile();
         } else if (menuTitle.equals("open")) {
             try {
                 FileInputStream fis = mMoreButton.getContext().openFileInput(DATAFILE);

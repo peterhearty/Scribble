@@ -50,4 +50,12 @@ public class FileList extends SimpleList {
         }
     }
 
+    public String getFileName () {
+        String result = null;
+        if (mFileName != null ) {
+            result = mFileName.getText().toString();
+        }
+        return result;
+    }
+
 }

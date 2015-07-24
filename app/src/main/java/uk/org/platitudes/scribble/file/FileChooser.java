@@ -10,9 +10,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
+
+import java.io.File;
 
 import uk.org.platitudes.scribble.R;
 
@@ -21,9 +20,9 @@ import uk.org.platitudes.scribble.R;
  */
 public class FileChooser extends DialogFragment implements DialogInterface.OnClickListener {
 
-    private DeviceList mDeviceList;
     private FileList mFileList;
     private DirList mDirList;
+    private File mFile;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -35,7 +34,7 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
 
         mFileList = new FileList(v);
         mDirList = new DirList(v, mFileList);
-        mDeviceList = new DeviceList(v, mDirList);
+        new DeviceList(v, mDirList);
 
         builder.setView(v);
         builder.setMessage("Choose a file");
@@ -49,5 +48,13 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
     @Override
     public void onClick(DialogInterface dialog, int which) {
 
+        if (which == DialogInterface.BUTTON_POSITIVE) {
+            String dirName = mDirList.getDirectoryName();
+            String fileName = mFileList.getFileName();
+            String pathName = dirName+ File.separator+fileName;
+            mFile = new File(pathName);
+        }
     }
+
+    public File getFile () {return mFile;}
 }

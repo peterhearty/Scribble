@@ -91,5 +91,13 @@ public class DirList extends SimpleList {
         }
     }
 
+    public String getDirectoryName () {
+        String result = null;
+        if (mDirectoryName != null ) {
+            result = mDirectoryName.getText().toString();
+        }
+        return result;
+    }
+
 
 }
