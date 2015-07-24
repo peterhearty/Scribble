@@ -122,7 +122,7 @@ public class FreeCompressContext {
                 int byteExponent = 114 + exponent;
                 if (byteExponent > 127 || byteExponent < 101) {
                     // Diff outside range 10**-13 to 10**13 pixels
-                    ScribbleMainActivity.makeToast("Exponent out of range " + byteExponent);
+                    ScribbleMainActivity.log("Exponent out of range " + byteExponent, "", null);
                 }
                 if (byteExponent != mCurExponent) {
                     // The exponent is different from last time, so save in compressed stream.

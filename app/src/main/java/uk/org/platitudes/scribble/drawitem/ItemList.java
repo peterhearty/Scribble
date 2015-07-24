@@ -56,8 +56,11 @@ public class ItemList {
                 case DrawItem.COMPRESSED_FREEHAND:
                     item = new FreehandCompressedDrawItem(dis, version, scribbleView);
                     break;
+                case DrawItem.DEFAULT_ITEM:
+                    // do nothing
+                    break;
                 default:
-                    ScribbleMainActivity.makeToast("Error reading data file");
+                    ScribbleMainActivity.log ("Error reading data file", "", null);
                     return;
             }
             if (item != null)

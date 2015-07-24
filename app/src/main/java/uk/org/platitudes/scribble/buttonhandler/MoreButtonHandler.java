@@ -75,7 +75,7 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
                 dos.close();
                 fos.close();
             } catch (Exception e) {
-                ScribbleMainActivity.makeToast("onMenuItemClick "+e);
+                ScribbleMainActivity.log("onMenuItemClick ", "", e);
             }
         } else if (menuTitle.equals("file")) {
             FileChooser fileChooser = new FileChooser();
@@ -87,10 +87,10 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
                 mActivity.readeverything(dis);
                 dis.close();
                 fis.close();
-                mActivity.getmMainView().invalidate();
             } catch (Exception e) {
-                ScribbleMainActivity.makeToast("onMenuItemClick "+e);
+                ScribbleMainActivity.log("onMenuItemClick", "", e);
             }
+            mActivity.getmMainView().invalidate();
 
         }  else if (menuTitle.equals("exit")) {
             ScribbleMainActivity.mainActivity.finish();
@@ -106,13 +106,13 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
     }
 
     public void onUpdate(int nowBeingRestored, String currentPackage) {
-        ScribbleMainActivity.makeToast("Restoring "+currentPackage);
+        ScribbleMainActivity.log("Restoring ", currentPackage, null);
     }
     public void restoreFinished(int error) {
-        ScribbleMainActivity.makeToast("Restore finished");
+        ScribbleMainActivity.log("Restore finished", "", null);
     }
     public void restoreStarting(int numPackages) {
-        ScribbleMainActivity.makeToast("Restore starting");
+        ScribbleMainActivity.log ("Restore starting", "", null);
     }
 
 }

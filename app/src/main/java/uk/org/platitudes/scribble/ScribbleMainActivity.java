@@ -6,6 +6,7 @@ package uk.org.platitudes.scribble;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -59,13 +60,6 @@ public class ScribbleMainActivity extends Activity {
 
     }
 
-    public static void makeToast (String s) {
-        Context context = mainActivity.getApplicationContext();
-        Toast toast = Toast.makeText(context, s, Toast.LENGTH_SHORT);
-        toast.show();
-
-    }
-
     public void saveEverything (DataOutputStream dos) throws IOException {
         dos.writeInt(FILE_FORMAT_VERSION);
         mMainView.saveEverything(dos, FILE_FORMAT_VERSION);
@@ -100,7 +94,7 @@ public class ScribbleMainActivity extends Activity {
             dos.close();
             baos.close();
         } catch (Exception e) {
-            makeToast("onSaveInstanceState "+e);
+            log("onSaveInstanceState", "", e);
         }
     }
 
@@ -116,13 +110,28 @@ public class ScribbleMainActivity extends Activity {
             dis.close();
             bais.close();
         } catch (Exception e) {
-            makeToast("readState " + e);
+            log("readState", "", e);
         }
     }
 
     public ScribbleView getmMainView() {return mMainView;}
     public ZoomButtonHandler getmZoomButtonHandler() {return mZoomButtonHandler;}
 
+    private static void makeToast (String s) {
+        Context context = mainActivity.getApplicationContext();
+        Toast toast = Toast.makeText(context, s, Toast.LENGTH_SHORT);
+        toast.show();
+
+    }
+
+    public static void log (String tag, String msg, Exception e) {
+        String s = tag + " " + msg;
+        if (e != null) {
+            s = s + " " + e;
+            Log.e(tag, msg, e);
+        }
+        makeToast(s);
+    }
 
 
 }

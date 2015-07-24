@@ -24,6 +24,7 @@ public abstract class DrawItem {
     public final static byte FREEHAND = 101;
     public final static byte TEXT = 102;
     public final static byte COMPRESSED_FREEHAND = 103;
+    public final static byte DEFAULT_ITEM = 104;
 
     /**
      * Used during selection to allow some imprecision in selecting DrawItems.
@@ -53,7 +54,15 @@ public abstract class DrawItem {
      */
     public void handleUpEvent (MotionEvent event) {};
 
-    public void saveToFile (DataOutputStream dos, int version) throws IOException {};
+    /**
+     * Drawing items override this method. Some DrawItems, like MoveItem, remain on the
+     * draw list so that they can be undone. They do not write themselves to disk and will
+     * appear as DEFAULT_ITEMs on being read. DEFAULT_ITEMs do not get added to the draw
+     * list and so disappear on subsequent writes.
+     */
+    public void saveToFile (DataOutputStream dos, int version) throws IOException {
+        dos.writeByte(DEFAULT_ITEM);
+    };
 
     public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {return null;};
 

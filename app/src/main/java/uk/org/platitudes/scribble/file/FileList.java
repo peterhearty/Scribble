@@ -17,16 +17,30 @@ public class FileList extends SimpleList {
     private EditText mFileName;
 
     public FileList (View v) {
-        super (v, "File list", R.id.file_list, R.id.device_name);
-
+        super (v, R.id.file_list);
+        setOrderObjects(true);
         mFileName = (EditText) v.findViewById(R.id.file_name);
-
     }
 
     public String getName (Object o){
         File f = (File) o;
         String s = f.getName();
         return s;
+    }
+
+    public boolean isLessThan (Object a, Object b) {
+        String stringA = a.toString();
+        String stringB = b.toString();
+        if (stringA.compareToIgnoreCase(stringB) < 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setmFileName (String s) {
+        if (mFileName != null) {
+            mFileName.setText(s);
+        }
     }
 
     public void onClick (Object o) {

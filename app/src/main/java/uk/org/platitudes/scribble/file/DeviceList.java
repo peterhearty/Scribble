@@ -5,14 +5,8 @@ package uk.org.platitudes.scribble.file;
 
 import android.os.Environment;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import uk.org.platitudes.scribble.R;
 
@@ -21,11 +15,13 @@ import uk.org.platitudes.scribble.R;
 public class DeviceList extends SimpleList {
 
     private DirList mFileList;
-    private static final String[] deviceNames = {"App private", "External private", "External public", "Root", "Parent dir"};
+    private static final String[] deviceNames = {"Private", "Public", "Root", "Parent dir"};
+
+    // Took out place "Private (external)" corresponding to getContext().getExternalFilesDir(null)
 
 
     public DeviceList (View v, DirList fileList) {
-        super (v, "Devices", R.id.device_list, R.id.device_name);
+        super (v, R.id.device_list);
         mFileList = fileList;
         setContents(deviceNames);
     }
@@ -37,12 +33,10 @@ public class DeviceList extends SimpleList {
         if (text.equals(deviceNames[0])) {
             dir = mParentView.getContext().getFilesDir();
         } else if (text.equals(deviceNames[1])) {
-            dir = mParentView.getContext().getExternalFilesDir(null);
-        } else if (text.equals(deviceNames[2])) {
             dir = Environment.getExternalStorageDirectory();
-        } else if (text.equals(deviceNames[3])) {
+        } else if (text.equals(deviceNames[2])) {
             dir = Environment.getRootDirectory();
-        } else if (text.equals(deviceNames[4])) {
+        } else if (text.equals(deviceNames[3])) {
             mFileList.setParentDirectory();
         }
         if (dir != null) {

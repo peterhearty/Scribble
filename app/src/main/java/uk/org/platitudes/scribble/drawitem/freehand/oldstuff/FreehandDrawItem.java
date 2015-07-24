@@ -85,7 +85,7 @@ public class FreehandDrawItem extends DrawItem {
         try {
             readFromFile(dis, version);
         } catch (IOException e) {
-            ScribbleMainActivity.makeToast("Error reading FreehandDrawItem " + e);
+            ScribbleMainActivity.log("Error reading FreehandDrawItem ", "", e);
         }
     }
 

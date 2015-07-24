@@ -13,15 +13,16 @@ import uk.org.platitudes.scribble.R;
 public class DirList extends SimpleList {
 
     private TextView mDirectoryName;
-    private SimpleList mFileList;
+    private FileList mFileList;
 
 
-    public DirList(View v, SimpleList fileList) {
-        super(v, "Dir list", R.id.dir_list, R.id.device_name);
+    public DirList(View v, FileList fileList) {
+        super(v, R.id.dir_list);
         mFileList = fileList;
         mDirectoryName = (TextView) v.findViewById(R.id.directory_name);
 
         File startDir = v.getContext().getFilesDir();
+        setOrderObjects(true);
         setContents(startDir);
 
     }
@@ -54,12 +55,22 @@ public class DirList extends SimpleList {
         }
 
         mDirectoryName.setText(dirPath);
+        mFileList.setmFileName("");
     }
 
     public String getName (Object o){
         File f = (File) o;
         String s = f.getName();
         return s;
+    }
+
+    public boolean isLessThan (Object a, Object b) {
+        String stringA = a.toString();
+        String stringB = b.toString();
+        if (stringA.compareToIgnoreCase(stringB) < 0) {
+            return true;
+        }
+        return false;
     }
 
     public void setParentDirectory() {
