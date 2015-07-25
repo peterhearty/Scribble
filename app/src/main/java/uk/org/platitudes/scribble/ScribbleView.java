@@ -22,6 +22,7 @@ import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
+import uk.org.platitudes.scribble.file.FileSaver;
 
 /**
  * Provides the main drawing view.
@@ -53,11 +54,8 @@ public class ScribbleView extends View {
      */
     private PointF mScrollOffset;
 
-    /**
-     * We need the DrawToolButtonHandler because it knows what type of
-     * draw tool has ben selected.
-     */
-    private DrawToolButtonHandler mDrawToolButtonHandler;
+
+    private ScribbleMainActivity mMainActivity;
 
 
     public ScribbleView(Context context, AttributeSet attrs) {
@@ -77,19 +75,30 @@ public class ScribbleView extends View {
         mScrollOffset = new PointF(0f, 0f);
     }
 
-    public void saveEverything (DataOutputStream dos, int version) throws IOException {
+    public void saveScrollOffset (DataOutputStream dos, int version) throws IOException {
         dos.writeFloat(mScrollOffset.x);
         dos.writeFloat(mScrollOffset.y);
-        mDrawItems.write(dos, version);
-        mUndoList.write(dos, version);
     }
 
-    public void readEverything (DataInputStream dis, int version) throws IOException {
+    public void readScrollOffset (DataInputStream dis, int version) throws IOException {
         mScrollOffset = new PointF();
         mScrollOffset.x = dis.readFloat();
         mScrollOffset.y = dis.readFloat();
+    }
 
+    public void saveDrawList (DataOutputStream dos, int version) throws IOException {
+        mDrawItems.write(dos, version);
+    }
+
+    public void readDrawList (DataInputStream dis, int version) throws IOException {
         mDrawItems = new ItemList(dis, version, this);
+    }
+
+    public void saveUndoList  (DataOutputStream dos, int version) throws IOException {
+        mUndoList.write(dos, version);
+    }
+
+    public void readUndoList (DataInputStream dis, int version) throws IOException {
         mUndoList = new ItemList(dis, version, this);
     }
 
@@ -135,9 +144,10 @@ public class ScribbleView extends View {
                     mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;
                 }
-                if (mDrawToolButtonHandler != null) {
+                if (mMainActivity != null) {
+                    DrawToolButtonHandler dth = mMainActivity.getmDrawToolButtonHandler();
                     // The draw tool button knows what type of draw tool is currently selected
-                    mCurrentItem = mDrawToolButtonHandler.generateDrawItem(event, this);
+                    mCurrentItem = dth.generateDrawItem(event, this);
                 }
                 break;
             case (MotionEvent.ACTION_MOVE) :
@@ -150,6 +160,8 @@ public class ScribbleView extends View {
                     mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;
                 }
+                FileSaver fs = new FileSaver(mMainActivity);
+                fs.writeToDefaultFile();
                 break;
             case (MotionEvent.ACTION_CANCEL) :
                 mCurrentItem = null;
@@ -198,13 +210,15 @@ public class ScribbleView extends View {
     }
 
     public ItemList getmDrawItems() {return mDrawItems;}
-    public void setmDrawToolButtonHandler(DrawToolButtonHandler dtbh) {this.mDrawToolButtonHandler = dtbh;}
     public PointF getmScrollOffset() {return mScrollOffset;}
     public void setmScrollOffset(PointF mScrollOffset) {this.mScrollOffset = mScrollOffset;}
     public void setmScrollOffset(float x,float y) {
         mScrollOffset.x = x;
         mScrollOffset.y = y;
     }
+    public ScribbleMainActivity getmMainActivity() {return mMainActivity;}
+    public void setmMainActivity(ScribbleMainActivity mMainActivity) {this.mMainActivity = mMainActivity;}
+
 
 
 

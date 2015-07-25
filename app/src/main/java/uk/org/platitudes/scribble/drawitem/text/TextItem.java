@@ -5,7 +5,6 @@ package uk.org.platitudes.scribble.drawitem.text;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.view.MotionEvent;
@@ -93,7 +92,6 @@ public class TextItem extends DrawItem {
         float maxX = mStartX+bounds.right+FUZZY;
         float minY = mStartY-FUZZY;
         float maxY = mStartY+bounds.bottom+FUZZY;
-        boolean selectChanged = false;
         if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
             mSelected = true;
             mPaint.setColor(Color.RED);

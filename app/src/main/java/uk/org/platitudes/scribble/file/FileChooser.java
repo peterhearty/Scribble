@@ -11,18 +11,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import java.io.File;
-
 import uk.org.platitudes.scribble.R;
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 
 /**
+ * Pops up a dialog to let a user choose a file.
+ *
  * See Android/Sdk/docs/guide/topics/ui/dialogs.html
  */
 public class FileChooser extends DialogFragment implements DialogInterface.OnClickListener {
 
     private FileList mFileList;
     private DirList mDirList;
-    private File mFile;
+    private boolean mSaveFike;
+    private ScribbleMainActivity mMainActivity;
+
+    public void setParameters (ScribbleMainActivity sma, boolean writer) {
+        mMainActivity = sma;
+        mSaveFike = writer;
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -51,10 +58,12 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
         if (which == DialogInterface.BUTTON_POSITIVE) {
             String dirName = mDirList.getDirectoryName();
             String fileName = mFileList.getFileName();
-            String pathName = dirName+ File.separator+fileName;
-            mFile = new File(pathName);
+            FileSaver fs = new FileSaver(mMainActivity);
+            if (mSaveFike) {
+                fs.writeToFile(dirName, fileName);
+            } else {
+                fs.readFromFile(dirName, fileName);
+            }
         }
     }
-
-    public File getFile () {return mFile;}
 }

@@ -21,10 +21,10 @@ import java.io.FileOutputStream;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.file.FileChooser;
+import uk.org.platitudes.scribble.file.FileSaver;
 
 public class MoreButtonHandler extends RestoreObserver implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
-    public static final String DATAFILE = "currentDataFile";
     private Button mMoreButton;
     private ScribbleMainActivity mActivity;
 
@@ -69,31 +69,16 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
         if (menuTitle.equals("fullscreen")) {
             overrideVisibilitychanges ();
         } else if (menuTitle.equals("save")) {
-            try {
-                FileOutputStream fos = mMoreButton.getContext().openFileOutput(DATAFILE, Context.MODE_PRIVATE);
-                DataOutputStream dos = new DataOutputStream(fos);
-                mActivity.saveEverything(dos);
-                dos.close();
-                fos.close();
-            } catch (Exception e) {
-                ScribbleMainActivity.log("onMenuItemClick ", "", e);
-            }
-        } else if (menuTitle.equals("file")) {
             FileChooser fileChooser = new FileChooser();
+            fileChooser.setParameters(mActivity, true);
             fileChooser.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
-            File f = fileChooser.getFile();
+        } else if (menuTitle.equals("file")) {
+            ScribbleMainActivity.log("file clisked", "", null);
         } else if (menuTitle.equals("open")) {
-            try {
-                FileInputStream fis = mMoreButton.getContext().openFileInput(DATAFILE);
-                DataInputStream dis = new DataInputStream(fis);
-                mActivity.readeverything(dis);
-                dis.close();
-                fis.close();
-            } catch (Exception e) {
-                ScribbleMainActivity.log("onMenuItemClick", "", e);
-            }
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setParameters(mActivity, false);
+            fileChooser.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
             mActivity.getmMainView().invalidate();
-
         }  else if (menuTitle.equals("exit")) {
             ScribbleMainActivity.mainActivity.finish();
         } else if (menuTitle.equals("backup")) {

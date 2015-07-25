@@ -26,10 +26,8 @@ public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClick
     @Override
     public void onClick(View v) {
         sZoom *= 2.0f;
-        if (sZoom >= 8.1f)
-            sZoom = 0.125f;
-//        Toast t = Toast.makeText(mScribbleView.getContext(), "Zoom set to "+sZoom, Toast.LENGTH_SHORT);
-//        t.show();
+        if (sZoom >= 4.05f)
+            sZoom = 0.25f;
         setButtonText();
         mScribbleView.invalidate();
     }
