@@ -11,6 +11,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:backupAgent="BackupToGoogle"
+        android:restoreAnyVersion="true"
         android:theme="@style/AppTheme" >
         <!-- registered with https://developer.android.com/google/backup/signup.html?csw=1 -->
         <meta-data

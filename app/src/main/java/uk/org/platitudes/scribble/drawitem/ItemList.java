@@ -101,4 +101,8 @@ public class ItemList {
         return result;
     }
 
+    public void clear () {
+        mList.clear();
+    }
+
 }

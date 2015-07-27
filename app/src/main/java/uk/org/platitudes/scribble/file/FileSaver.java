@@ -5,6 +5,7 @@ package uk.org.platitudes.scribble.file;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,6 +13,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -35,6 +37,9 @@ public class FileSaver {
     private static final int FILE_FORMAT_VERSION = 1000;
     private static final long MAGIC_NUMBER = 0x5C81881EF11EL; // sort of says SCRIBBLEFILE
     public static final String DATAFILE = "currentDataFile";
+
+    // See http://developer.android.com/guide/topics/data/backup.html
+    public static final Object sDataLock = new Object();
 
 
 
@@ -80,9 +85,11 @@ public class FileSaver {
 
     public void writeToDefaultFile () {
         try {
-            FileOutputStream fos = mMainView.getContext().openFileOutput(DATAFILE, Context.MODE_PRIVATE);
-            writeToOpenFile(fos);
-            fos.close();
+            synchronized (sDataLock) {
+                FileOutputStream fos = mMainView.getContext().openFileOutput(DATAFILE, Context.MODE_WORLD_READABLE);
+                writeToOpenFile(fos);
+                fos.close();
+            }
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "writeToDefaultFile", e);
         }
@@ -92,7 +99,7 @@ public class FileSaver {
         String pathName = dirName+ File.separator+fileName;
         try {
             FileOutputStream fos = new FileOutputStream(pathName);
-            writeToOpenFile (fos);
+            writeToOpenFile(fos);
             fos.close();
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "writeToFile", e);
@@ -154,10 +161,14 @@ public class FileSaver {
 
     public void readFromDefaultFile () {
         try {
-            FileInputStream fis = mMainView.getContext().openFileInput(DATAFILE);
-            readFromOpenFile (fis);
-            fis.close();
-        } catch (Exception e) {
+            synchronized (sDataLock) {
+                FileInputStream fis = mMainView.getContext().openFileInput(DATAFILE);
+                readFromOpenFile(fis);
+                fis.close();
+            }
+        } catch (FileNotFoundException fnfe) {
+            // do nothing
+        } catch (IOException e) {
             ScribbleMainActivity.log("FileSaver", "readFromDefaultFile", e);
         }
     }
@@ -173,6 +184,41 @@ public class FileSaver {
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "read from Bundle", e);
         }
+    }
+
+    public void copyDefaultFile () {
+        try {
+            FileInputStream fis = mMainView.getContext().openFileInput(DATAFILE);
+            File dir = Environment.getExternalStorageDirectory();
+            String pathTocopy = dir.getCanonicalPath()+File.separator+DATAFILE;
+            File outFile = new File(pathTocopy);
+            FileOutputStream fos = new FileOutputStream(outFile);
+            while (fis.available()>0) {
+                int nextByte = fis.read();
+                fos.write(nextByte);
+            }
+            fis.close();
+            fos.close();
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileSaver", "copyDefaultFile", e);
+        }
+
+    }
+
+    public void delete () {
+        try {
+            File dir = mMainView.getContext().getFilesDir();
+            String path = dir.getCanonicalPath() + File.separator + DATAFILE;
+            File f = new File(path);
+            boolean result = f.delete();
+            if (!result) {
+                ScribbleMainActivity.log(f.getCanonicalPath(), " not deleted", null);
+
+            }
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileSaver", "copyDefaultFile", e);
+        }
+
     }
 
 }

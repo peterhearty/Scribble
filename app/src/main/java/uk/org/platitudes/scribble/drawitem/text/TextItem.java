@@ -17,6 +17,7 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.file.FileSaver;
 
 /**
  */
@@ -33,6 +34,11 @@ public class TextItem extends DrawItem {
 
         mTextSize = 40f;
         mPaint.setTextSize(mTextSize);
+
+        // Tried to use a TextPaint as shown here:
+        // http://stackoverflow.com/questions/6756975/draw-multi-line-text-to-canvas
+        // Caused lots of strange screen effects. New Freehand DrawItems appeared in
+        // wrong place. don't understand.
 
         float screenX = event.getX();
         float screenY = event.getY();

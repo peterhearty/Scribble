@@ -87,6 +87,14 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
         } else if (menuTitle.equals("restore")) {
             BackupManager bm = new BackupManager(mActivity.getmMainView().getContext());
             bm.requestRestore(this);
+        } else if (menuTitle.equals("clear")) {
+            mActivity.getmMainView().clear();
+        } else if (menuTitle.equals("copy")) {
+            FileSaver fs = new FileSaver(mActivity);
+            fs.copyDefaultFile();
+        } else if (menuTitle.equals("delete")) {
+            FileSaver fs = new FileSaver(mActivity);
+            fs.delete();
         }
 
         return true;
@@ -97,9 +105,14 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
     }
     public void restoreFinished(int error) {
         ScribbleMainActivity.log("Restore finished", "", null);
+        FileSaver fs = new FileSaver(mActivity);
+        fs.readFromDefaultFile();
     }
     public void restoreStarting(int numPackages) {
-        ScribbleMainActivity.log ("Restore starting", "", null);
+        mActivity.getmMainView().clear();
+        FileSaver fs = new FileSaver(mActivity);
+        fs.delete();
+        ScribbleMainActivity.log("Restore starting", "", null);
     }
 
 }

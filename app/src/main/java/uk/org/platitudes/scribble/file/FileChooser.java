@@ -25,6 +25,7 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
     private DirList mDirList;
     private boolean mSaveFike;
     private ScribbleMainActivity mMainActivity;
+    private AlertDialog mAlertDialog;
 
     public void setParameters (ScribbleMainActivity sma, boolean writer) {
         mMainActivity = sma;
@@ -41,7 +42,7 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
 
         mFileList = new FileList(v);
         mDirList = new DirList(v, mFileList);
-        new DeviceList(v, mDirList);
+        DeviceList deviceList = new DeviceList(v, mDirList, mMainActivity);
 
         builder.setView(v);
         builder.setMessage("Choose a file");
@@ -49,7 +50,11 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
         builder.setPositiveButton("ok", this);
         builder.setNegativeButton("cancel", this);
         // Create the AlertDialog object and return it
-        return builder.create();
+        mAlertDialog = builder.create();
+
+        deviceList.setmAlertDialog(mAlertDialog);
+
+        return mAlertDialog;
     }
 
     @Override

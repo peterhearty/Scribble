@@ -109,6 +109,8 @@ public class ScribbleView extends View {
             movedItem.undo();
         }
         invalidate();
+        FileSaver fs = new FileSaver(mMainActivity);
+        fs.writeToDefaultFile();
     }
 
     public void redo () {
@@ -117,11 +119,23 @@ public class ScribbleView extends View {
             movedItem.redo();
         }
         invalidate();
+        FileSaver fs = new FileSaver(mMainActivity);
+        fs.writeToDefaultFile();
 
     }
 
     public void addItem (DrawItem item) {
         mDrawItems.add(item);
+        FileSaver fs = new FileSaver(mMainActivity);
+        fs.writeToDefaultFile();
+    }
+
+    public void clear () {
+        mDrawItems.clear();
+        mUndoList.clear();
+        FileSaver fs = new FileSaver(mMainActivity);
+        fs.writeToDefaultFile();
+        invalidate();
     }
 
     @Override
@@ -160,8 +174,6 @@ public class ScribbleView extends View {
                     mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;
                 }
-                FileSaver fs = new FileSaver(mMainActivity);
-                fs.writeToDefaultFile();
                 break;
             case (MotionEvent.ACTION_CANCEL) :
                 mCurrentItem = null;
