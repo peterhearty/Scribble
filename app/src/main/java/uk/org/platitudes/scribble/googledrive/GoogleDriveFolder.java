@@ -33,7 +33,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
     public GoogleDriveFolder(ScribbleMainActivity activity) {
         // Need to cal a super of some kind.
         super ("/");
-        mGoogleApiClient = activity.getmGoogleApiClient();
+        mGoogleApiClient = activity.getmGoogleStuff().getmGoogleApiClient();
         mDriveFolder = Drive.DriveApi.getRootFolder(mGoogleApiClient);
         contents = new File[0];
     }

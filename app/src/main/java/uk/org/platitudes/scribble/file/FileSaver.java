@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
@@ -132,7 +133,7 @@ public class FileSaver {
         String pathName = dirName+ File.separator+fileName;
         try {
             FileInputStream fis = new FileInputStream(pathName);
-            readFromOpenFile(fis);
+            readFromInputStream(fis);
             fis.close();
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "readFromFile", e);
@@ -140,7 +141,7 @@ public class FileSaver {
     }
 
 
-    private void readFromOpenFile (FileInputStream fis) {
+    public void readFromInputStream(InputStream fis) {
         try {
             DataInputStream dis = new DataInputStream(fis);
             long magNumber = dis.readLong();
@@ -154,7 +155,7 @@ public class FileSaver {
             }
             dis.close();
         } catch (Exception e) {
-            ScribbleMainActivity.log("FileSaver", "readFromDefaultFile", e);
+            ScribbleMainActivity.log("FileSaver", "readFromInputStream", e);
         }
 
     }
@@ -163,7 +164,7 @@ public class FileSaver {
         try {
             synchronized (sDataLock) {
                 FileInputStream fis = mMainView.getContext().openFileInput(DATAFILE);
-                readFromOpenFile(fis);
+                readFromInputStream(fis);
                 fis.close();
             }
         } catch (FileNotFoundException fnfe) {
@@ -185,6 +186,9 @@ public class FileSaver {
             ScribbleMainActivity.log("FileSaver", "read from Bundle", e);
         }
     }
+
+
+    /**************** Utility methods ***********************/
 
     public void copyDefaultFile () {
         try {

@@ -4,8 +4,13 @@
 package uk.org.platitudes.scribble.file;
 
 import android.app.AlertDialog;
+import android.content.IntentSender;
 import android.os.Environment;
 import android.view.View;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.OpenFileActivityBuilder;
 
 import java.io.File;
 
@@ -23,7 +28,6 @@ public class DeviceList extends SimpleList {
 
     // Took out place "Private (external)" corresponding to getContext().getExternalFilesDir(null)
 
-
     public DeviceList (View v, DirList fileList, ScribbleMainActivity activity) {
         super (v, R.id.device_list);
         mFileList = fileList;
@@ -32,7 +36,6 @@ public class DeviceList extends SimpleList {
     }
 
     public void setmAlertDialog(AlertDialog mAlertDialog) {this.mAlertDialog = mAlertDialog;}
-
 
     @Override
     public void onClick(Object o) {
@@ -46,7 +49,7 @@ public class DeviceList extends SimpleList {
             dir = Environment.getRootDirectory();
         } else if (text.equals(deviceNames[3])) {
             mAlertDialog.dismiss();
-            mMainActivity.startGoogleDriveFileSelector();
+            mMainActivity.getmGoogleStuff().startGoogleDriveFileSelector();
         } else if (text.equals(deviceNames[4])) {
             mFileList.setParentDirectory();
         }
