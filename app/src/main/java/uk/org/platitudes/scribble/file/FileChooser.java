@@ -23,14 +23,17 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
 
     private FileList mFileList;
     private DirList mDirList;
-    private boolean mSaveFike;
+    private boolean mSaveFile;
     private ScribbleMainActivity mMainActivity;
     private AlertDialog mAlertDialog;
 
     public void setParameters (ScribbleMainActivity sma, boolean writer) {
         mMainActivity = sma;
-        mSaveFike = writer;
+        mSaveFile = writer;
     }
+
+
+    public boolean ismSaveFile() {return mSaveFile;}
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -52,7 +55,7 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
         // Create the AlertDialog object and return it
         mAlertDialog = builder.create();
 
-        deviceList.setmAlertDialog(mAlertDialog);
+        deviceList.setParameters(mAlertDialog, mSaveFile);
 
         return mAlertDialog;
     }
@@ -64,7 +67,7 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
             String dirName = mDirList.getDirectoryName();
             String fileName = mFileList.getFileName();
             FileSaver fs = new FileSaver(mMainActivity);
-            if (mSaveFike) {
+            if (mSaveFile) {
                 fs.writeToFile(dirName, fileName);
             } else {
                 fs.readFromFile(dirName, fileName);

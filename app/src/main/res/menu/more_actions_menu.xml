@@ -3,7 +3,6 @@
     <item android:title="open" />
     <item android:title="save" />
     <item android:title="copy" />
-    <item android:title="delete" />
     <item android:title="backup" />
     <item android:title="restore" />
     <item android:title="export" />

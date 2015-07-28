@@ -12,25 +12,26 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.drive.CreateFileActivityBuilder;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveId;
+import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.OpenFileActivityBuilder;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.file.FileSaver;
 
 /**
  */
-public class GoogleDriveStuff
-        implements
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        ResultCallback<DriveApi.DriveContentsResult> {
+public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
+                                         GoogleApiClient.OnConnectionFailedListener {
 
     private ScribbleMainActivity mScribbleMainActivity;
     private GoogleApiClient mGoogleApiClient;
@@ -60,12 +61,8 @@ public class GoogleDriveStuff
     @Override
     public void onConnected(Bundle bundle) {
         mGoogleDriveConnected = true;
-
         mRootGoogleDriveFolder = new GoogleDriveFolder(mScribbleMainActivity);
-
-        if (mRootGoogleDriveFolder != null) {
-            mRootGoogleDriveFolder.requestContents();
-        }
+        mRootGoogleDriveFolder.requestContents();
     }
 
     @Override
@@ -93,29 +90,68 @@ public class GoogleDriveStuff
         Bundle extras = data.getExtras();
         DriveId driveID = (DriveId) extras.get(OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
         int resourceType = driveID.getResourceType();
-        if (resourceType == DriveId.RESOURCE_TYPE_FOLDER) {
-            // folder
-        } else if (resourceType == DriveId.RESOURCE_TYPE_FILE) {
+        if (resourceType == DriveId.RESOURCE_TYPE_FILE) {
+
+            final ResultCallback<DriveApi.DriveContentsResult> readCallback = new ResultCallback<DriveApi.DriveContentsResult>() {
+                @Override
+                public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
+                    Status s = driveContentsResult.getStatus();
+                    if (!s.isSuccess()) {
+                        // error
+                        return;
+                    }
+
+                    DriveContents driveContents = driveContentsResult.getDriveContents();
+                    InputStream is = driveContents.getInputStream();
+                    FileSaver fs = new FileSaver(mScribbleMainActivity);
+                    fs.readFromInputStream(is);
+                    try {
+                        is.close();
+                        driveContents.discard(mGoogleApiClient);
+                    } catch (IOException e) {
+                        ScribbleMainActivity.log("GoogleDriveStuff", "close file for reading", e);
+                    }
+                }
+            };
+
             DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, driveID);
             driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
-                    .setResultCallback(this);
-        } else {
-            // not a folder or a file
+                    .setResultCallback(readCallback);
         }
     }
 
-    @Override
-    public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
-        Status s = driveContentsResult.getStatus();
-        if (s.isSuccess()) {
-            DriveContents driveContents = driveContentsResult.getDriveContents();
-            InputStream is = driveContents.getInputStream();
-            FileSaver fs = new FileSaver(mScribbleMainActivity);
-            fs.readFromInputStream(is);
-        } else {
-            // error
-        }
+    public void writeToGoogleDrive (Intent data) {
+        Bundle extras = data.getExtras();
+        DriveId driveID = (DriveId) extras.get(OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+        int resourceType = driveID.getResourceType();
+        if (resourceType == DriveId.RESOURCE_TYPE_FILE) {
 
+            final ResultCallback<DriveApi.DriveContentsResult> writeCallback = new ResultCallback<DriveApi.DriveContentsResult>() {
+                @Override
+                public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
+                    Status s = driveContentsResult.getStatus();
+                    if (!s.isSuccess()) {
+                        // error
+                        return;
+                    }
+
+                    DriveContents driveContents = driveContentsResult.getDriveContents();
+                    OutputStream os = driveContents.getOutputStream();
+                    FileSaver fs = new FileSaver(mScribbleMainActivity);
+                    fs.writeToOutputStream(os);
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        ScribbleMainActivity.log("GoogleDriveStuff", "close file for writing", e);
+                    }
+                    driveContents.commit(mGoogleApiClient, null);
+                }
+            };
+
+            DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, driveID);
+            driveFile.open(mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null)
+                    .setResultCallback(writeCallback);
+        }
     }
 
     public void startGoogleDriveFileSelector () {
@@ -128,17 +164,39 @@ public class GoogleDriveStuff
             ofab.setMimeType(mime_type);
             IntentSender intentSender  = ofab.build(mGoogleApiClient);
             try {
-                mScribbleMainActivity.startIntentSenderForResult(intentSender, mScribbleMainActivity.GOOGLE_DRIVE_FILE_SELECT, null, 0, 0, 0);
+                mScribbleMainActivity.startIntentSenderForResult(intentSender, ScribbleMainActivity.GOOGLE_DRIVE_FILE_SELECT, null, 0, 0, 0);
                 // result in onActivityResult in mMainActivity
             } catch (IntentSender.SendIntentException e) {
-                ScribbleMainActivity.log("ScribbleMainActivity", "startGoogleDriveFileSelector", e);
+                ScribbleMainActivity.log("GoogleDriveStuff", "startGoogleDriveFileSelector", e);
+            }
+        }
+    }
+
+    public void startGoogleDriveFileCreator () {
+        if (mGoogleDriveConnected) {
+
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                    .setTitle("")
+                    .setMimeType("").build();
+
+            CreateFileActivityBuilder cfab = Drive.DriveApi.newCreateFileActivityBuilder();
+            cfab.setInitialMetadata(changeSet);
+            cfab.setInitialDriveContents(null);
+
+            IntentSender intentSender  = cfab.build(mGoogleApiClient);
+            try {
+                mScribbleMainActivity.startIntentSenderForResult(intentSender, ScribbleMainActivity.GOOGLE_DRIVE_FILE_CREATE, null, 0, 0, 0);
+                // result in onActivityResult in mMainActivity
+            } catch (IntentSender.SendIntentException e) {
+                ScribbleMainActivity.log("GoogleDriveStuff", "startGoogleDriveFileSelector", e);
             }
         }
     }
 
 
 
-
     public GoogleApiClient getmGoogleApiClient() {return mGoogleApiClient;}
+    public GoogleDriveFolder getmRootGoogleDriveFolder() {return mRootGoogleDriveFolder;}
+
 
 }

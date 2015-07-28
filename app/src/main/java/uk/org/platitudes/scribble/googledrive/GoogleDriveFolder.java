@@ -4,6 +4,7 @@
 package uk.org.platitudes.scribble.googledrive;
 
 import android.os.Environment;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -17,6 +18,7 @@ import com.google.android.gms.drive.MetadataBuffer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
@@ -41,9 +43,14 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
     public boolean isDirectory () {return true;}
     public boolean canRead () {return true;}
     public boolean exists () {return true;}
-
     public File[] listFiles () {
         return contents;
+    }
+
+    @NonNull
+    @Override
+    public String getCanonicalPath() throws IOException {
+        return "GoogleDrive /";
     }
 
     public void requestContents () {
@@ -58,14 +65,20 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
         if (status.isSuccess()) {
             MetadataBuffer mtb = metadataBufferResult.getMetadataBuffer();
             int count = mtb.getCount();
+            ArrayList<File> files = new ArrayList<>(count);
             for (Metadata m : mtb) {
+                if (m.isTrashed()) {
+                    continue;
+                }
                 if (m.isFolder()) {
                     // create a GoogleDriveFolder
                 } else {
                     GoogleDriveFile f = new GoogleDriveFile(this, m);
+                    files.add(f);
                 }
             }
             mtb.release();
+            contents = files.toArray(new File[files.size()]);
         } else {
             String msg = status.getStatusMessage();
             ScribbleMainActivity.log("GoogleDriveFolder", "Get root contents failure "+msg, null);

@@ -28,6 +28,7 @@ public class ScribbleMainActivity extends Activity  {
 
     public static final int RESOLVE_CONNECTION_REQUEST_CODE = 10000;
     public static final int GOOGLE_DRIVE_FILE_SELECT = 10020;
+    public static final int GOOGLE_DRIVE_FILE_CREATE = 10030;
 
     private ScribbleView mMainView;
     private Button mDrawToolButton;
@@ -135,6 +136,11 @@ public class ScribbleMainActivity extends Activity  {
             case GOOGLE_DRIVE_FILE_SELECT:
                 if (resultCode == RESULT_OK) {
                     mGoogleStuff.readFromGoogleDrive(data);
+                }
+                break;
+            case GOOGLE_DRIVE_FILE_CREATE:
+                if (resultCode == RESULT_OK) {
+                    mGoogleStuff.writeToGoogleDrive(data);
                 }
                 break;
         }

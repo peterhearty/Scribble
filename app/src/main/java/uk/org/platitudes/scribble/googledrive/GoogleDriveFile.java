@@ -15,10 +15,12 @@ public class GoogleDriveFile extends File {
 
     private String mName;
     private GoogleDriveFolder mParentFolder;
+    private Metadata metaData;
 
     public GoogleDriveFile(GoogleDriveFolder parent, Metadata m) {
         super("/");
         mName = m.getTitle();
+        metaData = m;
     }
 
     public boolean isDirectory () {return false;}

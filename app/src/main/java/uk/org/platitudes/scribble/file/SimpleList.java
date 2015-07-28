@@ -17,7 +17,7 @@ import uk.org.platitudes.scribble.R;
  * Provides a greatly simplified wrapper for the ListView class. The list is assumed to
  * consist of a single, small, column of data.
  */
-public class SimpleList implements AdapterView.OnItemClickListener {
+public class SimpleList implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     /**
      * The ListView that displays the data.
@@ -89,6 +89,7 @@ public class SimpleList implements AdapterView.OnItemClickListener {
         mListView = (ListView) v.findViewById(listResource);
         mListView.setAdapter(mSimpleAdapter);
         mListView.setOnItemClickListener(this);
+        mListView.setOnItemLongClickListener(this);
 
     }
 
@@ -171,6 +172,14 @@ public class SimpleList implements AdapterView.OnItemClickListener {
     public void onClick (Object o) {}
 
     /**
+     * Called when an object in the list is clicked. By default it does nothing. Most subclasses
+     * will override this.
+     *
+     * @param o     The object selected.
+     */
+    public void onLongClick (Object o, View v) {}
+
+    /**
      * Called with a parameter of true if the data should be ordered.
      */
     public void setOrderObjects(boolean order) {orderObjects = order;}
@@ -184,4 +193,17 @@ public class SimpleList implements AdapterView.OnItemClickListener {
         DataHolder dh = (DataHolder) rowHashmap.get(from[0]);
         onClick(dh.data);
     }
+
+    /**
+     * Handles ListView item clicks and invokes onLongClick (Object o, View v).
+     */
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        HashMap<String, Object> rowHashmap = mListContents.get(position);
+        DataHolder dh = (DataHolder) rowHashmap.get(from[0]);
+        onLongClick(dh.data, view);
+        return true;
+    }
+
+
 }

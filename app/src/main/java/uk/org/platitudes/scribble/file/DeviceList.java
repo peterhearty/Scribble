@@ -21,10 +21,11 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
  */
 public class DeviceList extends SimpleList {
 
+    private boolean isWriter;
     private DirList mFileList;
     private ScribbleMainActivity mMainActivity;
     private AlertDialog mAlertDialog;
-    private static final String[] deviceNames = {"Private", "Public", "Root", "Google Drive", "Parent dir"};
+    private static final String[] deviceNames = {"Private", "Public", "Root", "Google Drive", "GDrive (private)", "Parent dir"};
 
     // Took out place "Private (external)" corresponding to getContext().getExternalFilesDir(null)
 
@@ -35,7 +36,10 @@ public class DeviceList extends SimpleList {
         setContents(deviceNames);
     }
 
-    public void setmAlertDialog(AlertDialog mAlertDialog) {this.mAlertDialog = mAlertDialog;}
+    public void setParameters (AlertDialog ad, boolean writer) {
+        mAlertDialog = ad;
+        isWriter = writer;
+    }
 
     @Override
     public void onClick(Object o) {
@@ -49,8 +53,14 @@ public class DeviceList extends SimpleList {
             dir = Environment.getRootDirectory();
         } else if (text.equals(deviceNames[3])) {
             mAlertDialog.dismiss();
-            mMainActivity.getmGoogleStuff().startGoogleDriveFileSelector();
+            if (isWriter) {
+                mMainActivity.getmGoogleStuff().startGoogleDriveFileCreator();
+            } else {
+                mMainActivity.getmGoogleStuff().startGoogleDriveFileSelector();
+            }
         } else if (text.equals(deviceNames[4])) {
+            dir = mMainActivity.getmGoogleStuff().getmRootGoogleDriveFolder();
+        } else if (text.equals(deviceNames[5])) {
             mFileList.setParentDirectory();
         }
         if (dir != null) {
