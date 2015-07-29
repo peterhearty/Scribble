@@ -42,6 +42,7 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
     private DriveFile mDriveFile;
     private byte[] mFileContents;
     private ByteArrayOutputStream mOutputStream;
+    private DriveOutputStream pendingWrite;
 
     /**
      * Constructor for existing files.
@@ -82,6 +83,11 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
 
                 mDriveFile = result.getDriveFile();
                 mDriveId = mDriveFile.getDriveId();
+
+                if (pendingWrite != null) {
+                    pendingWrite.writeFile();
+                    pendingWrite = null;
+                }
             }
         };
 
@@ -165,12 +171,24 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
             mSize = mFileContents.length;
             super.close();
             closed = true;
-            // Initiate write to google drive
+
+            writeFile();
+        }
+
+        private void writeFile () {
+            if (mDriveId == null) {
+                // File has just been created. Callback in constructor hasn't been called yet.
+                // do the write when the constructor call back has completed.
+                pendingWrite = this;
+                return;
+            }
+
+            // File already exists and we are overwriting
             DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
             driveFile.open(mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null)
                     .setResultCallback(this);
-
         }
+
 
         @Override
         public void onResult(DriveApi.DriveContentsResult driveContentsResult) {

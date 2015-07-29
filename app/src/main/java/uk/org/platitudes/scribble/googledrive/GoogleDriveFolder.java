@@ -60,6 +60,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
             GoogleDriveFile[] newContents = new GoogleDriveFile[mContents.length+1];
             System.arraycopy(mContents, 0, newContents, 0, mContents.length);
             newContents[newContents.length-1] = result;
+            mContents = newContents;
         }
         return result;
     }
