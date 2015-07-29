@@ -2,4 +2,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="delete" />
     <item android:title="rename" />
+    <item android:title="copy" />
 </menu>

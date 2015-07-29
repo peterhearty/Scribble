@@ -14,6 +14,7 @@ public class DirList extends SimpleList {
 
     private TextView mDirectoryName;
     private FileList mFileList;
+    private File mCurDir;
 
 
     public DirList(View v, FileList fileList) {
@@ -56,6 +57,15 @@ public class DirList extends SimpleList {
 
         mDirectoryName.setText(dirPath);
         mFileList.setmFileName("");
+        mCurDir = dirFile;
+    }
+
+    /**
+     * Should be called when a dir has to be relisted, .e.g if a file
+     * is deleted or renamed.
+     */
+    public void resetContents () {
+        setContents(mCurDir);
     }
 
     public String getName (Object o){
@@ -99,5 +109,7 @@ public class DirList extends SimpleList {
         return result;
     }
 
+
+    public File getmCurDir() {return mCurDir;}
 
 }

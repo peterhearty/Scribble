@@ -57,6 +57,7 @@ public class LineDrawItem  extends DrawItem {
     }
 
     public void handleUpEvent (MotionEvent event) {
+        addPoint(event.getX(), event.getY(), mScribbleView);
         mScribbleView.addItem(this);
     }
 

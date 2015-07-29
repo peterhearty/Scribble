@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import java.io.File;
+
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 
@@ -32,9 +34,6 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
         mSaveFile = writer;
     }
 
-
-    public boolean ismSaveFile() {return mSaveFile;}
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
@@ -45,10 +44,10 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
 
         mFileList = new FileList(v);
         mDirList = new DirList(v, mFileList);
+        mFileList.setmDirList(mDirList);
         DeviceList deviceList = new DeviceList(v, mDirList, mMainActivity);
 
         builder.setView(v);
-        builder.setMessage("Choose a file");
 
         builder.setPositiveButton("ok", this);
         builder.setNegativeButton("cancel", this);
@@ -64,13 +63,14 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
     public void onClick(DialogInterface dialog, int which) {
 
         if (which == DialogInterface.BUTTON_POSITIVE) {
-            String dirName = mDirList.getDirectoryName();
-            String fileName = mFileList.getFileName();
             FileSaver fs = new FileSaver(mMainActivity);
             if (mSaveFile) {
-                fs.writeToFile(dirName, fileName);
+                File dir = mDirList.getmCurDir();
+                String fileName = mFileList.getFileName();
+                fs.writeToFile(dir, fileName);
             } else {
-                fs.readFromFile(dirName, fileName);
+                File selectedFile= mFileList.getFile();
+                fs.readFromFile(selectedFile);
             }
         }
     }

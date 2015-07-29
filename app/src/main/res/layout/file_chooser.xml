@@ -45,6 +45,7 @@
         <EditText
             android:id="@+id/file_name"
             android:background="#ffffff"
+            android:hint="new/copy/rename files here"
             android:text=""
             android:inputType="textNoSuggestions"
             android:layout_width="match_parent"
@@ -53,6 +54,7 @@
 
     <LinearLayout
         android:orientation="horizontal"
+        android:minHeight="800dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -61,13 +63,13 @@
             android:id="@+id/left_hand_pane"
             android:orientation="vertical"
             android:layout_weight="3"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:layout_height="0px"
+                android:layout_height="0dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -89,9 +91,9 @@
 
             <LinearLayout
                 android:orientation="vertical"
-                android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="0px">
+                android:layout_height="wrap_content"
+                >
 
                 <TextView
                     android:text="Places"
@@ -105,16 +107,15 @@
                     android:id="@+id/device_list"
                     android:background="#ffdd00"
                     android:padding="2dp"
-                    android:layout_weight="1"
                     android:layout_width="match_parent"
-                    android:layout_height="0px">
+                    android:layout_height="match_parent">
                 </ListView>
 
-                <View
+                <!--View
                     android:id="@+id/image_preview"
                     android:layout_width="match_parent"
-                    android:layout_weight="1"
-                    android:layout_height="0px" />
+                    android:layout_weight="0"
+                    android:layout_height="0px" /-->
 
 
             </LinearLayout>
@@ -125,7 +126,7 @@
             android:id="@+id/right_hand_pane"
             android:orientation="vertical"
             android:layout_weight="2"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <TextView
@@ -141,9 +142,15 @@
                 android:padding="2dp"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent">
 
             </ListView>
+
+            <Button
+                android:id="@+id/paste_button"
+                android:text="Paste"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
             </LinearLayout>
 

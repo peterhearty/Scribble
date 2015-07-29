@@ -21,6 +21,8 @@ import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
+import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 
 /**
  * Save data to a file or restores data from a file.
@@ -97,10 +99,48 @@ public class FileSaver {
         }
     }
 
-    public void writeToFile (String dirName, String fileName) {
-        String pathName = dirName+ File.separator+fileName;
+    public void writeToFile (File dir, String fileName) {
         try {
-            FileOutputStream fos = new FileOutputStream(pathName);
+            OutputStream os = null;
+            if (dir instanceof GoogleDriveFolder) {
+                GoogleDriveFolder gdf = (GoogleDriveFolder) dir;
+                GoogleDriveFile f = gdf.getFile(fileName);
+                if (f == null) {
+                    // create new file
+                    f = gdf.createFile(fileName);
+                }
+                os = f.getOutputStream();
+            } else {
+                // A local file
+                String dirName = dir.getCanonicalPath();
+                String pathName = dirName+ File.separator+fileName;
+                os = new FileOutputStream(pathName);
+            }
+            writeToOutputStream(os);
+            os.close();
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileSaver", "writeToFile", e);
+        }
+    }
+
+    private OutputStream getOutputStreamFromFile (File f) {
+        OutputStream result = null;
+        try {
+            if (f instanceof  GoogleDriveFile) {
+                GoogleDriveFile gdf = (GoogleDriveFile) f;
+                result = gdf.getOutputStream();
+            } else {
+                result = new FileOutputStream(f);
+            }
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileSaver", "getOutputStreamFromFile", e);
+        }
+        return result;
+    }
+
+    public void writeToFile (File f) {
+        try {
+            FileOutputStream fos = new FileOutputStream(f);
             writeToOutputStream(fos);
             fos.close();
         } catch (Exception e) {
@@ -133,11 +173,37 @@ public class FileSaver {
     public void readFromFile (String dirName, String fileName) {
         String pathName = dirName+ File.separator+fileName;
         try {
-            FileInputStream fis = new FileInputStream(pathName);
-            readFromInputStream(fis);
-            fis.close();
+            File f = new File (pathName);
+            readFromFile(f);
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "readFromFile", e);
+        }
+    }
+
+    private static InputStream getInputStreamFromFile (File f) {
+        InputStream result = null;
+        try {
+            if (f instanceof GoogleDriveFile) {
+                GoogleDriveFile gdf = (GoogleDriveFile) f;
+                result = gdf.getInputStream();
+            } else {
+                result = new FileInputStream(f);
+            }
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileSaver", "getInputStreamFromFile", e);
+        }
+        return result;
+    }
+
+    public void readFromFile (File f) {
+        InputStream is = getInputStreamFromFile(f);
+        if (is !=  null) {
+            try {
+                readFromInputStream(is);
+                is.close();
+            } catch (Exception e) {
+                ScribbleMainActivity.log("FileSaver", "readFromFile", e);
+            }
         }
     }
 
@@ -188,16 +254,43 @@ public class FileSaver {
         }
     }
 
+    /**
+     * Tests a file to check that it's a Scribble file.
+     */
+    public static boolean isScribbleFile (File f) {
+        boolean result = false;
+        try {
+            if (f.length() > 12) {
+                InputStream fis = getInputStreamFromFile(f);
+                if (fis != null) {
+                    DataInputStream dis = new DataInputStream(fis);
+                    long magicNumber = dis.readLong();
+                    if (magicNumber == MAGIC_NUMBER) {
+                        result = true;
+                    }
+                    dis.close();
+                    fis.close();
+                }
+            }
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileSaver", "isScribbleFile", e);
+        }
+        return result;
+    }
+
 
     /**************** Utility methods ***********************/
 
-    public void copyDefaultFile () {
+    public void copyFile (File src, File dst) {
         try {
-            FileInputStream fis = mMainView.getContext().openFileInput(DATAFILE);
-            File dir = Environment.getExternalStorageDirectory();
-            String pathTocopy = dir.getCanonicalPath()+File.separator+DATAFILE;
-            File outFile = new File(pathTocopy);
-            FileOutputStream fos = new FileOutputStream(outFile);
+            if (src.getCanonicalPath().equals(dst.getCanonicalPath())) {
+                throw new Exception ("source and destination files are the same");
+            }
+            if (dst.exists() && !isScribbleFile(dst)) {
+                throw new Exception ("Copy destination is not a scribble file");
+            }
+            FileInputStream fis = new FileInputStream(src);
+            FileOutputStream fos = new FileOutputStream(dst);
             while (fis.available()>0) {
                 int nextByte = fis.read();
                 fos.write(nextByte);
@@ -205,7 +298,7 @@ public class FileSaver {
             fis.close();
             fos.close();
         } catch (Exception e) {
-            ScribbleMainActivity.log("FileSaver", "copyDefaultFile", e);
+            ScribbleMainActivity.log("FileSaver", "copyFile", e);
         }
 
     }

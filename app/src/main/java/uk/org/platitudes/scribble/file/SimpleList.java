@@ -98,7 +98,8 @@ public class SimpleList implements AdapterView.OnItemClickListener, AdapterView.
      * then the data will be ordered according to the isLessThan method for comparing two
      * objects. Each object will be displayed using the result of the getName method.
      *
-     * @param newData
+     * @param newData   An array of objects. Each is wrapped in a DataHolder which is placed
+     *                  in a HashMap as a row in the list.
      */
     public void setContents (Object[] newData) {
         mListContents.clear();
@@ -122,7 +123,7 @@ public class SimpleList implements AdapterView.OnItemClickListener, AdapterView.
      * Does a simple bubble sort on the supplied array. isLessThan() is used to compare
      * data entries in the array.
      *
-     * @param data
+     * @param data      An array of objects to be sorted.
      */
     private void orderObjects (Object[] data) {
         if (data == null) return;

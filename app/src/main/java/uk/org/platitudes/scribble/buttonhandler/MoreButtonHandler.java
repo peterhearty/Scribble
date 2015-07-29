@@ -89,9 +89,6 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
             bm.requestRestore(this);
         } else if (menuTitle.equals("clear")) {
             mActivity.getmMainView().clear();
-        } else if (menuTitle.equals("copy")) {
-            FileSaver fs = new FileSaver(mActivity);
-            fs.copyDefaultFile();
         }
 
         return true;

@@ -23,6 +23,7 @@ import uk.org.platitudes.scribble.file.FileSaver;
  */
 public class TextItem extends DrawItem {
 
+    private static final float DEFAULT_TEXT_SIZE = 200.0f;
     private float mTextSize;
     private float mStartX;
     private float mStartY;
@@ -32,7 +33,7 @@ public class TextItem extends DrawItem {
     public TextItem (MotionEvent event, ScribbleView scribbleView) {
         super (event, scribbleView);
 
-        mTextSize = 40f;
+        mTextSize = DEFAULT_TEXT_SIZE;
         mPaint.setTextSize(mTextSize);
 
         // Tried to use a TextPaint as shown here:
@@ -76,7 +77,7 @@ public class TextItem extends DrawItem {
 
     public TextItem (DataInputStream dis, int version, ScribbleView sv) throws IOException {
         super(null, sv);
-        mTextSize = 40f;
+        mTextSize = DEFAULT_TEXT_SIZE;
         mPaint.setTextSize(mTextSize);
 
         readFromFile(dis, version);
@@ -84,7 +85,7 @@ public class TextItem extends DrawItem {
 
     @Override
     public DrawItem readFromFile(DataInputStream dis, int version) throws IOException {
-        mTextSize = 40f;
+        mTextSize = DEFAULT_TEXT_SIZE;
         mStartX = dis.readFloat();
         mStartY = dis.readFloat();
         String s = dis.readUTF();

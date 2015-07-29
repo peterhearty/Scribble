@@ -6,6 +6,7 @@ package uk.org.platitudes.scribble.file;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 
@@ -17,16 +18,23 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 
 /**
  */
-public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickListener {
+public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
 
     private EditText mFileName;
     private File mLongClickedFile;
+    private DirList mDirList;
+    private File mCurFile;
+    private File mPasteFile;
+    private Button mPasteButton;
 
     public FileList (View v) {
         super(v, R.id.file_list);
         setOrderObjects(true);
         mFileName = (EditText) v.findViewById(R.id.file_name);
 
+        mPasteButton = (Button) v.findViewById(R.id.paste_button);
+        mPasteButton.setOnClickListener(this);
+        mPasteButton.setEnabled(false);
     }
 
     public String getName (Object o){
@@ -52,10 +60,21 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
 
     public void onClick (Object o) {
         File f = (File) o;
-        if (!f.isDirectory()) {
-            mFileName.setText(f.getName());
+        if (f.isDirectory()) return;
+        if (!f.canRead()) {
+            ScribbleMainActivity.log ("File not readable", "", null);
+            return;
         }
+        if (!FileSaver.isScribbleFile(f)) {
+            ScribbleMainActivity.log ("Not a Scribble file", "", null);
+            return;
+        }
+
+        mFileName.setText(f.getName());
+        mCurFile = f;
     }
+
+    public File getFile () {return mCurFile;}
 
     public String getFileName () {
         String result = null;
@@ -76,39 +95,88 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
     @Override
     public void onLongClick(Object o, View v) {
         mLongClickedFile = (File) o;
-        createMenu (v);
+        if (FileSaver.isScribbleFile(mLongClickedFile)) {
+            createMenu(v);
+        } else {
+            ScribbleMainActivity.log("Not a Scribble file", "", null);
+            mLongClickedFile = null;
+        }
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        CharSequence menuText = item.getTitle();
-        if (menuText.equals("delete")) {
-            boolean deleted = mLongClickedFile.delete();
-            if (deleted) {
-                // refresh list
-            } else {
-                ScribbleMainActivity.log("Failed to delete ", mLongClickedFile.getName(), null);
-            }
-        } else if (menuText.equals("rename")) {
-            try {
+        try {
+            CharSequence menuText = item.getTitle();
+            if (menuText.equals("delete")) {
+                boolean deleted = mLongClickedFile.delete();
+                if (deleted) {
+                    mDirList.resetContents();
+                } else {
+                    ScribbleMainActivity.log("Failed to delete ", mLongClickedFile.getName(), null);
+                }
+            } else if (menuText.equals("rename")) {
                 String newFileName = mFileName.getText().toString();
                 if (newFileName.length() > 0) {
-                    String newFilePath = mLongClickedFile.getCanonicalPath();
+                    String newFilePath = mLongClickedFile.getParentFile().getCanonicalPath();
                     String newFileFullName = newFilePath + File.separator + newFileName;
-                    File newFile = new File (newFileFullName);
+                    File newFile = new File(newFileFullName);
                     boolean renamed = mLongClickedFile.renameTo(newFile);
-                    if (renamed ) {
-                        // refresh list
+                    if (renamed) {
+                        mDirList.resetContents();
                     } else {
                         ScribbleMainActivity.log("Failed to rename ", mLongClickedFile.getName(), null);
                     }
                 } else {
                     ScribbleMainActivity.log("New name in box above must be filled in", "", null);
                 }
-            } catch (Exception e) {
-                ScribbleMainActivity.log("FileList", "rename menu handler", e);
+            } else if (menuText.equals("copy")) {
+                String newFileName = mFileName.getText().toString();
+                if (newFileName.length() > 0) {
+                    // Copy to new file in same directory
+
+                    String newFilePath = mLongClickedFile.getParentFile().getCanonicalPath();
+                    String newFileFullName = newFilePath + File.separator + newFileName;
+                    File newFile = new File(newFileFullName);
+
+                    FileSaver fs = new FileSaver(ScribbleMainActivity.mainActivity);
+                    fs.copyFile(mLongClickedFile, newFile);
+                    mDirList.resetContents();
+                } else {
+                    // copy later to a different directory
+                    mPasteFile = mLongClickedFile;
+                    mPasteButton.setEnabled(true);
+                    mPasteButton.setText("Paste "+mPasteFile.getName());
+                }
             }
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileList", "onMenuItemClick", e);
         }
+        mLongClickedFile = null;
         return true;
+    }
+
+    public void setmDirList(DirList mDirList) {this.mDirList = mDirList;}
+
+    /**
+     * Handles clicks on the "Paste" button.
+     * @param v
+     */
+    @Override
+    public void onClick(View v) {
+        // copy a file to the current directory
+        String newFilePath = null;
+        try {
+            newFilePath = mDirList.getmCurDir().getCanonicalPath();
+            String newFileName = mPasteFile.getName();
+            String newFileFullName = newFilePath + File.separator + newFileName;
+            File newFile = new File(newFileFullName);
+
+            FileSaver fs = new FileSaver(ScribbleMainActivity.mainActivity);
+            fs.copyFile(mPasteFile, newFile);
+            mDirList.resetContents();
+
+        } catch (Exception e) {
+            ScribbleMainActivity.log("FileList", "onClick", e);
+        }
     }
 }

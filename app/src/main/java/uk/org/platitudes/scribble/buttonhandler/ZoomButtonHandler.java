@@ -19,7 +19,11 @@ public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClick
     }
 
     private void setButtonText () {
-        String newButtonText = "zoom "+Float.toString(sZoom);
+        String zoomSize = Float.toString(sZoom);
+        if (zoomSize.length() > 4) {
+            zoomSize = zoomSize.substring(0,4);
+        }
+        String newButtonText = "zoom "+zoomSize;
         mButton.setText(newButtonText);
     }
 
