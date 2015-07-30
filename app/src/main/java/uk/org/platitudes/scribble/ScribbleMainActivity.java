@@ -13,15 +13,15 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.Drive;
-
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.UndoButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.file.FileSaver;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveStuff;
+import uk.org.platitudes.scribble.io.BundleScribbleReader;
+import uk.org.platitudes.scribble.io.BundleScribbleWriter;
+import uk.org.platitudes.scribble.io.FileScribbleReader;
 
 
 public class ScribbleMainActivity extends Activity  {
@@ -66,7 +66,7 @@ public class ScribbleMainActivity extends Activity  {
         if (savedInstanceState != null) {
             readState(savedInstanceState);
         } else {
-            FileSaver fs = new FileSaver(this);
+            FileScribbleReader fs = new FileScribbleReader(this, null);
             fs.readFromDefaultFile();
         }
     }
@@ -81,8 +81,8 @@ public class ScribbleMainActivity extends Activity  {
         outState.putFloat("offset_X", mainViewScrollOffset.x);
         outState.putFloat("offset_Y", mainViewScrollOffset.y);
 
-        FileSaver fs = new FileSaver(this);
-        fs.writeToBundle(outState);
+        BundleScribbleWriter bsw = new BundleScribbleWriter(this, outState);
+        bsw.write();
     }
 
     private void readState (Bundle savedInstanceState) {
@@ -92,8 +92,8 @@ public class ScribbleMainActivity extends Activity  {
         float y = savedInstanceState.getFloat("offset_Y");
         mMainView.setmScrollOffset(x, y);
 
-        FileSaver fs = new FileSaver(this);
-        fs.readFromBundle(savedInstanceState);
+        BundleScribbleReader bsr = new BundleScribbleReader(this, savedInstanceState);
+        bsr.read();
     }
 
     public ScribbleView getmMainView() {return mMainView;}

@@ -15,6 +15,7 @@ import java.io.IOException;
 
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
+import uk.org.platitudes.scribble.io.FileScribbleReader;
 
 /**
  */
@@ -65,7 +66,7 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
             ScribbleMainActivity.log ("File not readable", "", null);
             return;
         }
-        if (!FileSaver.isScribbleFile(f)) {
+        if (!FileScribbleReader.isScribbleFile(f)) {
             ScribbleMainActivity.log ("Not a Scribble file", "", null);
             return;
         }
@@ -95,7 +96,7 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
     @Override
     public void onLongClick(Object o, View v) {
         mLongClickedFile = (File) o;
-        if (FileSaver.isScribbleFile(mLongClickedFile)) {
+        if (FileScribbleReader.isScribbleFile(mLongClickedFile)) {
             createMenu(v);
         } else {
             ScribbleMainActivity.log("Not a Scribble file", "", null);
@@ -138,8 +139,8 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
                     String newFileFullName = newFilePath + File.separator + newFileName;
                     File newFile = new File(newFileFullName);
 
-                    FileSaver fs = new FileSaver(ScribbleMainActivity.mainActivity);
-                    fs.copyFile(mLongClickedFile, newFile);
+                    FileScribbleReader fs = new FileScribbleReader(ScribbleMainActivity.mainActivity, mLongClickedFile);
+                    fs.copyFile(newFile);
                     mDirList.resetContents();
                 } else {
                     // copy later to a different directory
@@ -171,8 +172,8 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
             String newFileFullName = newFilePath + File.separator + newFileName;
             File newFile = new File(newFileFullName);
 
-            FileSaver fs = new FileSaver(ScribbleMainActivity.mainActivity);
-            fs.copyFile(mPasteFile, newFile);
+            FileScribbleReader fs = new FileScribbleReader(ScribbleMainActivity.mainActivity, mPasteFile);
+            fs.copyFile(newFile);
             mDirList.resetContents();
 
         } catch (Exception e) {

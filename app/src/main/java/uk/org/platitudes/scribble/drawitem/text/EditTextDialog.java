@@ -15,6 +15,7 @@ import android.widget.EditText;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.file.FileSaver;
+import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**
  * See Android/Sdk/docs/guide/topics/ui/dialogs.html
@@ -52,8 +53,8 @@ public class EditTextDialog extends DialogFragment implements DialogInterface.On
             // Although the list of items has not changed, there contents has, so has to be saved.
             // Note that we can't do this in  textItem.setmText() as setmtext gets called during
             // file reads. starting a write during the read corrupts the file.
-            FileSaver fs = new FileSaver(ScribbleMainActivity.mainActivity);
-            fs.writeToDefaultFile();
+            FileScribbleWriter fsw = new FileScribbleWriter(ScribbleMainActivity.mainActivity);
+            fsw.writeToDefaultFile();
         } else {
             // leave empty
         }

@@ -5,23 +5,18 @@ package uk.org.platitudes.scribble.buttonhandler;
 
 import android.app.backup.BackupManager;
 import android.app.backup.RestoreObserver;
-import android.content.Context;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.PopupMenu;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.file.FileChooser;
 import uk.org.platitudes.scribble.file.FileSaver;
+import uk.org.platitudes.scribble.io.FileScribbleReader;
+import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 public class MoreButtonHandler extends RestoreObserver implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
@@ -99,13 +94,14 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
     }
     public void restoreFinished(int error) {
         ScribbleMainActivity.log("Restore finished", "", null);
-        FileSaver fs = new FileSaver(mActivity);
-        fs.readFromDefaultFile();
+
+        FileScribbleReader fsr = new FileScribbleReader(mActivity, null);
+        fsr.readFromDefaultFile();
     }
     public void restoreStarting(int numPackages) {
         mActivity.getmMainView().clear();
-        FileSaver fs = new FileSaver(mActivity);
-        fs.delete();
+        FileScribbleWriter fsw = new FileScribbleWriter(mActivity);
+        fsw.deleteDefaultFile();
         ScribbleMainActivity.log("Restore starting", "", null);
     }
 

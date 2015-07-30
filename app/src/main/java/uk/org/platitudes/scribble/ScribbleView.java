@@ -23,6 +23,7 @@ import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
 import uk.org.platitudes.scribble.file.FileSaver;
+import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**
  * Provides the main drawing view.
@@ -102,6 +103,10 @@ public class ScribbleView extends View {
         mUndoList = new ItemList(dis, version, this);
     }
 
+    private void writeToDefaultFile () {
+        FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity);
+        fsw.writeToDefaultFile();
+    }
 
     public void undo () {
         DrawItem movedItem = mDrawItems.moveLastTo(mUndoList);
@@ -109,8 +114,7 @@ public class ScribbleView extends View {
             movedItem.undo();
         }
         invalidate();
-        FileSaver fs = new FileSaver(mMainActivity);
-        fs.writeToDefaultFile();
+        writeToDefaultFile();
     }
 
     public void redo () {
@@ -119,22 +123,18 @@ public class ScribbleView extends View {
             movedItem.redo();
         }
         invalidate();
-        FileSaver fs = new FileSaver(mMainActivity);
-        fs.writeToDefaultFile();
-
+        writeToDefaultFile();
     }
 
     public void addItem (DrawItem item) {
         mDrawItems.add(item);
-        FileSaver fs = new FileSaver(mMainActivity);
-        fs.writeToDefaultFile();
+        writeToDefaultFile();
     }
 
     public void clear () {
         mDrawItems.clear();
         mUndoList.clear();
-        FileSaver fs = new FileSaver(mMainActivity);
-        fs.writeToDefaultFile();
+        writeToDefaultFile ();
         invalidate();
     }
 

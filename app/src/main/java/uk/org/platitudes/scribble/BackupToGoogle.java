@@ -10,8 +10,8 @@ import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.IOException;
 
-import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.file.FileSaver;
+import uk.org.platitudes.scribble.io.FileScribbleReader;
 
 /**
  */
@@ -19,8 +19,8 @@ public class BackupToGoogle extends BackupAgentHelper {
     @Override
     public void onCreate() {
         try {
-            synchronized (FileSaver.sDataLock) {
-                FileBackupHelper helper = new FileBackupHelper(this, FileSaver.DATAFILE);
+            synchronized (FileScribbleReader.sDataLock) {
+                FileBackupHelper helper = new FileBackupHelper(this, FileScribbleReader.DATAFILE);
                 addHelper("google_backup_key", helper);
                 ScribbleMainActivity.log("Backup agent created", "", null);
             }
@@ -32,7 +32,7 @@ public class BackupToGoogle extends BackupAgentHelper {
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState) throws IOException {
         // Hold the lock while the FileBackupHelper performs backup
-        synchronized (FileSaver.sDataLock) {
+        synchronized (FileScribbleReader.sDataLock) {
             ScribbleMainActivity.log("Backup started", "", null);
             super.onBackup(oldState, data, newState);
         }
@@ -42,7 +42,7 @@ public class BackupToGoogle extends BackupAgentHelper {
     public void onRestore(BackupDataInput data, int appVersionCode,
                           ParcelFileDescriptor newState) throws IOException {
         // Hold the lock while the FileBackupHelper restores the file
-        synchronized (FileSaver.sDataLock) {
+        synchronized (FileScribbleReader.sDataLock) {
             super.onRestore(data, appVersionCode, newState);
         }
     }

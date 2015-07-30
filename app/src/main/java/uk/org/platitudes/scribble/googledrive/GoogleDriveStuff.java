@@ -27,6 +27,8 @@ import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.file.FileSaver;
+import uk.org.platitudes.scribble.io.FileScribbleReader;
+import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**
  */
@@ -103,8 +105,8 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
 
                     DriveContents driveContents = driveContentsResult.getDriveContents();
                     InputStream is = driveContents.getInputStream();
-                    FileSaver fs = new FileSaver(mScribbleMainActivity);
-                    fs.readFromInputStream(is);
+                    FileScribbleReader fsr = new FileScribbleReader(mScribbleMainActivity, null);
+                    fsr.readFromInputStream(is);
                     try {
                         is.close();
                         driveContents.discard(mGoogleApiClient);
@@ -137,8 +139,8 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
 
                     DriveContents driveContents = driveContentsResult.getDriveContents();
                     OutputStream os = driveContents.getOutputStream();
-                    FileSaver fs = new FileSaver(mScribbleMainActivity);
-                    fs.writeToOutputStream(os);
+                    FileScribbleWriter fsw = new FileScribbleWriter(mScribbleMainActivity);
+                    fsw.writeToOutputStream(os);
                     try {
                         os.close();
                     } catch (IOException e) {

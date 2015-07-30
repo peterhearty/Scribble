@@ -15,6 +15,8 @@ import java.io.File;
 
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
+import uk.org.platitudes.scribble.io.FileScribbleReader;
+import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**
  * Pops up a dialog to let a user choose a file.
@@ -63,14 +65,15 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
     public void onClick(DialogInterface dialog, int which) {
 
         if (which == DialogInterface.BUTTON_POSITIVE) {
-            FileSaver fs = new FileSaver(mMainActivity);
             if (mSaveFile) {
                 File dir = mDirList.getmCurDir();
                 String fileName = mFileList.getFileName();
-                fs.writeToFile(dir, fileName);
+                FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, dir, fileName);
+                fsw.write();
             } else {
                 File selectedFile= mFileList.getFile();
-                fs.readFromFile(selectedFile);
+                FileScribbleReader fsr = new FileScribbleReader(mMainActivity, selectedFile);
+                fsr.read();
             }
         }
     }
