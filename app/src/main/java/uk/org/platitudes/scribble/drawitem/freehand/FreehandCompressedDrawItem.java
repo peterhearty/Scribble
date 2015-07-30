@@ -106,7 +106,8 @@ public class FreehandCompressedDrawItem extends DrawItem {
 
     @Override
     public void handleUpEvent(MotionEvent event) {
-        mScribbleView.addItem(this);
+        if (numPoints > 1)
+            mScribbleView.addItem(this);
     }
 
     @Override

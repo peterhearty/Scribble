@@ -22,6 +22,7 @@ import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.UndoButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
+import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveStuff;
 import uk.org.platitudes.scribble.io.BundleScribbleReader;
@@ -73,27 +74,33 @@ public class ScribbleMainActivity extends Activity  {
         if (savedInstanceState != null) {
             readState(savedInstanceState);
         } else {
-            Context context = mMainView.getContext();
-            String defaultFile = context.getFilesDir()+File.separator+ ScribbleReader.DEFAULT_FILE;
-            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-            String currentFilePath = sharedPref.getString(ScribbleReader.CURRENT_FILE_PREFERENCE_KEY, defaultFile);
-
-            try {
-                mCurrentlyOpenFile = new File (currentFilePath);
-                if (GoogleDriveFolder.isGoogleDriveFile(currentFilePath)) {
-                    // google drive file - have to read later
-                    mGoogleStuff.setFileToReadWhenReady(currentFilePath);
-                } else {
-                    // a local file, read it now
-                    FileScribbleReader fs = new FileScribbleReader(this, mCurrentlyOpenFile);
-                    fs.read();
-                }
-            } catch (Exception e) {
-                log ("Error opening file ", currentFilePath, e);
-                useDefaultFile();
-            }
 
         }
+        Context context = mMainView.getContext();
+        String defaultFile = context.getFilesDir()+File.separator+ ScribbleReader.DEFAULT_FILE;
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String currentFilePath = sharedPref.getString(ScribbleReader.CURRENT_FILE_PREFERENCE_KEY, defaultFile);
+
+        try {
+            mCurrentlyOpenFile = new File (currentFilePath);
+            if (GoogleDriveFolder.isGoogleDriveFile(currentFilePath)) {
+                // google drive file - have to read later
+                mGoogleStuff.setFileToReadWhenReady(currentFilePath);
+            } else {
+                // a local file, read it now
+                FileScribbleReader fs = new FileScribbleReader(this, mCurrentlyOpenFile);
+                fs.read();
+            }
+        } catch (Exception e) {
+            log ("Error opening file ", currentFilePath, e);
+            useDefaultFile();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mMainView.getDrawing().onDestroy();
     }
 
     @Override
@@ -106,8 +113,8 @@ public class ScribbleMainActivity extends Activity  {
         outState.putFloat("offset_X", mainViewScrollOffset.x);
         outState.putFloat("offset_Y", mainViewScrollOffset.y);
 
-        BundleScribbleWriter bsw = new BundleScribbleWriter(this, outState);
-        bsw.write();
+//        BundleScribbleWriter bsw = new BundleScribbleWriter(this, outState);
+//        bsw.write();
     }
 
     private void readState (Bundle savedInstanceState) {
@@ -117,8 +124,8 @@ public class ScribbleMainActivity extends Activity  {
         float y = savedInstanceState.getFloat("offset_Y");
         mMainView.setmScrollOffset(x, y);
 
-        BundleScribbleReader bsr = new BundleScribbleReader(this, savedInstanceState);
-        bsr.read();
+//        BundleScribbleReader bsr = new BundleScribbleReader(this, savedInstanceState);
+//        bsr.read();
     }
 
     public ScribbleView getmMainView() {return mMainView;}
@@ -189,6 +196,19 @@ public class ScribbleMainActivity extends Activity  {
         e.commit();
     }
 
+    /**
+     * Check to see if updated google drive file is the open file.
+     */
+    public void checkDriveFileUpdate (GoogleDriveFile f) {
+        if (mCurrentlyOpenFile == f) {
+            try {
+                mGoogleStuff.setFileToReadWhenReady(f.getCanonicalPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void useDefaultFile () {
         Context context = mMainView.getContext();
         String defaultFile = context.getFilesDir()+File.separator+ ScribbleReader.DEFAULT_FILE;
@@ -202,7 +222,7 @@ public class ScribbleMainActivity extends Activity  {
             path = mCurrentlyOpenFile.getCanonicalPath();
             path += " size="+mCurrentlyOpenFile.length();
         } catch (IOException e) {
-            e.printStackTrace();
+            log ("ScribbleMainActivity", "about", e);
         }
         log (path, "", null);
     }

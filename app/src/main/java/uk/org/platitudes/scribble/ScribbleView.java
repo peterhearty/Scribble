@@ -30,17 +30,6 @@ import uk.org.platitudes.scribble.io.FileScribbleWriter;
 public class ScribbleView extends View {
 
     /**
-     * The draw list, the list of DrawItems on this page.
-     */
-    private ItemList mDrawItems;
-
-    /**
-     * Items get moved from the draw list to here when undo is pressed.
-     * They move the oppoiste way on redo.
-     */
-    private ItemList mUndoList;
-
-    /**
      * The current DrawItem. Created on a DOWN event based on the current
      * draw tool selection. Moved to the draw item list when an UP, or a new
      * DOWN is received.
@@ -54,6 +43,10 @@ public class ScribbleView extends View {
      */
     private PointF mScrollOffset;
 
+    /**
+     * The items to draw
+     */
+    private Drawing drawing;
 
     private ScribbleMainActivity mMainActivity;
 
@@ -70,8 +63,7 @@ public class ScribbleView extends View {
 
 
     private void setup () {
-        mDrawItems = new ItemList();
-        mUndoList = new ItemList();
+        drawing = new Drawing(this);
         mScrollOffset = new PointF(0f, 0f);
     }
 
@@ -86,53 +78,27 @@ public class ScribbleView extends View {
         mScrollOffset.y = dis.readFloat();
     }
 
-    public void saveDrawList (DataOutputStream dos, int version) throws IOException {
-        mDrawItems.write(dos, version);
-    }
-
-    public void readDrawList (DataInputStream dis, int version) throws IOException {
-        mDrawItems = new ItemList(dis, version, this);
-    }
-
-    public void saveUndoList  (DataOutputStream dos, int version) throws IOException {
-        mUndoList.write(dos, version);
-    }
-
-    public void readUndoList (DataInputStream dis, int version) throws IOException {
-        mUndoList = new ItemList(dis, version, this);
-    }
-
     private void writeToCurrentFile() {
         FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, mMainActivity.getmCurrentlyOpenFile());
         fsw.write();
     }
 
     public void undo () {
-        DrawItem movedItem = mDrawItems.moveLastTo(mUndoList);
-        if (movedItem != null) {
-            movedItem.undo();
-        }
+        drawing.undo();
         invalidate();
-        writeToCurrentFile();
     }
 
     public void redo () {
-        DrawItem movedItem = mUndoList.moveLastTo(mDrawItems);
-        if (movedItem != null) {
-            movedItem.redo();
-        }
+        drawing.redo();
         invalidate();
-        writeToCurrentFile();
     }
 
     public void addItem (DrawItem item) {
-        mDrawItems.add(item);
-        writeToCurrentFile();
+        drawing.addItem(item);
     }
 
     public void clear () {
-        mDrawItems.clear();
-        mUndoList.clear();
+        drawing.clear();
         mMainActivity.useDefaultFile();
         writeToCurrentFile();
         invalidate();
@@ -145,7 +111,7 @@ public class ScribbleView extends View {
 
         int pointerCount = event.getPointerCount();
         if (pointerCount == 2 && mCurrentItem != null && !(mCurrentItem instanceof ScrollItem)) {
-            mCurrentItem.handleUpEvent(event);
+//            mCurrentItem.handleUpEvent(event);
             mCurrentItem = new ScrollItem(event, this);
             return true;
         }
@@ -215,13 +181,13 @@ public class ScribbleView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-        mDrawItems.onDraw(canvas);
+        drawing.getmDrawItems().onDraw(canvas);
         if (mCurrentItem != null) {
             mCurrentItem.draw(canvas);
         }
     }
 
-    public ItemList getmDrawItems() {return mDrawItems;}
+    public ItemList getmDrawItems() {return drawing.getmDrawItems();}
     public PointF getmScrollOffset() {return mScrollOffset;}
     public void setmScrollOffset(PointF mScrollOffset) {this.mScrollOffset = mScrollOffset;}
     public void setmScrollOffset(float x,float y) {
@@ -230,8 +196,6 @@ public class ScribbleView extends View {
     }
     public ScribbleMainActivity getmMainActivity() {return mMainActivity;}
     public void setmMainActivity(ScribbleMainActivity mMainActivity) {this.mMainActivity = mMainActivity;}
-
-
-
+    public Drawing getDrawing() {return drawing;}
 
 }

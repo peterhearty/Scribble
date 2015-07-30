@@ -43,8 +43,7 @@ abstract public class ScribbleWriter {
 
     protected void writeMainView(DataOutputStream dos) {
         try {
-            mMainView.saveDrawList(dos, ScribbleReader.FILE_FORMAT_VERSION);
-            mMainView.saveUndoList(dos, ScribbleReader.FILE_FORMAT_VERSION);
+            mMainView.getDrawing().save(dos, ScribbleReader.FILE_FORMAT_VERSION);
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "writeMainView", e);
         }

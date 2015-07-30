@@ -80,6 +80,9 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
                     FileScribbleReader fsr = new FileScribbleReader(mMainActivity, selectedFile);
                     fsr.read();
                     mMainActivity.setmCurrentlyOpenFile(fsr.getLastSuccessfulFileRead());
+                    // following sets offset to zero and zoom=1
+                    // used to do this in FilescribbleReader, but that gets used on screen rotate
+                    mMainActivity.getmZoomButtonHandler().onLongClick(null);
                 }
             }
         }

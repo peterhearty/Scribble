@@ -39,8 +39,7 @@ abstract public class ScribbleReader {
 
     protected void readMainView(DataInputStream dis, int fileFormatVersion) {
         try {
-            mMainView.readDrawList(dis, fileFormatVersion);
-            mMainView.readUndoList(dis, fileFormatVersion);
+            mMainView.getDrawing().read(dis, fileFormatVersion);
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "readMainView", e);
         }
@@ -56,7 +55,7 @@ abstract public class ScribbleReader {
                 int fileFormatVersion = dis.readInt();
                 readMainView(dis, fileFormatVersion);
                 // following set offset to zero and zoom to 1
-                mScribbleMainActivity.getmZoomButtonHandler().onLongClick(null);
+//                mScribbleMainActivity.getmZoomButtonHandler().onLongClick(null);
             }
             dis.close();
         } catch (Exception e) {

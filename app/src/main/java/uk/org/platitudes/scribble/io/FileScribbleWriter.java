@@ -41,18 +41,6 @@ public class FileScribbleWriter extends ScribbleWriter {
         super(sma);
     }
 
-//    public void writeToDefaultFile () {
-//        try {
-//            synchronized (ScribbleReader.sDataLock) {
-//                FileOutputStream fos = mMainView.getContext().openFileOutput(ScribbleReader.DEFAULT_FILE, Context.MODE_WORLD_READABLE);
-//                writeToOutputStream(fos);
-//                fos.close();
-//            }
-//        } catch (Exception e) {
-//            ScribbleMainActivity.log("FileSaver", "writeToDefaultFile", e);
-//        }
-//    }
-
     public File getLastSuccessfulFileWrite() {
         return lastSuccessfulFileWrite;
     }
