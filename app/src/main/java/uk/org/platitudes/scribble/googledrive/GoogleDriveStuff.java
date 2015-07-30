@@ -21,6 +21,7 @@ import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.OpenFileActivityBuilder;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,6 +40,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
     private int mGoogleDriveConnectionFailedCount;
     public boolean mGoogleDriveConnected;
     private GoogleDriveFolder mRootGoogleDriveFolder;
+    private String fileToReadWhenReady;
 
     public GoogleDriveStuff (ScribbleMainActivity scribbleMainActivity) {
         mScribbleMainActivity = scribbleMainActivity;
@@ -53,9 +55,25 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
 
     }
 
+    public void setFileToReadWhenReady (String s) {
+        fileToReadWhenReady = GoogleDriveFolder.extractGoogleDriveFilename(s);
+    }
+
     public void connect () {
         if (mGoogleDriveConnectionFailedCount<2) {
             mGoogleApiClient.connect();
+        }
+    }
+
+    public void checkFileLoadPending (GoogleDriveFile f) {
+        if (fileToReadWhenReady == null) return;
+
+        if (f.getName().equals(fileToReadWhenReady)) {
+            fileToReadWhenReady = null;
+            FileScribbleReader fsr = new FileScribbleReader(mScribbleMainActivity, f);
+            fsr.read();
+            mScribbleMainActivity.setmCurrentlyOpenFile(f);
+            mScribbleMainActivity.getmMainView().invalidate();
         }
     }
 

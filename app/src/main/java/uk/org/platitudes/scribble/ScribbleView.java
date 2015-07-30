@@ -102,9 +102,9 @@ public class ScribbleView extends View {
         mUndoList = new ItemList(dis, version, this);
     }
 
-    private void writeToDefaultFile () {
-        FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity);
-        fsw.writeToDefaultFile();
+    private void writeToCurrentFile() {
+        FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, mMainActivity.getmCurrentlyOpenFile());
+        fsw.write();
     }
 
     public void undo () {
@@ -113,7 +113,7 @@ public class ScribbleView extends View {
             movedItem.undo();
         }
         invalidate();
-        writeToDefaultFile();
+        writeToCurrentFile();
     }
 
     public void redo () {
@@ -122,18 +122,19 @@ public class ScribbleView extends View {
             movedItem.redo();
         }
         invalidate();
-        writeToDefaultFile();
+        writeToCurrentFile();
     }
 
     public void addItem (DrawItem item) {
         mDrawItems.add(item);
-        writeToDefaultFile();
+        writeToCurrentFile();
     }
 
     public void clear () {
         mDrawItems.clear();
         mUndoList.clear();
-        writeToDefaultFile();
+        mMainActivity.useDefaultFile();
+        writeToCurrentFile();
         invalidate();
     }
 

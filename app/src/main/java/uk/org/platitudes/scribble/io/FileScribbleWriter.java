@@ -20,6 +20,7 @@ public class FileScribbleWriter extends ScribbleWriter {
 
     private File mdir;
     private String mfilename;
+    private File lastSuccessfulFileWrite;
 
     /**
      * Used when writing.
@@ -30,20 +31,30 @@ public class FileScribbleWriter extends ScribbleWriter {
         mfilename = fileName;
     }
 
+    public FileScribbleWriter(ScribbleMainActivity sma, File file) {
+        super(sma);
+        mdir = file.getParentFile();
+        mfilename = file.getName();
+    }
+
     public FileScribbleWriter(ScribbleMainActivity sma) {
         super(sma);
     }
 
-    public void writeToDefaultFile () {
-        try {
-            synchronized (ScribbleReader.sDataLock) {
-                FileOutputStream fos = mMainView.getContext().openFileOutput(ScribbleReader.DATAFILE, Context.MODE_WORLD_READABLE);
-                writeToOutputStream(fos);
-                fos.close();
-            }
-        } catch (Exception e) {
-            ScribbleMainActivity.log("FileSaver", "writeToDefaultFile", e);
-        }
+//    public void writeToDefaultFile () {
+//        try {
+//            synchronized (ScribbleReader.sDataLock) {
+//                FileOutputStream fos = mMainView.getContext().openFileOutput(ScribbleReader.DEFAULT_FILE, Context.MODE_WORLD_READABLE);
+//                writeToOutputStream(fos);
+//                fos.close();
+//            }
+//        } catch (Exception e) {
+//            ScribbleMainActivity.log("FileSaver", "writeToDefaultFile", e);
+//        }
+//    }
+
+    public File getLastSuccessfulFileWrite() {
+        return lastSuccessfulFileWrite;
     }
 
     public void write () {
@@ -56,16 +67,19 @@ public class FileScribbleWriter extends ScribbleWriter {
                     // create new file
                     f = gdf.createFile(mfilename);
                 }
+                lastSuccessfulFileWrite = f;
                 os = f.getOutputStream();
             } else {
                 // A local file
                 String dirName = mdir.getCanonicalPath();
                 String pathName = dirName+ File.separator+mfilename;
                 os = new FileOutputStream(pathName);
+                lastSuccessfulFileWrite = new File (mdir, mfilename);
             }
             writeToOutputStream(os);
             os.close();
         } catch (Exception e) {
+            lastSuccessfulFileWrite = null;
             ScribbleMainActivity.log("FileSaver", "writeToFile", e);
         }
     }
@@ -84,23 +98,5 @@ public class FileScribbleWriter extends ScribbleWriter {
         }
         return result;
     }
-
-    public void deleteDefaultFile () {
-        try {
-            File dir = mMainView.getContext().getFilesDir();
-            String path = dir.getCanonicalPath() + File.separator + ScribbleReader.DATAFILE;
-            File f = new File(path);
-            boolean result = f.delete();
-            if (!result) {
-                ScribbleMainActivity.log(f.getCanonicalPath(), " not deleted", null);
-
-            }
-        } catch (Exception e) {
-            ScribbleMainActivity.log("FileSaver", "copyDefaultFile", e);
-        }
-
-    }
-
-
 
 }

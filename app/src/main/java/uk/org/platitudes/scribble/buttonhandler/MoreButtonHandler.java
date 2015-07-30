@@ -17,7 +17,7 @@ import uk.org.platitudes.scribble.file.FileChooser;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
 import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
-public class MoreButtonHandler extends RestoreObserver implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
     private Button mMoreButton;
     private ScribbleMainActivity mActivity;
@@ -75,25 +75,11 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
             ScribbleMainActivity.mainActivity.finish();
         } else if (menuTitle.equals("clear")) {
             mActivity.getmMainView().clear();
+        } else if (menuTitle.equals("about")) {
+            mActivity.about();
         }
 
         return true;
-    }
-
-    public void onUpdate(int nowBeingRestored, String currentPackage) {
-        ScribbleMainActivity.log("Restoring ", currentPackage, null);
-    }
-    public void restoreFinished(int error) {
-        ScribbleMainActivity.log("Restore finished", "", null);
-
-        FileScribbleReader fsr = new FileScribbleReader(mActivity, null);
-        fsr.readFromDefaultFile();
-    }
-    public void restoreStarting(int numPackages) {
-        mActivity.getmMainView().clear();
-        FileScribbleWriter fsw = new FileScribbleWriter(mActivity);
-        fsw.deleteDefaultFile();
-        ScribbleMainActivity.log("Restore starting", "", null);
     }
 
 }

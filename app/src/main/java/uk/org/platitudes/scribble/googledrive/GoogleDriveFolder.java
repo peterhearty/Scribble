@@ -33,6 +33,8 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
     private GoogleDriveFile[] mContents;
     private PendingResult<DriveApi.MetadataBufferResult> mPendingResult;
 
+    public static final String PATH_PREFIX = ":GoogleDrive:";
+
     public GoogleDriveFolder(ScribbleMainActivity activity) {
         // Need to cal a super of some kind.
         super ("/");
@@ -41,13 +43,26 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
         mContents = new GoogleDriveFile[0];
     }
 
+    public static boolean isGoogleDriveFile (String path) {
+        if (path.contains(PATH_PREFIX)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static String extractGoogleDriveFilename (String path) {
+        int lastSlash = path.lastIndexOf('/');
+        String name = path.substring(lastSlash+1);
+        return name;
+    }
+
     public GoogleApiClient getmGoogleApiClient() {return mGoogleApiClient;}
     public DriveFolder getmDriveFolder() {return mDriveFolder;}
     public boolean isDirectory () {return true;}
     public boolean canRead () {return true;}
     public boolean exists () {return true;}
     public File[] listFiles () {return mContents;}
-    public String getCanonicalPath() throws IOException {return ":GoogleDrive: /";}
+    public String getCanonicalPath() throws IOException {return PATH_PREFIX;}
 
     public GoogleDriveFile createFile (String name) {
         GoogleDriveFile result = getFile(name);

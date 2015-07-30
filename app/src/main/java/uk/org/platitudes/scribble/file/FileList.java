@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.PopupMenu;
 
 import java.io.File;
+import java.io.IOException;
 
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
@@ -122,11 +123,28 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
         return result;
     }
 
+    private boolean inUse (File f) {
+        try {
+            String targetPath = f.getCanonicalPath();
+            String inUse = ScribbleMainActivity.mainActivity.getmCurrentlyOpenFile().getCanonicalPath();
+            if (targetPath.equals(inUse)) {
+                ScribbleMainActivity.log("File is open", "", null);
+                return true;
+            }
+        } catch (IOException e) {
+            ScribbleMainActivity.log("FileList", "inUse", e);
+        }
+        return false;
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         try {
             CharSequence menuText = item.getTitle();
             if (menuText.equals("delete")) {
+                if (inUse(mLongClickedFile)) {
+                    return true;
+                }
                 boolean deleted = mLongClickedFile.delete();
                 if (deleted) {
                     mDirList.resetContents();
@@ -134,6 +152,9 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
                     ScribbleMainActivity.log("Failed to delete ", mLongClickedFile.getName(), null);
                 }
             } else if (menuText.equals("rename")) {
+                if (inUse(mLongClickedFile)) {
+                    return true;
+                }
                 String newFileName = mFileName.getText().toString();
                 if (newFileName.length() > 0) {
                     String newFilePath = mLongClickedFile.getParentFile().getCanonicalPath();

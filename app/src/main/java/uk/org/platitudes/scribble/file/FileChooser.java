@@ -73,11 +73,13 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
                 }
                 FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, dir, fileName);
                 fsw.write();
+                mMainActivity.setmCurrentlyOpenFile(fsw.getLastSuccessfulFileWrite());
             } else {
                 File selectedFile= mFileList.getFile();
                 if (selectedFile != null) {
                     FileScribbleReader fsr = new FileScribbleReader(mMainActivity, selectedFile);
                     fsr.read();
+                    mMainActivity.setmCurrentlyOpenFile(fsr.getLastSuccessfulFileRead());
                 }
             }
         }

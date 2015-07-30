@@ -6,21 +6,28 @@ package uk.org.platitudes.scribble;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.UndoButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
+import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveStuff;
 import uk.org.platitudes.scribble.io.BundleScribbleReader;
 import uk.org.platitudes.scribble.io.BundleScribbleWriter;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
+import uk.org.platitudes.scribble.io.ScribbleReader;
 
 
 public class ScribbleMainActivity extends Activity  {
@@ -34,6 +41,7 @@ public class ScribbleMainActivity extends Activity  {
     private ZoomButtonHandler mZoomButtonHandler;
     private DrawToolButtonHandler mDrawToolButtonHandler;
     private GoogleDriveStuff mGoogleStuff;
+    private File mCurrentlyOpenFile;
     public static ScribbleMainActivity mainActivity;
 
     @Override
@@ -65,8 +73,26 @@ public class ScribbleMainActivity extends Activity  {
         if (savedInstanceState != null) {
             readState(savedInstanceState);
         } else {
-            FileScribbleReader fs = new FileScribbleReader(this, null);
-            fs.readFromDefaultFile();
+            Context context = mMainView.getContext();
+            String defaultFile = context.getFilesDir()+File.separator+ ScribbleReader.DEFAULT_FILE;
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+            String currentFilePath = sharedPref.getString(ScribbleReader.CURRENT_FILE_PREFERENCE_KEY, defaultFile);
+
+            try {
+                mCurrentlyOpenFile = new File (currentFilePath);
+                if (GoogleDriveFolder.isGoogleDriveFile(currentFilePath)) {
+                    // google drive file - have to read later
+                    mGoogleStuff.setFileToReadWhenReady(currentFilePath);
+                } else {
+                    // a local file, read it now
+                    FileScribbleReader fs = new FileScribbleReader(this, mCurrentlyOpenFile);
+                    fs.read();
+                }
+            } catch (Exception e) {
+                log ("Error opening file ", currentFilePath, e);
+                useDefaultFile();
+            }
+
         }
     }
 
@@ -146,5 +172,39 @@ public class ScribbleMainActivity extends Activity  {
     }
 
     public GoogleDriveStuff getmGoogleStuff() {return mGoogleStuff;}
+    public File getmCurrentlyOpenFile() {return mCurrentlyOpenFile;}
+
+    public void setmCurrentlyOpenFile(File f) {
+        if (f == null) return;
+
+        mCurrentlyOpenFile = f;
+        Context context = mMainView.getContext();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor e = sharedPref.edit();
+        try {
+            e.putString(ScribbleReader.CURRENT_FILE_PREFERENCE_KEY, mCurrentlyOpenFile.getCanonicalPath());
+        } catch (Exception e1) {
+            log ("ScribbleMainActivity", "setmCurrentlyOpenFile", e1);
+        }
+        e.commit();
+    }
+
+    public void useDefaultFile () {
+        Context context = mMainView.getContext();
+        String defaultFile = context.getFilesDir()+File.separator+ ScribbleReader.DEFAULT_FILE;
+        File f = new File (defaultFile);
+        setmCurrentlyOpenFile(f);
+    }
+
+    public void about () {
+        String path = "";
+        try {
+            path = mCurrentlyOpenFile.getCanonicalPath();
+            path += " size="+mCurrentlyOpenFile.length();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log (path, "", null);
+    }
 
 }

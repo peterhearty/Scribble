@@ -52,8 +52,9 @@ public class EditTextDialog extends DialogFragment implements DialogInterface.On
             // Although the list of items has not changed, there contents has, so has to be saved.
             // Note that we can't do this in  textItem.setmText() as setmtext gets called during
             // file reads. starting a write during the read corrupts the file.
-            FileScribbleWriter fsw = new FileScribbleWriter(ScribbleMainActivity.mainActivity);
-            fsw.writeToDefaultFile();
+            ScribbleMainActivity main = ScribbleMainActivity.mainActivity;
+            FileScribbleWriter fsw = new FileScribbleWriter(main, main.getmCurrentlyOpenFile());
+            fsw.write();
         } else {
             // leave empty
         }

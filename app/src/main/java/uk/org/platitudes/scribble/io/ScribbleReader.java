@@ -20,7 +20,8 @@ abstract public class ScribbleReader {
     protected static final String EVERYTHING_KEY = "everything";
     protected static final int FILE_FORMAT_VERSION = 1000;
     protected static final long MAGIC_NUMBER = 0x5C81881EF11EL; // sort of says SCRIBBLEFILE
-    public static final String DATAFILE = "currentDataFile";
+    public static final String DEFAULT_FILE = "defaultDataFile";
+    public static final String CURRENT_FILE_PREFERENCE_KEY = "current_file_key";
 
     // See http://developer.android.com/guide/topics/data/backup.html
     public static final Object sDataLock = new Object();

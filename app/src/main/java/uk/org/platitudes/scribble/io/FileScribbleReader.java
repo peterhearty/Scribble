@@ -7,13 +7,13 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
+import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 
 /**
  * File reader.
@@ -21,6 +21,7 @@ import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
 public class FileScribbleReader extends ScribbleReader {
 
     private File mFile;
+    private File lastSuccessfulFileRead;
 
     /**
      * Used when reading.
@@ -55,13 +56,19 @@ public class FileScribbleReader extends ScribbleReader {
         return result;
     }
 
+    public File getLastSuccessfulFileRead() {
+        return lastSuccessfulFileRead;
+    }
+
     public void read () {
         InputStream is = getInputStreamFromFile(mFile);
         if (is !=  null) {
             try {
+                lastSuccessfulFileRead = mFile;
                 readFromInputStream(is);
                 is.close();
             } catch (Exception e) {
+                lastSuccessfulFileRead = null;
                 ScribbleMainActivity.log("FileScribbleReader", "read", e);
             }
         }
@@ -70,7 +77,7 @@ public class FileScribbleReader extends ScribbleReader {
     public void readFromDefaultFile () {
         try {
             synchronized (sDataLock) {
-                FileInputStream fis = mMainView.getContext().openFileInput(DATAFILE);
+                FileInputStream fis = mMainView.getContext().openFileInput(DEFAULT_FILE);
                 readFromInputStream(fis);
                 fis.close();
             }

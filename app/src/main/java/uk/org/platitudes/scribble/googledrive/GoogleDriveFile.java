@@ -72,6 +72,7 @@ public class GoogleDriveFile extends File {
                     is.read(mFileContents, 0, size);
                     is.close();
                     driveContents.discard(mGoogleApiClient);
+                    ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(GoogleDriveFile.this);
                 } catch (Exception e) {
                     ScribbleMainActivity.log("GoogleDriveFile", "getInputStream", e);
                 }
@@ -160,7 +161,7 @@ public class GoogleDriveFile extends File {
     @NonNull
     @Override
     public String getCanonicalPath() throws IOException {
-        String s = mParentFolder.getCanonicalPath() + mName;
+        String s = mParentFolder.getCanonicalPath() + File.separator + mName;
         return s;
     }
 
