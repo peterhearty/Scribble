@@ -70,7 +70,7 @@ public class FileScribbleWriter extends ScribbleWriter {
         }
     }
 
-    private OutputStream getOutputStreamFromFile (File f) {
+    public static OutputStream getOutputStreamFromFile (File f) {
         OutputStream result = null;
         try {
             if (f instanceof  GoogleDriveFile) {

@@ -14,7 +14,6 @@ import android.widget.PopupMenu;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.file.FileChooser;
-import uk.org.platitudes.scribble.file.FileSaver;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
 import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
@@ -63,25 +62,17 @@ public class MoreButtonHandler extends RestoreObserver implements View.OnClickLi
         CharSequence menuTitle = item.getTitle();
         if (menuTitle.equals("fullscreen")) {
             overrideVisibilitychanges ();
-        } else if (menuTitle.equals("save")) {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setParameters(mActivity, true);
-            fileChooser.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
-        } else if (menuTitle.equals("file")) {
-            ScribbleMainActivity.log("file clisked", "", null);
         } else if (menuTitle.equals("open")) {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setParameters(mActivity, false);
             fileChooser.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
             mActivity.getmMainView().invalidate();
+        } else if (menuTitle.equals("save")) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setParameters(mActivity, true);
+            fileChooser.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
         }  else if (menuTitle.equals("exit")) {
             ScribbleMainActivity.mainActivity.finish();
-        } else if (menuTitle.equals("backup")) {
-            BackupManager bm = new BackupManager(mActivity.getmMainView().getContext());
-            bm.dataChanged();
-        } else if (menuTitle.equals("restore")) {
-            BackupManager bm = new BackupManager(mActivity.getmMainView().getContext());
-            bm.requestRestore(this);
         } else if (menuTitle.equals("clear")) {
             mActivity.getmMainView().clear();
         }

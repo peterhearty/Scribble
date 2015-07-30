@@ -68,12 +68,17 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
             if (mSaveFile) {
                 File dir = mDirList.getmCurDir();
                 String fileName = mFileList.getFileName();
+                if (fileName == null || fileName.length() == 0) {
+                    return;
+                }
                 FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, dir, fileName);
                 fsw.write();
             } else {
                 File selectedFile= mFileList.getFile();
-                FileScribbleReader fsr = new FileScribbleReader(mMainActivity, selectedFile);
-                fsr.read();
+                if (selectedFile != null) {
+                    FileScribbleReader fsr = new FileScribbleReader(mMainActivity, selectedFile);
+                    fsr.read();
+                }
             }
         }
     }

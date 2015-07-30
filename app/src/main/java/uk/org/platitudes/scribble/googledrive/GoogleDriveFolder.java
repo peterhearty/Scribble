@@ -46,29 +46,44 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
     public boolean isDirectory () {return true;}
     public boolean canRead () {return true;}
     public boolean exists () {return true;}
-    public File[] listFiles () {
-        return mContents;
-    }
+    public File[] listFiles () {return mContents;}
+    public String getCanonicalPath() throws IOException {return ":GoogleDrive: /";}
 
     public GoogleDriveFile createFile (String name) {
         GoogleDriveFile result = getFile(name);
         if (result == null) {
             // file does not exist, create a new one
-            result = new GoogleDriveFile(this, name);
+            result = new GoogleDriveFile(this, name, true);
 
             // add new file to local dir contents
-            GoogleDriveFile[] newContents = new GoogleDriveFile[mContents.length+1];
-            System.arraycopy(mContents, 0, newContents, 0, mContents.length);
-            newContents[newContents.length-1] = result;
-            mContents = newContents;
+            addFileToList(result);
         }
         return result;
     }
 
-    @NonNull
-    @Override
-    public String getCanonicalPath() throws IOException {
-        return "GoogleDrive /";
+    public void addFileToList (GoogleDriveFile newFile) {
+        // add new file to local dir contents
+        GoogleDriveFile[] newContents = new GoogleDriveFile[mContents.length+1];
+        System.arraycopy(mContents, 0, newContents, 0, mContents.length);
+        newContents[newContents.length-1] = newFile;
+        mContents = newContents;
+    }
+
+    /**
+     * Deletes a file from the locally held list. It's the caller's responsibility
+     * to make sure it exists, otherwise an ArrayOutOfBounds is likely.
+     *
+     * Caller performs the GoogleDrive delete function.
+     */
+    public void deleteFile (GoogleDriveFile deletedFile) {
+        GoogleDriveFile[] newContents = new GoogleDriveFile[mContents.length-1];
+        int newPosn = 0;
+        for (GoogleDriveFile f : mContents) {
+            if (f != deletedFile) {
+                newContents[newPosn++] = f;
+            }
+        }
+        mContents = newContents;
     }
 
     public GoogleDriveFile getFile (String name) {

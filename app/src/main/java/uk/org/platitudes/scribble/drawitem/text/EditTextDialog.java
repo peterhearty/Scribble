@@ -14,7 +14,6 @@ import android.widget.EditText;
 
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
-import uk.org.platitudes.scribble.file.FileSaver;
 import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**

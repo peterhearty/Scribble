@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
-import uk.org.platitudes.scribble.file.FileSaver;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
 import uk.org.platitudes.scribble.io.FileScribbleWriter;
 

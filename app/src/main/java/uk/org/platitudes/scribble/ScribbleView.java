@@ -22,7 +22,6 @@ import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
-import uk.org.platitudes.scribble.file.FileSaver;
 import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**
@@ -134,7 +133,7 @@ public class ScribbleView extends View {
     public void clear () {
         mDrawItems.clear();
         mUndoList.clear();
-        writeToDefaultFile ();
+        writeToDefaultFile();
         invalidate();
     }
 

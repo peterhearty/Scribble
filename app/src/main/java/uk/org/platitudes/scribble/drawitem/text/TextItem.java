@@ -17,7 +17,6 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
-import uk.org.platitudes.scribble.file.FileSaver;
 
 /**
  */

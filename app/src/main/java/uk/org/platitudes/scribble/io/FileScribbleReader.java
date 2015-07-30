@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
@@ -112,14 +113,14 @@ public class FileScribbleReader extends ScribbleReader {
             if (dst.exists() && !isScribbleFile(dst)) {
                 throw new Exception ("Copy destination is not a scribble file");
             }
-            FileInputStream fis = new FileInputStream(mFile);
-            FileOutputStream fos = new FileOutputStream(dst);
-            while (fis.available()>0) {
-                int nextByte = fis.read();
-                fos.write(nextByte);
+            InputStream is = getInputStreamFromFile(mFile);
+            OutputStream os = FileScribbleWriter.getOutputStreamFromFile(dst);
+            while (is.available()>0) {
+                int nextByte = is.read();
+                os.write(nextByte);
             }
-            fis.close();
-            fos.close();
+            is.close();
+            os.close();
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "copyFile", e);
         }

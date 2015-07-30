@@ -11,10 +11,11 @@ import android.widget.EditText;
 import android.widget.PopupMenu;
 
 import java.io.File;
-import java.io.IOException;
 
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
+import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
+import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
 
 /**
@@ -104,6 +105,23 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
         }
     }
 
+    /**
+     * Creates either a java.io.File object or a GoogleDriveFile object, depending on a
+     * supplied template. The new File is then set to the supplied name.
+     */
+    private File createFile (File parent, String name) {
+        File result = null;
+        if (parent instanceof GoogleDriveFolder) {
+            GoogleDriveFolder gdf = (GoogleDriveFolder) parent;
+            // Note, the following will create a file on the Google Drive
+            GoogleDriveFile newFile = new GoogleDriveFile(gdf, name, false);
+            result = newFile;
+        } else {
+            result = new File (parent, name);
+        }
+        return result;
+    }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         try {
@@ -135,9 +153,7 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
                 if (newFileName.length() > 0) {
                     // Copy to new file in same directory
 
-                    String newFilePath = mLongClickedFile.getParentFile().getCanonicalPath();
-                    String newFileFullName = newFilePath + File.separator + newFileName;
-                    File newFile = new File(newFileFullName);
+                    File newFile = createFile(mLongClickedFile.getParentFile(), newFileName);
 
                     FileScribbleReader fs = new FileScribbleReader(ScribbleMainActivity.mainActivity, mLongClickedFile);
                     fs.copyFile(newFile);
@@ -167,10 +183,8 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
         // copy a file to the current directory
         String newFilePath = null;
         try {
-            newFilePath = mDirList.getmCurDir().getCanonicalPath();
             String newFileName = mPasteFile.getName();
-            String newFileFullName = newFilePath + File.separator + newFileName;
-            File newFile = new File(newFileFullName);
+            File newFile = createFile(mDirList.getmCurDir(), newFileName);
 
             FileScribbleReader fs = new FileScribbleReader(ScribbleMainActivity.mainActivity, mPasteFile);
             fs.copyFile(newFile);

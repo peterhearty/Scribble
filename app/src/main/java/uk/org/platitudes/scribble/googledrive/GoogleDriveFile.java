@@ -15,6 +15,7 @@ import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
+import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 
@@ -26,23 +27,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
-import uk.org.platitudes.scribble.file.FileSaver;
 
 /**
  */
-public class GoogleDriveFile extends File implements ResultCallback<DriveApi.DriveContentsResult> {
+public class GoogleDriveFile extends File {
 
     private String mName;
     private GoogleDriveFolder mParentFolder;
-    private Metadata metaData;
-    private DriveContents mDriveContents;
     private long mSize;
     private GoogleApiClient mGoogleApiClient;
     private DriveId mDriveId;
-    private DriveFile mDriveFile;
     private byte[] mFileContents;
-    private ByteArrayOutputStream mOutputStream;
     private DriveOutputStream pendingWrite;
+    private boolean dummyFile;
 
     /**
      * Constructor for existing files.
@@ -50,27 +47,64 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
     public GoogleDriveFile(GoogleDriveFolder parent, Metadata m) {
         super("GoogleDriveFile:noname");
         mName = m.getTitle();
-        metaData = m;
         mParentFolder = parent;
         mSize = m.getFileSize();
         mGoogleApiClient = mParentFolder.getmGoogleApiClient();
         mDriveId = m.getDriveId();
-        mDriveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+        DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
 
-        mDriveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
-                .setResultCallback(this);
+        ResultCallback<DriveApi.DriveContentsResult> callback =
+                new ResultCallback<DriveApi.DriveContentsResult>() {
+            @Override
+            public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
+
+                Status s = driveContentsResult.getStatus();
+                if (!s.isSuccess()) {
+                    // error
+                    return;
+                }
+                DriveContents driveContents = driveContentsResult.getDriveContents();
+
+                int size = (int) mSize;
+                mFileContents = new byte[size];
+                try {
+                    InputStream is = driveContents.getInputStream();
+                    is.read(mFileContents, 0, size);
+                    is.close();
+                    driveContents.discard(mGoogleApiClient);
+                } catch (Exception e) {
+                    ScribbleMainActivity.log("GoogleDriveFile", "getInputStream", e);
+                }
+
+            }
+        };
+
+        driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
+                .setResultCallback(callback);
     }
 
     /**
-     * Constructor for new file.
+     * Constructor for new file. The createFile flag allows the caller to specify
+     * whether the file should actually be created on the Google Drive. Ssometimes we
+     * just want a dummy file for testing.
+     *
+     * Caller should add the file to the parent's contents.
      */
-    public GoogleDriveFile(GoogleDriveFolder parent, String name) {
+    public GoogleDriveFile(GoogleDriveFolder parent, String name, boolean createFile) {
         super("GoogleDriveFile:noname");
         mName = name;
         mParentFolder = parent;
         mGoogleApiClient = mParentFolder.getmGoogleApiClient();
 
 
+        if (createFile) {
+            createFileOnDrive();
+        } else {
+            dummyFile = true;
+        }
+    }
+
+    private void createFileOnDrive () {
         final ResultCallback<DriveFolder.DriveFileResult> writeCallback
                 = new ResultCallback<DriveFolder.DriveFileResult>() {
             @Override
@@ -81,8 +115,8 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
                     return;
                 }
 
-                mDriveFile = result.getDriveFile();
-                mDriveId = mDriveFile.getDriveId();
+                DriveFile driveFile = result.getDriveFile();
+                mDriveId = driveFile.getDriveId();
 
                 if (pendingWrite != null) {
                     pendingWrite.writeFile();
@@ -97,62 +131,110 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
         PendingResult<DriveFolder.DriveFileResult> pendingResult
                 = mParentFolder.getmDriveFolder().createFile(mGoogleApiClient, changeSet, null);
         pendingResult.setResultCallback(writeCallback);
-
     }
 
     public boolean isDirectory () {return false;}
     public boolean canRead () {return true;}
-    public boolean exists () {return true;}
+    public File getParentFile() {return mParentFolder;}
+    public long length() {return mSize;}
+    public String getName() {return mName;}
+
+    /**
+     * Tests to see if this file is known to the parent folder.
+     *
+     * SIDE EFFECT - copies the file details and file contents.
+     */
+    public boolean exists () {
+        GoogleDriveFile f = mParentFolder.getFile(mName);
+        if (f == null)
+            return false;
+
+        // File exists, copy file details
+        mSize = f.mSize;
+        mFileContents = f.mFileContents;
+        mDriveId = f.mDriveId;
+        mGoogleApiClient = f.mGoogleApiClient;
+        return true;
+    }
+
+    @NonNull
+    @Override
+    public String getCanonicalPath() throws IOException {
+        String s = mParentFolder.getCanonicalPath() + mName;
+        return s;
+    }
 
     @Override
-    public long length() {
-        return mSize;
+    public boolean delete() {
+        if (mDriveId != null) {
+
+            ResultCallback<Status> callback = new ResultCallback<Status>() {
+                @Override
+                public void onResult(Status status) {
+                    if (!status.isSuccess()) {
+                        ScribbleMainActivity.log("Problem", "deleting "+mName, null);
+                    }
+                }
+            };
+
+            DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+            PendingResult<Status> result = driveFile.delete(mGoogleApiClient);
+            result.setResultCallback(callback);
+
+            // We assume it's going to work
+            mParentFolder.deleteFile(this);
+            return true;
+
+        }
+        return false;
+    }
+
+    /**
+     * We always rename to the same directory.
+     */
+    @Override
+    public boolean renameTo(File newPath) {
+        String newName = newPath.getName();
+        if (mDriveId != null) {
+
+            ResultCallback<DriveResource.MetadataResult> callback = new ResultCallback<DriveResource.MetadataResult>() {
+                @Override
+                public void onResult(DriveResource.MetadataResult metadataResult) {
+                    Status status = metadataResult.getStatus();
+                    if (!status.isSuccess()) {
+                        ScribbleMainActivity.log("Problem", "renaming "+mName, null);
+                    }
+                }
+            };
+
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                    .setTitle(newName)
+                    .build();
+
+            DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+            PendingResult<DriveResource.MetadataResult>  result = driveFile.updateMetadata(mGoogleApiClient, changeSet);
+            result.setResultCallback(callback);
+
+            // We assume it's going to work
+            mName = newName;
+            return true;
+
+        }
+        return false;
     }
 
     public InputStream getInputStream () {
-        if (mFileContents == null && mDriveContents != null) {
+        if (mFileContents == null) {
             // file contents have not been fetched.
-            int size = (int) mSize;
-            mFileContents = new byte[size];
-            try {
-                InputStream is = mDriveContents.getInputStream();
-                is.read(mFileContents, 0, size);
-                is.close();
-                mDriveContents.discard(mGoogleApiClient);
-                mDriveContents = null;
-            } catch (Exception e) {
-                ScribbleMainActivity.log("GoogleDriveFile", "getInputStream", e);
-            }
+            return null;
         }
         ByteArrayInputStream bais = new ByteArrayInputStream(mFileContents);
         return bais;
     }
 
     public OutputStream getOutputStream () {
-        mOutputStream = new DriveOutputStream(2048);
-        if (mDriveContents != null) {
-            mDriveContents.discard(mGoogleApiClient);
-        }
-        mDriveContents = null;
-        return mOutputStream;
-    }
-
-
-
-    @NonNull
-    @Override
-    public String getName() {
-        return mName;
-    }
-
-    @Override
-    public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
-        Status s = driveContentsResult.getStatus();
-        if (!s.isSuccess()) {
-            // error
-            return;
-        }
-        mDriveContents = driveContentsResult.getDriveContents();
+        DriveOutputStream dos = new DriveOutputStream(2048);
+        return dos;
     }
 
     class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<DriveApi.DriveContentsResult> {
@@ -179,6 +261,13 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
             if (mDriveId == null) {
                 // File has just been created. Callback in constructor hasn't been called yet.
                 // do the write when the constructor call back has completed.
+                if (dummyFile) {
+                    // The file was created to test for existence but has now been written to.
+                    // convert it into a real file.
+                    createFileOnDrive();
+                    mParentFolder.addFileToList(GoogleDriveFile.this);
+                    dummyFile = false;
+                }
                 pendingWrite = this;
                 return;
             }
@@ -189,7 +278,6 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
                     .setResultCallback(this);
         }
 
-
         @Override
         public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
             Status s = driveContentsResult.getStatus();
@@ -198,14 +286,14 @@ public class GoogleDriveFile extends File implements ResultCallback<DriveApi.Dri
                 return;
             }
 
-            mDriveContents = driveContentsResult.getDriveContents();
-            OutputStream os = mDriveContents.getOutputStream();
+            DriveContents driveContents = driveContentsResult.getDriveContents();
+            OutputStream os = driveContents.getOutputStream();
             try {
                 os.write(mFileContents, 0, mFileContents.length);
             } catch (Exception e) {
                 ScribbleMainActivity.log("DriveOutputStream", "onResult", e);
             }
-            mDriveContents.commit(mGoogleApiClient, null);
+            driveContents.commit(mGoogleApiClient, null);
 
         }
     }
