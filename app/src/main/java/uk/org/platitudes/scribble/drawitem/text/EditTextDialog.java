@@ -53,7 +53,7 @@ public class EditTextDialog extends DialogFragment implements DialogInterface.On
             // Note that we can't do this in  textItem.setmText() as setmtext gets called during
             // file reads. starting a write during the read corrupts the file.
             ScribbleMainActivity main = ScribbleMainActivity.mainActivity;
-            FileScribbleWriter fsw = new FileScribbleWriter(main, main.getmCurrentlyOpenFile());
+            FileScribbleWriter fsw = new FileScribbleWriter(main, main.getmMainView().getDrawing().getmCurrentlyOpenFile());
             fsw.write();
         } else {
             // leave empty

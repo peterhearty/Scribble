@@ -43,49 +43,73 @@ public class GoogleDriveFile extends File {
     private DriveOutputStream pendingWrite;
     private boolean dummyFile;
     private boolean ignoreNextChangeEvent;
+    private ChangeListener changeListener;
 
 
-    ResultCallback<DriveApi.DriveContentsResult> readCallback =
-            new ResultCallback<DriveApi.DriveContentsResult>() {
-                @Override
-                public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
 
-                    Status s = driveContentsResult.getStatus();
-                    if (!s.isSuccess()) {
-                        // error
-                        return;
-                    }
-                    DriveContents driveContents = driveContentsResult.getDriveContents();
-
-                    int size = (int) mSize;
-                    mFileContents = new byte[size];
-                    try {
-                        InputStream is = driveContents.getInputStream();
-                        is.read(mFileContents, 0, size);
-                        is.close();
-                        driveContents.discard(mGoogleApiClient);
-                        ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(GoogleDriveFile.this);
-                    } catch (Exception e) {
-                        ScribbleMainActivity.log("GoogleDriveFile", "getInputStream", e);
-                    }
-
-                }
-            };
-
-    ChangeListener changeListener = new ChangeListener() {
+    ResultCallback<DriveApi.DriveContentsResult> readCallback = new ResultCallback<DriveApi.DriveContentsResult>() {
         @Override
-        public void onChange(ChangeEvent changeEvent) {
-            if (ignoreNextChangeEvent) {
-                // change due to our own update
-                ignoreNextChangeEvent = false;
+        public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
+
+            Status s = driveContentsResult.getStatus();
+            if (!s.isSuccess()) {
+                // error
                 return;
             }
-            DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
-            driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
-                    .setResultCallback(readCallback);
-            ScribbleMainActivity.mainActivity.checkDriveFileUpdate(GoogleDriveFile.this);
+            DriveContents driveContents = driveContentsResult.getDriveContents();
+
+            int size = (int) mSize;
+            mFileContents = new byte[size];
+            try {
+                InputStream is = driveContents.getInputStream();
+                is.read(mFileContents, 0, size);
+                is.close();
+                driveContents.discard(mGoogleApiClient);
+                //TODO - getting occasional EOFEception below
+                ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(GoogleDriveFile.this);
+
+                if (changeListener == null) {
+                    // First time we've read the file contents, listen for changes
+                    changeListener = new ChangeListener() {
+                        @Override
+                        public void onChange(ChangeEvent changeEvent) {
+                            if (ignoreNextChangeEvent) {
+                                // change due to our own update
+                                ignoreNextChangeEvent = false;
+                                return;
+                            }
+                            DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+                            PendingResult<DriveResource.MetadataResult> metRes = driveFile.getMetadata(mGoogleApiClient);
+                            metRes.setResultCallback(metaDataCallback);
+                        }
+                    };
+                    DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+                    driveFile.addChangeListener(mGoogleApiClient, changeListener);
+
+                }
+            } catch (Exception e) {
+                ScribbleMainActivity.log("GoogleDriveFile", "getInputStream", e);
+            }
+
         }
     };
+
+    ResultCallback<DriveResource.MetadataResult> metaDataCallback = new ResultCallback<DriveResource.MetadataResult>() {
+        @Override
+        public void onResult(DriveResource.MetadataResult metadataResult) {
+            Status s = metadataResult.getStatus();
+            if (s.isSuccess()) {
+                Metadata m = metadataResult.getMetadata();
+                mSize = m.getFileSize();
+
+                DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+                driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
+                        .setResultCallback(readCallback);
+                ScribbleMainActivity.mainActivity.getmMainView().getDrawing().checkDriveFileUpdate(GoogleDriveFile.this);
+            }
+        }
+    };
+
 
     /**
      * Constructor for existing files.
@@ -99,8 +123,6 @@ public class GoogleDriveFile extends File {
         mDriveId = m.getDriveId();
         DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
 
-
-        driveFile.addChangeListener(mGoogleApiClient, changeListener);
         driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
                 .setResultCallback(readCallback);
     }

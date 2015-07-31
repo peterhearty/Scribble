@@ -71,8 +71,8 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
         if (f.getName().equals(fileToReadWhenReady)) {
             fileToReadWhenReady = null;
             FileScribbleReader fsr = new FileScribbleReader(mScribbleMainActivity, f);
-            fsr.read();
-            mScribbleMainActivity.setmCurrentlyOpenFile(f);
+            fsr.read(mScribbleMainActivity.getmMainView().getDrawing());
+            mScribbleMainActivity.getmMainView().getDrawing().setmCurrentlyOpenFile(f);
             mScribbleMainActivity.getmMainView().invalidate();
         }
     }
@@ -81,7 +81,6 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
     public void onConnected(Bundle bundle) {
         mGoogleDriveConnected = true;
         mRootGoogleDriveFolder = new GoogleDriveFolder(mScribbleMainActivity);
-        mRootGoogleDriveFolder.requestContents();
     }
 
     @Override
@@ -123,7 +122,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
                     DriveContents driveContents = driveContentsResult.getDriveContents();
                     InputStream is = driveContents.getInputStream();
                     FileScribbleReader fsr = new FileScribbleReader(mScribbleMainActivity, null);
-                    fsr.readFromInputStream(is);
+                    fsr.readFromInputStream(is, mScribbleMainActivity.getmMainView().getDrawing());
                     try {
                         is.close();
                         driveContents.discard(mGoogleApiClient);

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
@@ -60,12 +61,12 @@ public class FileScribbleReader extends ScribbleReader {
         return lastSuccessfulFileRead;
     }
 
-    public void read () {
+    public void read (Drawing drawing) {
         InputStream is = getInputStreamFromFile(mFile);
         if (is !=  null) {
             try {
                 lastSuccessfulFileRead = mFile;
-                readFromInputStream(is);
+                readFromInputStream(is, drawing);
                 is.close();
             } catch (Exception e) {
                 lastSuccessfulFileRead = null;
@@ -74,19 +75,19 @@ public class FileScribbleReader extends ScribbleReader {
         }
     }
 
-    public void readFromDefaultFile () {
-        try {
-            synchronized (sDataLock) {
-                FileInputStream fis = mMainView.getContext().openFileInput(DEFAULT_FILE);
-                readFromInputStream(fis);
-                fis.close();
-            }
-        } catch (FileNotFoundException fnfe) {
-            // do nothing
-        } catch (IOException e) {
-            ScribbleMainActivity.log("FileScribbleReader", "readFromDefaultFile", e);
-        }
-    }
+//    public void readFromDefaultFile (Drawing drawing) {
+//        try {
+//            synchronized (sDataLock) {
+//                FileInputStream fis = mMainView.getContext().openFileInput(DEFAULT_FILE);
+//                readFromInputStream(fis, drawing);
+//                fis.close();
+//            }
+//        } catch (FileNotFoundException fnfe) {
+//            // do nothing
+//        } catch (IOException e) {
+//            ScribbleMainActivity.log("FileScribbleReader", "readFromDefaultFile", e);
+//        }
+//    }
 
     /**
      * Tests a file to check that it's a Scribble file.

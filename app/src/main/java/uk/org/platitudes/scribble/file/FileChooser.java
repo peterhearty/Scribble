@@ -13,6 +13,7 @@ import android.view.View;
 
 import java.io.File;
 
+import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
@@ -65,6 +66,7 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
     public void onClick(DialogInterface dialog, int which) {
 
         if (which == DialogInterface.BUTTON_POSITIVE) {
+            Drawing drawing = mMainActivity.getmMainView().getDrawing();
             if (mSaveFile) {
                 File dir = mDirList.getmCurDir();
                 String fileName = mFileList.getFileName();
@@ -73,13 +75,13 @@ public class FileChooser extends DialogFragment implements DialogInterface.OnCli
                 }
                 FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, dir, fileName);
                 fsw.write();
-                mMainActivity.setmCurrentlyOpenFile(fsw.getLastSuccessfulFileWrite());
+                drawing.setmCurrentlyOpenFile(fsw.getLastSuccessfulFileWrite());
             } else {
                 File selectedFile= mFileList.getFile();
                 if (selectedFile != null) {
                     FileScribbleReader fsr = new FileScribbleReader(mMainActivity, selectedFile);
-                    fsr.read();
-                    mMainActivity.setmCurrentlyOpenFile(fsr.getLastSuccessfulFileRead());
+                    fsr.read(drawing);
+                    drawing.setmCurrentlyOpenFile(fsr.getLastSuccessfulFileRead());
                     // following sets offset to zero and zoom=1
                     // used to do this in FilescribbleReader, but that gets used on screen rotate
                     mMainActivity.getmZoomButtonHandler().onLongClick(null);

@@ -42,7 +42,8 @@ public class ScribbleMainActivity extends Activity  {
     private ZoomButtonHandler mZoomButtonHandler;
     private DrawToolButtonHandler mDrawToolButtonHandler;
     private GoogleDriveStuff mGoogleStuff;
-    private File mCurrentlyOpenFile;
+//    private File mCurrentlyOpenFile;
+
     public static ScribbleMainActivity mainActivity;
 
     @Override
@@ -57,6 +58,17 @@ public class ScribbleMainActivity extends Activity  {
         mMainView = (ScribbleView) findViewById(R.id.main_content);
         mMainView.setmMainActivity(this);
 
+        setupButtonHandlers();
+
+        if (savedInstanceState != null) {
+            // only reads button states, zoom and offset
+            // data is read in from file
+            readState(savedInstanceState);
+        }
+
+    }
+
+    private void setupButtonHandlers () {
         Button b = (Button) findViewById(R.id.more_button);
         b.setOnClickListener(new MoreButtonHandler(b, this));
 
@@ -70,31 +82,6 @@ public class ScribbleMainActivity extends Activity  {
         b = (Button) findViewById(R.id.zoom_in_button);
         mZoomButtonHandler = new ZoomButtonHandler(mMainView, b);
         b.setOnClickListener(mZoomButtonHandler);
-
-        if (savedInstanceState != null) {
-            readState(savedInstanceState);
-        } else {
-
-        }
-        Context context = mMainView.getContext();
-        String defaultFile = context.getFilesDir()+File.separator+ ScribbleReader.DEFAULT_FILE;
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        String currentFilePath = sharedPref.getString(ScribbleReader.CURRENT_FILE_PREFERENCE_KEY, defaultFile);
-
-        try {
-            mCurrentlyOpenFile = new File (currentFilePath);
-            if (GoogleDriveFolder.isGoogleDriveFile(currentFilePath)) {
-                // google drive file - have to read later
-                mGoogleStuff.setFileToReadWhenReady(currentFilePath);
-            } else {
-                // a local file, read it now
-                FileScribbleReader fs = new FileScribbleReader(this, mCurrentlyOpenFile);
-                fs.read();
-            }
-        } catch (Exception e) {
-            log ("Error opening file ", currentFilePath, e);
-            useDefaultFile();
-        }
     }
 
     @Override
@@ -179,52 +166,4 @@ public class ScribbleMainActivity extends Activity  {
     }
 
     public GoogleDriveStuff getmGoogleStuff() {return mGoogleStuff;}
-    public File getmCurrentlyOpenFile() {return mCurrentlyOpenFile;}
-
-    public void setmCurrentlyOpenFile(File f) {
-        if (f == null) return;
-
-        mCurrentlyOpenFile = f;
-        Context context = mMainView.getContext();
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor e = sharedPref.edit();
-        try {
-            e.putString(ScribbleReader.CURRENT_FILE_PREFERENCE_KEY, mCurrentlyOpenFile.getCanonicalPath());
-        } catch (Exception e1) {
-            log ("ScribbleMainActivity", "setmCurrentlyOpenFile", e1);
-        }
-        e.commit();
-    }
-
-    /**
-     * Check to see if updated google drive file is the open file.
-     */
-    public void checkDriveFileUpdate (GoogleDriveFile f) {
-        if (mCurrentlyOpenFile == f) {
-            try {
-                mGoogleStuff.setFileToReadWhenReady(f.getCanonicalPath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void useDefaultFile () {
-        Context context = mMainView.getContext();
-        String defaultFile = context.getFilesDir()+File.separator+ ScribbleReader.DEFAULT_FILE;
-        File f = new File (defaultFile);
-        setmCurrentlyOpenFile(f);
-    }
-
-    public void about () {
-        String path = "";
-        try {
-            path = mCurrentlyOpenFile.getCanonicalPath();
-            path += " size="+mCurrentlyOpenFile.length();
-        } catch (IOException e) {
-            log ("ScribbleMainActivity", "about", e);
-        }
-        log (path, "", null);
-    }
-
 }

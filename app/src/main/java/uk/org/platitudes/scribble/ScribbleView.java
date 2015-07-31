@@ -13,16 +13,11 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
-import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**
  * Provides the main drawing view.
@@ -64,23 +59,8 @@ public class ScribbleView extends View {
 
     private void setup () {
         drawing = new Drawing(this);
+        drawing.openCurrentFile();
         mScrollOffset = new PointF(0f, 0f);
-    }
-
-    public void saveScrollOffset (DataOutputStream dos, int version) throws IOException {
-        dos.writeFloat(mScrollOffset.x);
-        dos.writeFloat(mScrollOffset.y);
-    }
-
-    public void readScrollOffset (DataInputStream dis, int version) throws IOException {
-        mScrollOffset = new PointF();
-        mScrollOffset.x = dis.readFloat();
-        mScrollOffset.y = dis.readFloat();
-    }
-
-    private void writeToCurrentFile() {
-        FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, mMainActivity.getmCurrentlyOpenFile());
-        fsw.write();
     }
 
     public void undo () {
@@ -98,9 +78,9 @@ public class ScribbleView extends View {
     }
 
     public void clear () {
-        drawing.clear();
-        mMainActivity.useDefaultFile();
-        writeToCurrentFile();
+        drawing.clear(); // will save any changes before clearing
+        drawing.useDefaultFile();
+        drawing.write();;
         invalidate();
     }
 
@@ -116,7 +96,6 @@ public class ScribbleView extends View {
             return true;
         }
 
-//        Log.d("onTouchEvent", event.toString());
         switch(action) {
             case (MotionEvent.ACTION_DOWN) :
                 if (mCurrentItem != null) {

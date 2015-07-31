@@ -6,6 +6,7 @@ package uk.org.platitudes.scribble.io;
 import java.io.DataInputStream;
 import java.io.InputStream;
 
+import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 
@@ -14,7 +15,7 @@ import uk.org.platitudes.scribble.ScribbleView;
  */
 abstract public class ScribbleReader {
 
-    protected ScribbleView mMainView;
+//    protected ScribbleView mMainView;
     protected ScribbleMainActivity mScribbleMainActivity;
 
     protected static final String EVERYTHING_KEY = "everything";
@@ -32,20 +33,20 @@ abstract public class ScribbleReader {
      */
     public ScribbleReader (ScribbleMainActivity sma) {
         mScribbleMainActivity = sma;
-        mMainView = mScribbleMainActivity.getmMainView();
+//        mMainView = mScribbleMainActivity.getmMainView();
     }
 
-    public abstract void read ();
+    public abstract void read (Drawing drawing);
 
-    protected void readMainView(DataInputStream dis, int fileFormatVersion) {
+    protected void readMainView(DataInputStream dis, int fileFormatVersion, Drawing drawing) {
         try {
-            mMainView.getDrawing().read(dis, fileFormatVersion);
+            drawing.read(dis, fileFormatVersion);
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "readMainView", e);
         }
     }
 
-    public void readFromInputStream(InputStream fis) {
+    public void readFromInputStream(InputStream fis, Drawing drawing) {
         try {
             DataInputStream dis = new DataInputStream(fis);
             long magNumber = dis.readLong();
@@ -53,7 +54,7 @@ abstract public class ScribbleReader {
                 ScribbleMainActivity.log("Not a scribble file", "", null);
             } else {
                 int fileFormatVersion = dis.readInt();
-                readMainView(dis, fileFormatVersion);
+                readMainView(dis, fileFormatVersion, drawing);
                 // following set offset to zero and zoom to 1
 //                mScribbleMainActivity.getmZoomButtonHandler().onLongClick(null);
             }

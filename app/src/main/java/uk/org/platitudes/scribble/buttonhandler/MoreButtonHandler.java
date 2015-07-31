@@ -76,7 +76,7 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
         } else if (menuTitle.equals("clear")) {
             mActivity.getmMainView().clear();
         } else if (menuTitle.equals("about")) {
-            mActivity.about();
+            mActivity.getmMainView().getDrawing().about();
         }
 
         return true;

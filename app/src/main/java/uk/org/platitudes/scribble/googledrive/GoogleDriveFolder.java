@@ -41,6 +41,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
         mGoogleApiClient = activity.getmGoogleStuff().getmGoogleApiClient();
         mDriveFolder = Drive.DriveApi.getRootFolder(mGoogleApiClient);
         mContents = new GoogleDriveFile[0];
+        requestContents();
     }
 
     public static boolean isGoogleDriveFile (String path) {
@@ -112,7 +113,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
 
 
 
-    public void requestContents () {
+    private void requestContents () {
         // Start off an async request to get the children.
         mPendingResult = mDriveFolder.listChildren(mGoogleApiClient);
         mPendingResult.setResultCallback(this);

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 
+import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 
 /**
@@ -26,11 +27,11 @@ public class BundleScribbleReader extends ScribbleReader {
     }
 
     @Override
-    public void read () {
+    public void read (Drawing drawing) {
         byte[] bytes = mBundle.getByteArray(EVERYTHING_KEY);
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         DataInputStream dis = new DataInputStream(bais);
-        readMainView(dis, FILE_FORMAT_VERSION);
+        readMainView(dis, FILE_FORMAT_VERSION, drawing);
         try {
             dis.close();
             bais.close();

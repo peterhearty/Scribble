@@ -126,7 +126,7 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
     private boolean inUse (File f) {
         try {
             String targetPath = f.getCanonicalPath();
-            String inUse = ScribbleMainActivity.mainActivity.getmCurrentlyOpenFile().getCanonicalPath();
+            String inUse = ScribbleMainActivity.mainActivity.getmMainView().getDrawing().getmCurrentlyOpenFile().getCanonicalPath();
             if (targetPath.equals(inUse)) {
                 ScribbleMainActivity.log("File is open", "", null);
                 return true;
