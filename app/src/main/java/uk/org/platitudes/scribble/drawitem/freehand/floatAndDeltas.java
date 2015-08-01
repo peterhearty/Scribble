@@ -7,6 +7,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
+
 /**
  * Stores a sequence of floats as a base value plus subsequent deltas (differences). Neighbouring
  * floating point numbers are assumed to be nearby - within a few % of each other. The differences
@@ -175,13 +178,13 @@ public class floatAndDeltas {
     }
 
 
-    public void write(DataOutputStream dos) throws IOException {
+    public void write(ScribbleOutputStream dos) throws IOException {
         dos.writeFloat(mStart);
         dos.writeInt(mNextFreeDelta);
         dos.write(mDeltas, 0, mNextFreeDelta);
     }
 
-    public void read(DataInputStream dis) throws IOException {
+    public void read(ScribbleInputStream dis) throws IOException {
         mStart = dis.readFloat();
         mNextFreeDelta = dis.readInt();
         mDeltas = new byte[mNextFreeDelta];

@@ -16,6 +16,8 @@ import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
 import uk.org.platitudes.scribble.drawitem.freehand.oldstuff.FreehandDrawItem;
 import uk.org.platitudes.scribble.drawitem.text.TextItem;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
 /**
  */
@@ -37,7 +39,7 @@ public class ItemList {
         }
     }
 
-    public ItemList (DataInputStream dis, int version, ScribbleView scribbleView) throws IOException {
+    public ItemList (ScribbleInputStream dis, int version, ScribbleView scribbleView) throws IOException {
         int numItems = dis.readInt();
         mList = new ArrayList<>(numItems+20);
         for (int i=0; i<numItems; i++) {
@@ -68,7 +70,7 @@ public class ItemList {
         }
     }
 
-    public void write (DataOutputStream dos, int version) throws IOException {
+    public void write (ScribbleOutputStream dos, int version) throws IOException {
         dos.writeInt(mList.size());
         for (int i=0; i< mList.size(); i++) {
             DrawItem di = mList.get(i);

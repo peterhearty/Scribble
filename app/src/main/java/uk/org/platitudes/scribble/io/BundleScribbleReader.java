@@ -30,7 +30,7 @@ public class BundleScribbleReader extends ScribbleReader {
     public void read (Drawing drawing) {
         byte[] bytes = mBundle.getByteArray(EVERYTHING_KEY);
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        DataInputStream dis = new DataInputStream(bais);
+        ScribbleInputStream dis = new ScribbleInputStream(bais);
         readMainView(dis, FILE_FORMAT_VERSION, drawing);
         try {
             dis.close();

@@ -30,7 +30,7 @@ abstract public class ScribbleWriter {
 
     public void writeToOutputStream(OutputStream fos) {
         try {
-            DataOutputStream dos = new DataOutputStream(fos);
+            ScribbleOutputStream dos = new ScribbleOutputStream(fos, true);
             dos.writeLong(ScribbleReader.MAGIC_NUMBER);
             dos.writeInt(ScribbleReader.FILE_FORMAT_VERSION);
             writeMainView(dos);
@@ -41,7 +41,7 @@ abstract public class ScribbleWriter {
 
     }
 
-    protected void writeMainView(DataOutputStream dos) {
+    protected void writeMainView(ScribbleOutputStream dos) {
         try {
             mMainView.getDrawing().save(dos, ScribbleReader.FILE_FORMAT_VERSION);
         } catch (Exception e) {

@@ -18,6 +18,8 @@ import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
 import uk.org.platitudes.scribble.io.FileScribbleWriter;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 import uk.org.platitudes.scribble.io.ScribbleReader;
 
 /**
@@ -153,12 +155,12 @@ public class Drawing implements Runnable {
         }
     }
 
-    public synchronized void save (DataOutputStream dos, int version) throws IOException {
+    public synchronized void save (ScribbleOutputStream dos, int version) throws IOException {
         mDrawItems.write(dos, version);
         mUndoList.write(dos, version);
     }
 
-    public synchronized void read (DataInputStream dis, int version) throws IOException {
+    public synchronized void read (ScribbleInputStream dis, int version) throws IOException {
         if (writeInProgress) {
             ScribbleMainActivity.log ("Read during write", "", null);
         } else {

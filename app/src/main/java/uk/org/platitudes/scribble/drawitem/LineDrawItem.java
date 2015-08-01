@@ -16,6 +16,8 @@ import java.util.ArrayList;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
 /**
  * Draws a straight line.
@@ -64,7 +66,7 @@ public class LineDrawItem  extends DrawItem {
     /**
      * Constructor to read data from file.
      */
-    public LineDrawItem (DataInputStream dis, int version, ScribbleView sv) {
+    public LineDrawItem (ScribbleInputStream dis, int version, ScribbleView sv) {
         super(null, sv);
         mStartPoint = new PointF();
         mEndPoint = new PointF();
@@ -75,7 +77,7 @@ public class LineDrawItem  extends DrawItem {
         }
     }
 
-    public void saveToFile (DataOutputStream dos, int version) throws IOException {
+    public void saveToFile (ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(LINE);
         dos.writeFloat(mStartPoint.x);
         dos.writeFloat(mStartPoint.y);
@@ -83,7 +85,7 @@ public class LineDrawItem  extends DrawItem {
         dos.writeFloat(mEndPoint.y);
     }
 
-    public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {
+    public DrawItem readFromFile (ScribbleInputStream dis, int version) throws IOException {
         mStartPoint.x = dis.readFloat();
         mStartPoint.y = dis.readFloat();
         mEndPoint.x = dis.readFloat();

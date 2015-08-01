@@ -4,6 +4,7 @@
 package uk.org.platitudes.scribble;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -133,7 +134,10 @@ public class ScribbleMainActivity extends Activity  {
             s = s + " " + e;
             Log.e(tag, msg, e);
         }
-        makeToast(s);
+        AlertDialog.Builder alert = new AlertDialog.Builder(ScribbleMainActivity.mainActivity);
+        AlertDialog dialog = alert.setMessage(s).setCancelable(true).create();
+        dialog.show();
+//        makeToast(s);
     }
 
     @Override

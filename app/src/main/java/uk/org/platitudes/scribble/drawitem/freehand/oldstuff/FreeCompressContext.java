@@ -21,6 +21,7 @@ import java.util.zip.InflaterInputStream;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
 
 /**
  * Compresses Freehand drawings coordinates before saving them and expands them after reading them.
@@ -168,12 +169,12 @@ public class FreeCompressContext {
      * ********************* READ DATA ************************
      */
 
-    public FreeCompressContext(DataInputStream dis, ArrayList<PointF> points, boolean useYs) throws IOException {
+    public FreeCompressContext(ScribbleInputStream dis, ArrayList<PointF> points, boolean useYs) throws IOException {
         readData(dis);
         uncompressData(points, useYs);
     }
 
-    public void readData (DataInputStream dis) throws IOException {
+    public void readData (ScribbleInputStream dis) throws IOException {
         mStart = dis.readFloat();
         mDataPosn = dis.readShort();
         mCurExponent = 114;

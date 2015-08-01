@@ -18,6 +18,7 @@ import java.util.zip.InflaterInputStream;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
 
 /**
  */
@@ -80,7 +81,7 @@ public class FreehandDrawItem extends DrawItem {
     /**
      * Constructor to read data from file.
      */
-    public FreehandDrawItem(DataInputStream dis, int version, ScribbleView sv) {
+    public FreehandDrawItem(ScribbleInputStream dis, int version, ScribbleView sv) {
         super (null, sv);
         try {
             readFromFile(dis, version);
@@ -159,7 +160,7 @@ public class FreehandDrawItem extends DrawItem {
         compressData(dos, version);
     }
 
-    public DrawItem readFromFile(DataInputStream dis, int version) throws IOException {
+    public DrawItem readFromFile(ScribbleInputStream dis, int version) throws IOException {
         int numPoints = dis.readInt();
         mPoints = new ArrayList<>(numPoints);
         for (int i = 0; i < numPoints; i++) {

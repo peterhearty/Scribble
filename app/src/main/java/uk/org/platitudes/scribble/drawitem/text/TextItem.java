@@ -17,6 +17,8 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
 /**
  */
@@ -67,14 +69,14 @@ public class TextItem extends DrawItem {
     }
 
     @Override
-    public void saveToFile(DataOutputStream dos, int version) throws IOException {
+    public void saveToFile(ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(TEXT);
         dos.writeFloat(mStartX);
         dos.writeFloat(mStartY);
         dos.writeUTF(mText);
     }
 
-    public TextItem (DataInputStream dis, int version, ScribbleView sv) throws IOException {
+    public TextItem (ScribbleInputStream dis, int version, ScribbleView sv) throws IOException {
         super(null, sv);
         mTextSize = DEFAULT_TEXT_SIZE;
         mPaint.setTextSize(mTextSize);
@@ -83,7 +85,7 @@ public class TextItem extends DrawItem {
     }
 
     @Override
-    public DrawItem readFromFile(DataInputStream dis, int version) throws IOException {
+    public DrawItem readFromFile(ScribbleInputStream dis, int version) throws IOException {
         mTextSize = DEFAULT_TEXT_SIZE;
         mStartX = dis.readFloat();
         mStartY = dis.readFloat();

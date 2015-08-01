@@ -98,7 +98,7 @@ public class FileScribbleReader extends ScribbleReader {
             if (f.length() > 12) {
                 InputStream fis = getInputStreamFromFile(f);
                 if (fis != null) {
-                    DataInputStream dis = new DataInputStream(fis);
+                    ScribbleInputStream dis = new ScribbleInputStream(fis);
                     long magicNumber = dis.readLong();
                     if (magicNumber == MAGIC_NUMBER) {
                         result = true;

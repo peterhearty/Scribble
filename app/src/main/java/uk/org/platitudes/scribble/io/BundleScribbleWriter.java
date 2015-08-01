@@ -28,7 +28,7 @@ public class BundleScribbleWriter extends ScribbleWriter{
 
     public void write () {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
-        DataOutputStream dos = new DataOutputStream(baos);
+        ScribbleOutputStream dos = new ScribbleOutputStream(baos, false);
 
         writeMainView(dos);
         byte[] bytes = baos.toByteArray();

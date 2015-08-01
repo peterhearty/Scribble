@@ -16,6 +16,8 @@ import java.io.IOException;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.freehand.floatAndDeltas;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
 /**
  * Freehand drawing tool.
@@ -39,7 +41,7 @@ public class FreehandCompressedDrawItem extends DrawItem {
         handleMoveEvent(event);
     }
 
-    public FreehandCompressedDrawItem(DataInputStream dis, int version, ScribbleView scribbleView) throws IOException {
+    public FreehandCompressedDrawItem(ScribbleInputStream dis, int version, ScribbleView scribbleView) throws IOException {
         super(null, scribbleView);
         x = new floatAndDeltas();
         y = new floatAndDeltas();
@@ -111,7 +113,7 @@ public class FreehandCompressedDrawItem extends DrawItem {
     }
 
     @Override
-    public void saveToFile(DataOutputStream dos, int version) throws IOException {
+    public void saveToFile(ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(COMPRESSED_FREEHAND);
         dos.writeInt(numPoints);
         x.write(dos);
@@ -119,7 +121,7 @@ public class FreehandCompressedDrawItem extends DrawItem {
     }
 
     @Override
-    public DrawItem readFromFile(DataInputStream dis, int version) throws IOException {
+    public DrawItem readFromFile(ScribbleInputStream dis, int version) throws IOException {
         numPoints = dis.readInt();
         x.read(dis);
         y.read(dis);

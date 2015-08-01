@@ -45,6 +45,9 @@ public class GoogleDriveFile extends File {
     private boolean ignoreNextChangeEvent;
     private ChangeListener changeListener;
 
+    public String toString () {
+        return mParentFolder.toString()+"/"+mName;
+    }
 
 
     ResultCallback<DriveApi.DriveContentsResult> readCallback = new ResultCallback<DriveApi.DriveContentsResult>() {

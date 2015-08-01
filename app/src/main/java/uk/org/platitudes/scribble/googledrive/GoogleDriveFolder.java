@@ -35,6 +35,10 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
 
     public static final String PATH_PREFIX = ":GoogleDrive:";
 
+    public String toString () {
+        return PATH_PREFIX;
+    }
+
     public GoogleDriveFolder(ScribbleMainActivity activity) {
         // Need to cal a super of some kind.
         super ("/");

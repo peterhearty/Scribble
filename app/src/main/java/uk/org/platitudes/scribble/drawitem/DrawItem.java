@@ -14,6 +14,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
 public abstract class DrawItem {
 
@@ -60,11 +62,11 @@ public abstract class DrawItem {
      * appear as DEFAULT_ITEMs on being read. DEFAULT_ITEMs do not get added to the draw
      * list and so disappear on subsequent writes.
      */
-    public void saveToFile (DataOutputStream dos, int version) throws IOException {
+    public void saveToFile (ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(DEFAULT_ITEM);
     };
 
-    public DrawItem readFromFile (DataInputStream dis, int version) throws IOException {return null;};
+    public DrawItem readFromFile (ScribbleInputStream dis, int version) throws IOException {return null;};
 
     /**
      * Tests a DrawItem's stored coordinates against the given point to see if

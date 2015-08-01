@@ -38,7 +38,7 @@ abstract public class ScribbleReader {
 
     public abstract void read (Drawing drawing);
 
-    protected void readMainView(DataInputStream dis, int fileFormatVersion, Drawing drawing) {
+    protected void readMainView(ScribbleInputStream dis, int fileFormatVersion, Drawing drawing) {
         try {
             drawing.read(dis, fileFormatVersion);
         } catch (Exception e) {
@@ -48,7 +48,7 @@ abstract public class ScribbleReader {
 
     public void readFromInputStream(InputStream fis, Drawing drawing) {
         try {
-            DataInputStream dis = new DataInputStream(fis);
+            ScribbleInputStream dis = new ScribbleInputStream(fis);
             long magNumber = dis.readLong();
             if (magNumber != MAGIC_NUMBER) {
                 ScribbleMainActivity.log("Not a scribble file", "", null);
