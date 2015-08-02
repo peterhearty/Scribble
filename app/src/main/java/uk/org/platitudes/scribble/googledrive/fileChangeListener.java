@@ -30,6 +30,17 @@ public class fileChangeListener implements ChangeListener, ResultCallback<DriveR
         mGoogleApiClient = apiClient;
         mDriveId = id;
         mGoogleDriveFile = f;
+
+        DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+        PendingResult<Status> result = driveFile.addChangeListener(mGoogleApiClient, this);
+        result.setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(Status status) {
+                if (!status.isSuccess()) {
+                    ScribbleMainActivity.log ("Problem setting listener", mGoogleDriveFile.toString(), null);
+                }
+            }
+        });
     }
 
     @Override
@@ -53,7 +64,7 @@ public class fileChangeListener implements ChangeListener, ResultCallback<DriveR
         if (s.isSuccess()) {
             Metadata m = metadataResult.getMetadata();
             long size = m.getFileSize();
-            mGoogleDriveFile.setmSize(size);
+//            mGoogleDriveFile.setmSize(size);
 
             AsyncRead readRequest = new AsyncRead(mGoogleDriveFile, mGoogleApiClient, mDriveId);
             mGoogleDriveFile.setReadRequest(readRequest);

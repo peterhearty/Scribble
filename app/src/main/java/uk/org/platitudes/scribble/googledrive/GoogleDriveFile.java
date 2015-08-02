@@ -32,7 +32,7 @@ public class GoogleDriveFile extends File {
     private String mName;
 
     private GoogleDriveFolder mParentFolder;
-    private long mSize;
+//    private long mSize;
     private GoogleApiClient mGoogleApiClient;
     private DriveId mDriveId;
     private byte[] mFileContents;
@@ -48,11 +48,36 @@ public class GoogleDriveFile extends File {
         super("GoogleDriveFile:noname");
         mName = m.getTitle();
         mParentFolder = parent;
-        mSize = m.getFileSize();
+//        mSize = m.getFileSize();
         mGoogleApiClient = mParentFolder.getmGoogleApiClient();
         mDriveId = m.getDriveId();
-        readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
+        ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(this);
+//        changeListener = new fileChangeListener(this, mGoogleApiClient, mDriveId);
+
+//        readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
     }
+
+    public void forceReRead() {
+        if (readRequest == null) {
+//            ScribbleMainActivity.mainActivity.getmGoogleStuff().setFileToReadWhenReady(toString());
+            readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
+        }
+    }
+
+    public InputStream getInputStream () {
+        if (mFileContents == null) {
+            // file contents have not been fetched.
+            return null;
+        }
+        ByteArrayInputStream bais = new ByteArrayInputStream(mFileContents);
+        return bais;
+    }
+
+    public OutputStream getOutputStream () {
+        DriveOutputStream dos = new DriveOutputStream(2048, mGoogleApiClient, this);
+        return dos;
+    }
+
 
     /**
      * Constructor for new file. The createFile flag allows the caller to specify
@@ -106,18 +131,24 @@ public class GoogleDriveFile extends File {
 
     public boolean isDummyFile() {return dummyFile;}
     public void setDummyFile(boolean dummyFile) {this.dummyFile = dummyFile;}
-    public void setmFileContents(byte[] mFileContents) {this.mFileContents = mFileContents;}
+    public void setmFileContents(byte[] mFileContents) {
+        this.mFileContents = mFileContents;
+//        mSize = mFileContents.length;
+    }
     public fileChangeListener getChangeListener() {return changeListener;}
     public void setChangeListener(fileChangeListener changeListener) {this.changeListener = changeListener;}
     public String toString () {return mParentFolder.toString()+"/"+mName;}
     public boolean isDirectory () {return false;}
     public boolean canRead () {return true;}
     public File getParentFile() {return mParentFolder;}
-    public long length() {return mSize;}
+    public long length() {
+        if (mFileContents==null) return 0;
+        return mFileContents.length;
+    }
     public String getName() {return mName;}
     public AsyncRead getReadRequest() {return readRequest;}
     public void setReadRequest(AsyncRead readRequest) {this.readRequest = readRequest;}
-    public void setmSize(long mSize) {this.mSize = mSize;}
+//    public void setmSize(long mSize) {this.mSize = mSize;}
     public byte[] getmFileContents() {return mFileContents;}
     public GoogleDriveFolder getmParentFolder() {return mParentFolder;}
     public void setmParentFolder(GoogleDriveFolder mParentFolder) {this.mParentFolder = mParentFolder;}
@@ -136,7 +167,7 @@ public class GoogleDriveFile extends File {
             return false;
 
         // File exists, copy file details
-        mSize = f.mSize;
+//        mSize = f.mSize;
         mFileContents = f.mFileContents;
         mDriveId = f.mDriveId;
         mGoogleApiClient = f.mGoogleApiClient;
@@ -207,20 +238,6 @@ public class GoogleDriveFile extends File {
 
         }
         return false;
-    }
-
-    public InputStream getInputStream () {
-        if (mFileContents == null) {
-            // file contents have not been fetched.
-            return null;
-        }
-        ByteArrayInputStream bais = new ByteArrayInputStream(mFileContents);
-        return bais;
-    }
-
-    public OutputStream getOutputStream () {
-        DriveOutputStream dos = new DriveOutputStream(2048, mGoogleApiClient, this);
-        return dos;
     }
 
 

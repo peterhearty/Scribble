@@ -12,6 +12,7 @@
         android:label="@string/app_name"
         android:restoreAnyVersion="true"
         android:theme="@style/AppTheme" >
+
         <!-- registered with https://developer.android.com/google/backup/signup.html?csw=1 -->
         <!-- abandoned this - different things seemed to be restored to different devices
         meta-data

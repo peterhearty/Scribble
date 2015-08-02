@@ -38,7 +38,7 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
         if (closed) return;
         byte[] contents = toByteArray();
         mGoogleDriveFile.setmFileContents(contents);
-        mGoogleDriveFile.setmSize(contents.length);
+//        mGoogleDriveFile.setmSize(contents.length);
         super.close();
         closed = true;
 

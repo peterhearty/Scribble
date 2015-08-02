@@ -15,6 +15,7 @@ import com.google.android.gms.drive.events.ChangeListener;
 
 import java.io.InputStream;
 
+import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 
 /**
@@ -48,21 +49,26 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
         byte[] contents = new byte[size];
         try {
             InputStream is = driveContents.getInputStream();
+            int available = is.available();
+            if (available != size) {
+                if (available > size) {
+                    contents = new byte[available];
+                    size = available;
+                }
+            }
             is.read(contents, 0, size);
             is.close();
             driveContents.discard(mGoogleApiClient);
             mFile.setmFileContents(contents);
-            //TODO - getting occasional EOFEception below
-            ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(mFile);
+            //TODO - getting occasional EOFEception below - could have been dues to size not being set in line above?
+//            ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(mFile);
 
-            fileChangeListener listener = mFile.getChangeListener();
-            if (listener == null) {
-                // First time we've read the file contents, listen for changes
-                listener = new fileChangeListener(mFile, mGoogleApiClient, mDriveId);
-                DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
-                driveFile.addChangeListener(mGoogleApiClient, listener);
-                mFile.setChangeListener(listener);
-            }
+//            fileChangeListener listener = mFile.getChangeListener();
+//            if (listener == null) {
+//                // First time we've read the file contents, listen for changes
+//                listener = new fileChangeListener(mFile, mGoogleApiClient, mDriveId);
+//                mFile.setChangeListener(listener);
+//            }
 
             mFile.setReadRequest(null);
         } catch (Exception e) {

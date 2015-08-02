@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
@@ -47,6 +48,8 @@ public class Drawing implements Runnable {
 
     private Thread backgroundThread;
     private volatile boolean stopBackgroundThread;
+    boolean writeInProgress;
+
 
 
 
@@ -66,6 +69,8 @@ public class Drawing implements Runnable {
             mCurrentlyOpenFile = new File (currentFilePath);
             if (GoogleDriveFolder.isGoogleDriveFile(currentFilePath)) {
                 // google drive file - have to read later
+                // GoogleDriveStuff will call setmCurrentlyOpenFile when the file is available
+                // The backgroundThread will then load the contents shortly afterwards
                 mMainActivity.getmGoogleStuff().setFileToReadWhenReady(currentFilePath);
             } else {
                 // a local file, read it now
@@ -114,19 +119,19 @@ public class Drawing implements Runnable {
     /**
      * Check to see if updated google drive file is the open file.
      */
-    public void checkDriveFileUpdate (GoogleDriveFile f) {
-        if (mCurrentlyOpenFile != null) {
-            try {
-                String currentPath = mCurrentlyOpenFile.getCanonicalPath();
-                String comparePath = f.getCanonicalPath();
-                if (currentPath.equals(comparePath)) {
-                    mMainActivity.getmGoogleStuff().setFileToReadWhenReady(currentPath);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    public void checkDriveFileUpdate (GoogleDriveFile f) {
+//        if (mCurrentlyOpenFile != null) {
+//            try {
+//                String currentPath = mCurrentlyOpenFile.getCanonicalPath();
+//                String comparePath = f.getCanonicalPath();
+//                if (currentPath.equals(comparePath)) {
+//                    mMainActivity.getmGoogleStuff().setFileToReadWhenReady(currentPath);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     public void about () {
         String path = "";
@@ -166,6 +171,12 @@ public class Drawing implements Runnable {
         } else {
             mDrawItems = new ItemList(dis, version, mScribbleView);
             mUndoList = new ItemList(dis, version, mScribbleView);
+            mScribbleView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mScribbleView.invalidate();
+                }
+            });
         }
     }
 
@@ -202,8 +213,6 @@ public class Drawing implements Runnable {
 
     public ItemList getmDrawItems() {return mDrawItems;}
 
-    boolean writeInProgress;
-
     public synchronized void write () {
         modifiedSinceLastWrite = false;
         ScribbleMainActivity activity = ScribbleMainActivity.mainActivity;
@@ -226,6 +235,13 @@ public class Drawing implements Runnable {
                 Thread.sleep(5000);
                 if (modifiedSinceLastWrite) {
                     write();
+                } else if (mCurrentlyOpenFile instanceof GoogleDriveFile) {
+                    // Read the current file contents
+                    GoogleDriveFile gdf = (GoogleDriveFile) mCurrentlyOpenFile;
+                    FileScribbleReader fsr = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
+                    fsr.read(this);
+                    // Set up an async read to update the file contents next time
+                    gdf.forceReRead();
                 }
             } catch (InterruptedException e) {
                 stopBackgroundThread = true;

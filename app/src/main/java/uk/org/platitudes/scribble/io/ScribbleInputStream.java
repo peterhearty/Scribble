@@ -23,6 +23,9 @@ public class ScribbleInputStream {
         StringBuilder sb = new StringBuilder();
         do {
             try {
+                if (dis.available()==0) {
+                    break;
+                }
                 int nextByte = dis.read();
                 if (nextByte == '\n') {
                     break;

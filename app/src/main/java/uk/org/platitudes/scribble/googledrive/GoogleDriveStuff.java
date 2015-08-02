@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.io.FileScribbleReader;
 import uk.org.platitudes.scribble.io.FileScribbleWriter;
@@ -70,10 +71,12 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
 
         if (f.getName().equals(fileToReadWhenReady)) {
             fileToReadWhenReady = null;
-            FileScribbleReader fsr = new FileScribbleReader(mScribbleMainActivity, f);
-            fsr.read(mScribbleMainActivity.getmMainView().getDrawing());
-            mScribbleMainActivity.getmMainView().getDrawing().setmCurrentlyOpenFile(f);
-            mScribbleMainActivity.getmMainView().invalidate();
+            Drawing drawing = mScribbleMainActivity.getmMainView().getDrawing();
+//            FileScribbleReader fsr = new FileScribbleReader(mScribbleMainActivity, f);
+//            fsr.read(drawing);
+            drawing.setmCurrentlyOpenFile(f);
+            f.forceReRead(); // this just speeds up the firat read from the background thread
+//            mScribbleMainActivity.getmMainView().invalidate();
         }
     }
 
