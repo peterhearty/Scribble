@@ -28,14 +28,15 @@ public class BundleScribbleWriter extends ScribbleWriter{
 
     public void write () {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
-        ScribbleOutputStream dos = new ScribbleOutputStream(baos, false);
+//        ScribbleOutputStream dos = new ScribbleOutputStream(baos, false);
 
-        writeMainView(dos);
+        writeToOutputStream(baos);
+//        writeMainView(dos);
         byte[] bytes = baos.toByteArray();
         mBundle.putByteArray(ScribbleReader.EVERYTHING_KEY, bytes);
 
         try {
-            dos.close();
+//            dos.close();
             baos.close();
         } catch (IOException e) {
             ScribbleMainActivity.log("FileSaver", "writeToBundle", e);

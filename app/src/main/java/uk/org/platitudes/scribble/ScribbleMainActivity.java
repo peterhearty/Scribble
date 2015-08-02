@@ -101,8 +101,8 @@ public class ScribbleMainActivity extends Activity  {
         outState.putFloat("offset_X", mainViewScrollOffset.x);
         outState.putFloat("offset_Y", mainViewScrollOffset.y);
 
-//        BundleScribbleWriter bsw = new BundleScribbleWriter(this, outState);
-//        bsw.write();
+        BundleScribbleWriter bsw = new BundleScribbleWriter(this, outState);
+        bsw.write();
     }
 
     private void readState (Bundle savedInstanceState) {
@@ -112,8 +112,8 @@ public class ScribbleMainActivity extends Activity  {
         float y = savedInstanceState.getFloat("offset_Y");
         mMainView.setmScrollOffset(x, y);
 
-//        BundleScribbleReader bsr = new BundleScribbleReader(this, savedInstanceState);
-//        bsr.read();
+        BundleScribbleReader bsr = new BundleScribbleReader(this, savedInstanceState);
+        bsr.read(mMainView.getDrawing());
     }
 
     public ScribbleView getmMainView() {return mMainView;}

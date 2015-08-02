@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
-import uk.org.platitudes.scribble.drawitem.freehand.oldstuff.FreehandDrawItem;
+//import uk.org.platitudes.scribble.drawitem.freehand.oldstuff.FreehandDrawItem;
 import uk.org.platitudes.scribble.drawitem.text.TextItem;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
@@ -47,7 +47,7 @@ public class ItemList {
             byte itemType = dis.readByte();
             switch (itemType) {
                 case DrawItem.FREEHAND:
-                    item = new FreehandDrawItem(dis, version, scribbleView);
+//                    item = new FreehandDrawItem(dis, version, scribbleView);
                     break;
                 case DrawItem.LINE:
                     item = new LineDrawItem(dis, version, scribbleView);

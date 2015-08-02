@@ -75,7 +75,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
 //            FileScribbleReader fsr = new FileScribbleReader(mScribbleMainActivity, f);
 //            fsr.read(drawing);
             drawing.setmCurrentlyOpenFile(f);
-            f.forceReRead(); // this just speeds up the firat read from the background thread
+//            f.forceReRead(); // this just speeds up the firat read from the background thread
 //            mScribbleMainActivity.getmMainView().invalidate();
         }
     }

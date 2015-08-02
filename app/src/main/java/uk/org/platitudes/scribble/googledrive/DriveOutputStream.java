@@ -62,10 +62,10 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
         }
 
         // File already exists and we are overwriting
-        fileChangeListener listener = mGoogleDriveFile.getChangeListener();
-        if (listener != null) {
-            listener.setIgnoreNextChangeEvent(true);
-        }
+//        fileChangeListener listener = mGoogleDriveFile.getChangeListener();
+//        if (listener != null) {
+//            listener.setIgnoreNextChangeEvent(true);
+//        }
         DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, id);
         driveFile.open(mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null)
                 .setResultCallback(this);

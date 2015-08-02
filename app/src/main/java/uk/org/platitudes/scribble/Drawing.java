@@ -49,6 +49,7 @@ public class Drawing implements Runnable {
     private Thread backgroundThread;
     private volatile boolean stopBackgroundThread;
     boolean writeInProgress;
+    long mThreadWait;
 
 
 
@@ -58,6 +59,8 @@ public class Drawing implements Runnable {
         mMainActivity = ScribbleMainActivity.mainActivity;
         mDrawItems = new ItemList();
         mUndoList = new ItemList();
+
+        mThreadWait = 1000;
         backgroundThread = new Thread(this);
         backgroundThread.start();
     }
@@ -103,6 +106,8 @@ public class Drawing implements Runnable {
         if (f == null) return;
 
         mCurrentlyOpenFile = f;
+        mThreadWait = 1000;
+
         Context context = mScribbleView.getContext();
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor e = sharedPref.edit();
@@ -232,16 +237,20 @@ public class Drawing implements Runnable {
     public void run() {
         while (!stopBackgroundThread) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(mThreadWait);
                 if (modifiedSinceLastWrite) {
                     write();
-                } else if (mCurrentlyOpenFile instanceof GoogleDriveFile) {
+                } else if (mCurrentlyOpenFile != null && mCurrentlyOpenFile instanceof GoogleDriveFile) {
                     // Read the current file contents
                     GoogleDriveFile gdf = (GoogleDriveFile) mCurrentlyOpenFile;
                     FileScribbleReader fsr = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
                     fsr.read(this);
                     // Set up an async read to update the file contents next time
                     gdf.forceReRead();
+                }
+
+                if (mThreadWait < 4000) {
+                    mThreadWait *= 2;
                 }
             } catch (InterruptedException e) {
                 stopBackgroundThread = true;

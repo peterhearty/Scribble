@@ -30,10 +30,11 @@ public class BundleScribbleReader extends ScribbleReader {
     public void read (Drawing drawing) {
         byte[] bytes = mBundle.getByteArray(EVERYTHING_KEY);
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        ScribbleInputStream dis = new ScribbleInputStream(bais);
-        readMainView(dis, FILE_FORMAT_VERSION, drawing);
+        readFromInputStream(bais, drawing);
+//        ScribbleInputStream dis = new ScribbleInputStream(bais);
+//        readMainView(dis, FILE_FORMAT_VERSION, drawing);
         try {
-            dis.close();
+//            dis.close();
             bais.close();
         } catch (Exception e) {
             ScribbleMainActivity.log("FileSaver", "read from Bundle", e);

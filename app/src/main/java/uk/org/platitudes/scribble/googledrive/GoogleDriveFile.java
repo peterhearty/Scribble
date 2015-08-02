@@ -32,13 +32,12 @@ public class GoogleDriveFile extends File {
     private String mName;
 
     private GoogleDriveFolder mParentFolder;
-//    private long mSize;
     private GoogleApiClient mGoogleApiClient;
     private DriveId mDriveId;
     private byte[] mFileContents;
     private DriveOutputStream pendingWrite;
     private boolean dummyFile;
-    private fileChangeListener changeListener;
+//    private fileChangeListener changeListener;
     private AsyncRead readRequest;
 
     /**
@@ -48,18 +47,15 @@ public class GoogleDriveFile extends File {
         super("GoogleDriveFile:noname");
         mName = m.getTitle();
         mParentFolder = parent;
-//        mSize = m.getFileSize();
         mGoogleApiClient = mParentFolder.getmGoogleApiClient();
         mDriveId = m.getDriveId();
+        // We need all the files cached so that we can test for a Scribble file when a  file is being selected
+        forceReRead();
         ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(this);
-//        changeListener = new fileChangeListener(this, mGoogleApiClient, mDriveId);
-
-//        readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
     }
 
     public void forceReRead() {
         if (readRequest == null) {
-//            ScribbleMainActivity.mainActivity.getmGoogleStuff().setFileToReadWhenReady(toString());
             readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
         }
     }
@@ -133,10 +129,9 @@ public class GoogleDriveFile extends File {
     public void setDummyFile(boolean dummyFile) {this.dummyFile = dummyFile;}
     public void setmFileContents(byte[] mFileContents) {
         this.mFileContents = mFileContents;
-//        mSize = mFileContents.length;
     }
-    public fileChangeListener getChangeListener() {return changeListener;}
-    public void setChangeListener(fileChangeListener changeListener) {this.changeListener = changeListener;}
+//    public fileChangeListener getChangeListener() {return changeListener;}
+//    public void setChangeListener(fileChangeListener changeListener) {this.changeListener = changeListener;}
     public String toString () {return mParentFolder.toString()+"/"+mName;}
     public boolean isDirectory () {return false;}
     public boolean canRead () {return true;}
@@ -148,7 +143,6 @@ public class GoogleDriveFile extends File {
     public String getName() {return mName;}
     public AsyncRead getReadRequest() {return readRequest;}
     public void setReadRequest(AsyncRead readRequest) {this.readRequest = readRequest;}
-//    public void setmSize(long mSize) {this.mSize = mSize;}
     public byte[] getmFileContents() {return mFileContents;}
     public GoogleDriveFolder getmParentFolder() {return mParentFolder;}
     public void setmParentFolder(GoogleDriveFolder mParentFolder) {this.mParentFolder = mParentFolder;}
@@ -167,7 +161,6 @@ public class GoogleDriveFile extends File {
             return false;
 
         // File exists, copy file details
-//        mSize = f.mSize;
         mFileContents = f.mFileContents;
         mDriveId = f.mDriveId;
         mGoogleApiClient = f.mGoogleApiClient;
