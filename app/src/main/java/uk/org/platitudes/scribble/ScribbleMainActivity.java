@@ -7,10 +7,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.Display;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -18,6 +20,7 @@ import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.UndoButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
+import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveStuff;
 import uk.org.platitudes.scribble.io.BundleScribbleReader;
 import uk.org.platitudes.scribble.io.BundleScribbleWriter;
@@ -32,6 +35,7 @@ public class ScribbleMainActivity extends Activity  {
     private ZoomButtonHandler mZoomButtonHandler;
     private DrawToolButtonHandler mDrawToolButtonHandler;
     private GoogleDriveStuff mGoogleStuff;
+    public Point mDisplaySize;
 //    private File mCurrentlyOpenFile;
 
     public static ScribbleMainActivity mainActivity;
@@ -44,6 +48,8 @@ public class ScribbleMainActivity extends Activity  {
 
         mGoogleStuff = new GoogleDriveStuff((this));
 
+        getDisplaySize();
+
         setContentView(R.layout.activity_scribble_main);
         mMainView = (ScribbleView) findViewById(R.id.main_content);
         mMainView.setmMainActivity(this);
@@ -51,11 +57,17 @@ public class ScribbleMainActivity extends Activity  {
         setupButtonHandlers();
 
         if (savedInstanceState != null) {
-            // only reads button states, zoom and offset
-            // data is read in from file
             readState(savedInstanceState);
         }
 
+    }
+
+    private void getDisplaySize() {
+        Display display = getWindowManager().getDefaultDisplay();
+        mDisplaySize = new Point();
+        display.getSize(mDisplaySize);
+        int max = Math.max(mDisplaySize.x, mDisplaySize.y);
+        DrawItem.FUZZY = max/20;
     }
 
     private void setupButtonHandlers () {
@@ -123,9 +135,12 @@ public class ScribbleMainActivity extends Activity  {
             s = s + " " + e;
             Log.e(tag, msg, e);
         }
-        AlertDialog.Builder alert = new AlertDialog.Builder(ScribbleMainActivity.mainActivity);
-        AlertDialog dialog = alert.setMessage(s).setCancelable(true).create();
-        dialog.show();
+        if (!mainActivity.getmMainView().getDrawing().inBackgroundThread()) {
+            // Background thread musn't attempt UI stuff
+            AlertDialog.Builder alert = new AlertDialog.Builder(ScribbleMainActivity.mainActivity);
+            AlertDialog dialog = alert.setMessage(s).setCancelable(true).create();
+            dialog.show();
+        }
 //        makeToast(s);
     }
 

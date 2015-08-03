@@ -12,10 +12,6 @@ import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.Metadata;
-import com.google.android.gms.drive.metadata.CustomPropertyKey;
-
-import java.util.Date;
-import java.util.Map;
 
 /**
  */

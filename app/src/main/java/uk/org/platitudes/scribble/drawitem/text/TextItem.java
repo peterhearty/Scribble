@@ -57,6 +57,13 @@ public class TextItem extends DrawItem {
         scribbleView.addItem(this);
     }
 
+    @Override
+    public int getHashTag() {
+        int result = (int) (TEXT + mStartX +mStartY +mText.length());
+        return result;
+    }
+
+
 
     @Override
     public void draw(Canvas c) {

@@ -27,12 +27,14 @@ public abstract class DrawItem {
     public final static byte TEXT = 102;
     public final static byte COMPRESSED_FREEHAND = 103;
     public final static byte DEFAULT_ITEM = 104;
+    public final static byte MOVE = 105;
 
     /**
      * Used during selection to allow some imprecision in selecting DrawItems.
-     * It's up to each individual DrawItem whether ot use this or not.
+     * It's up to each individual DrawItem whether to use this or not.
+     * Gets overriden by ScribbleMainAcitivity.getDisplaySize.
      */
-    public static final float FUZZY = 5.0f;
+    public static float FUZZY = 5.0f;
 
     protected Paint mPaint;
     protected ScribbleView mScribbleView;
@@ -49,6 +51,17 @@ public abstract class DrawItem {
 
     public void draw (Canvas c) {}
     public void handleMoveEvent (MotionEvent event) {}
+
+    /**
+     * Provides a way of identifying a particular DrawItem. This enables relationships between
+     * DrawItems, e.g. between a MoveItem and the item it moves, to be saved when written to file.
+     * MoveItem can ask the object it moves to identify itself via its hashTag. when it is read in
+     * again, it scans the list of DrawItems to fint eh one that matches the supplied hashTag.
+     *
+     * A combination of start point, end point and item type will usually be sufficient to identify
+     * and item.
+     */
+    public int getHashTag() {return 0;}
 
     /**
      * Note that the event passed might not actuallly be an UP event. ScribbleView calls this

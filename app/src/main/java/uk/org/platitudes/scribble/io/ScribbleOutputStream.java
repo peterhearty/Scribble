@@ -45,11 +45,27 @@ public class ScribbleOutputStream {
     }
 
     public void writeInt (int l) {
-        writeLong(l);
+        if (asText) {
+            writeLong(l);
+        } else {
+            try {
+                dos.writeInt(l);
+            } catch (IOException e) {
+                ScribbleMainActivity.log("ScribbleOutputStream", "writeInt", e);
+            }
+        }
     }
 
     public void writeByte (int l) {
-        writeLong(l);
+        if (asText) {
+            writeLong(l);
+        } else {
+            try {
+                dos.writeByte(l);
+            } catch (IOException e) {
+                ScribbleMainActivity.log("ScribbleOutputStream", "writeInt", e);
+            }
+        }
     }
 
     public void writeFloat (float f) {

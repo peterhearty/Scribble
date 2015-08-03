@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
-//import uk.org.platitudes.scribble.drawitem.freehand.oldstuff.FreehandDrawItem;
 import uk.org.platitudes.scribble.drawitem.text.TextItem;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
@@ -24,6 +23,12 @@ import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 public class ItemList {
 
     private ArrayList<DrawItem> mList;
+
+    /**
+     * Used when a list is being read in to identify the presence of MoveItems. Each one has to
+     * be matched up to a target DrawItem (not necessarily in the same ItemList).
+     */
+    public boolean mContainsMoveItems;
 
     public ItemList () {
         mList = new ArrayList<>();
@@ -58,6 +63,10 @@ public class ItemList {
                 case DrawItem.COMPRESSED_FREEHAND:
                     item = new FreehandCompressedDrawItem(dis, version, scribbleView);
                     break;
+                case DrawItem.MOVE:
+                    item = new MoveItem(dis, version, scribbleView);
+                    mContainsMoveItems = true;
+                    break;
                 case DrawItem.DEFAULT_ITEM:
                     // do nothing
                     break;
@@ -67,6 +76,18 @@ public class ItemList {
             }
             if (item != null)
                 mList.add(item);
+        }
+    }
+
+    public void tieMoveItemsToTargets (ItemList itemList) {
+        if (!mContainsMoveItems) {
+            return;
+        }
+        for (DrawItem d : mList) {
+            if (d instanceof  MoveItem) {
+                MoveItem m = (MoveItem) d;
+                m.matchDrawItem(itemList.mList);
+            }
         }
     }
 

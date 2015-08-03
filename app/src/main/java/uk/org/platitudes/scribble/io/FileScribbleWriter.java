@@ -3,8 +3,6 @@
  */
 package uk.org.platitudes.scribble.io;
 
-import android.content.Context;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -35,10 +33,6 @@ public class FileScribbleWriter extends ScribbleWriter {
         super(sma);
         mdir = file.getParentFile();
         mfilename = file.getName();
-    }
-
-    public FileScribbleWriter(ScribbleMainActivity sma) {
-        super(sma);
     }
 
     public File getLastSuccessfulFileWrite() {

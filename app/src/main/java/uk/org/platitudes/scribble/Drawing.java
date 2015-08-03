@@ -62,6 +62,14 @@ public class Drawing implements Runnable {
         backgroundThread.start();
     }
 
+    public boolean inBackgroundThread () {
+        Thread thisThread = Thread.currentThread();
+        if (thisThread.equals(backgroundThread)) {
+            return true;
+        }
+        return false;
+    }
+
     public void openCurrentFile () {
         String currentFilePath = getCurrentFilenameFromPreferences();
 
@@ -129,9 +137,6 @@ public class Drawing implements Runnable {
         ScribbleMainActivity.log(path, "", null);
     }
 
-
-
-
     public void onDestroy () {
         stopBackgroundThread = true;
 
@@ -156,6 +161,13 @@ public class Drawing implements Runnable {
         } else {
             mDrawItems = new ItemList(dis, version, mScribbleView);
             mUndoList = new ItemList(dis, version, mScribbleView);
+
+            // Each item list has to scan both item lists for MoveItems and matching targets.
+            mDrawItems.tieMoveItemsToTargets(mDrawItems);
+            mDrawItems.tieMoveItemsToTargets(mUndoList);
+            mUndoList.tieMoveItemsToTargets(mDrawItems);
+            mUndoList.tieMoveItemsToTargets(mUndoList);
+
             mScribbleView.post(new Runnable() {
                 @Override
                 public void run() {
@@ -229,6 +241,9 @@ public class Drawing implements Runnable {
                         fsr.read(this);
                     }
                     // Force another read of file contents.
+                    // NOTE - tried adding an update listener, a subscription, or checking for
+                    // metadata modifiedDate change. None of them worked properly. So while the file
+                    // is open, we keep rereading the contents, checking each time for a change.
                     gdf.forceReRead();
                 }
 

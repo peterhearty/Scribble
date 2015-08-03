@@ -31,7 +31,7 @@ abstract public class ScribbleWriter {
 
     public void writeToOutputStream(OutputStream fos) {
         try {
-            ScribbleOutputStream dos = new ScribbleOutputStream(fos, true);
+            ScribbleOutputStream dos = new ScribbleOutputStream(fos, false);
             dos.writeLong(ScribbleReader.MAGIC_NUMBER);
             dos.writeInt(ScribbleReader.FILE_FORMAT_VERSION);
             dos.writeByte(++changeByte);

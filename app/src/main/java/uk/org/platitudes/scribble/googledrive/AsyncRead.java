@@ -11,11 +11,9 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.events.ChangeListener;
 
 import java.io.InputStream;
 
-import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 
 /**
@@ -60,7 +58,8 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
             is.close();
             driveContents.discard(mGoogleApiClient);
 
-            // Check for contents change - this is to prevent the view abrubtly changing in the
+            // Check for contents change. Only modify Drawing if contents have changed.
+            // This is to prevent the view abrubtly changing in the
             // middle of an extended move, pan, or zoom operation.
             byte[] currentContents = mFile.getmFileContents();
             boolean updateContents = false;
@@ -70,7 +69,10 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
                 if (currentContents.length != contents.length) {
                     updateContents = true;
                 } else {
-                    // old and new same length
+                    // old and new same length, check contents
+                    // Scribble files have a changeByte near the start that changes on each write.
+                    // This should prevent the need for comparing the full contents every time
+                    // for a change.
                     for (int i=0; i<contents.length; i++) {
                         if (currentContents[i] != contents[i]) {
                             // contents have changed

@@ -3,8 +3,6 @@
  */
 package uk.org.platitudes.scribble.buttonhandler;
 
-import android.app.backup.BackupManager;
-import android.app.backup.RestoreObserver;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,8 +12,6 @@ import android.widget.PopupMenu;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.file.FileChooser;
-import uk.org.platitudes.scribble.io.FileScribbleReader;
-import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 

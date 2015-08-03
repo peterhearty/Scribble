@@ -33,6 +33,12 @@ public class LineDrawItem  extends DrawItem {
     }
 
     @Override
+    public int getHashTag() {
+        int result = (int) (LINE + mStartPoint.x +mStartPoint.y +mEndPoint.x +mEndPoint.y);
+        return result;
+    }
+
+    @Override
     public void draw(Canvas c) {
         if (mStartPoint == null || mEndPoint == null) return;
         float startX = mScribbleView.storedXtoScreen(mStartPoint.x);

@@ -49,6 +49,14 @@ public class FreehandCompressedDrawItem extends DrawItem {
     }
 
     @Override
+    public int getHashTag() {
+        int result = (int) (COMPRESSED_FREEHAND + x.min +lastX+y.min+lastY);
+        return result;
+    }
+
+
+
+    @Override
     public void draw(Canvas c) {
         float x_val = x.firstFloat();
         float y_val = y.firstFloat();
