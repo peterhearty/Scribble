@@ -38,7 +38,6 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
         if (closed) return;
         byte[] contents = toByteArray();
         mGoogleDriveFile.setmFileContents(contents);
-//        mGoogleDriveFile.setmSize(contents.length);
         super.close();
         closed = true;
 
@@ -61,11 +60,6 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
             return;
         }
 
-        // File already exists and we are overwriting
-//        fileChangeListener listener = mGoogleDriveFile.getChangeListener();
-//        if (listener != null) {
-//            listener.setIgnoreNextChangeEvent(true);
-//        }
         DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, id);
         driveFile.open(mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null)
                 .setResultCallback(this);

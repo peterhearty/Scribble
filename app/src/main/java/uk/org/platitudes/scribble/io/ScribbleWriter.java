@@ -16,6 +16,7 @@ abstract public class ScribbleWriter {
 
     protected ScribbleView mMainView;
     protected ScribbleMainActivity mScribbleMainActivity;
+    private static byte changeByte;
 
     /**
      * Used when reading or writing.
@@ -33,6 +34,7 @@ abstract public class ScribbleWriter {
             ScribbleOutputStream dos = new ScribbleOutputStream(fos, true);
             dos.writeLong(ScribbleReader.MAGIC_NUMBER);
             dos.writeInt(ScribbleReader.FILE_FORMAT_VERSION);
+            dos.writeByte(++changeByte);
             writeMainView(dos);
             dos.close();
         } catch (Exception e) {

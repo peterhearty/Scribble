@@ -4,13 +4,8 @@
 package uk.org.platitudes.scribble.file;
 
 import android.app.AlertDialog;
-import android.content.IntentSender;
 import android.os.Environment;
 import android.view.View;
-
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.OpenFileActivityBuilder;
 
 import java.io.File;
 
@@ -25,7 +20,7 @@ public class DeviceList extends SimpleList {
     private DirList mFileList;
     private ScribbleMainActivity mMainActivity;
     private AlertDialog mAlertDialog;
-    private static final String[] deviceNames = {"Private", "Public", "Root", "Google Drive", "GDrive (private)", "Parent dir"};
+    private static final String[] deviceNames = {"Private", "Public", "Root", "Google Drive", "Parent dir"};
 
     // Took out place "Private (external)" corresponding to getContext().getExternalFilesDir(null)
 
@@ -52,15 +47,8 @@ public class DeviceList extends SimpleList {
         } else if (text.equals(deviceNames[2])) {
             dir = Environment.getRootDirectory();
         } else if (text.equals(deviceNames[3])) {
-            mAlertDialog.dismiss();
-            if (isWriter) {
-                mMainActivity.getmGoogleStuff().startGoogleDriveFileCreator();
-            } else {
-                mMainActivity.getmGoogleStuff().startGoogleDriveFileSelector();
-            }
-        } else if (text.equals(deviceNames[4])) {
             dir = mMainActivity.getmGoogleStuff().getmRootGoogleDriveFolder();
-        } else if (text.equals(deviceNames[5])) {
+        } else if (text.equals(deviceNames[4])) {
             mFileList.setParentDirectory();
         }
         if (dir != null) {

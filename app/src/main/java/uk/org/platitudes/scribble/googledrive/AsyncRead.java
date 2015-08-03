@@ -59,16 +59,32 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
             is.read(contents, 0, size);
             is.close();
             driveContents.discard(mGoogleApiClient);
-            mFile.setmFileContents(contents);
-            //TODO - getting occasional EOFEception below - could have been dues to size not being set in line above?
-//            ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(mFile);
 
-//            fileChangeListener listener = mFile.getChangeListener();
-//            if (listener == null) {
-//                // First time we've read the file contents, listen for changes
-//                listener = new fileChangeListener(mFile, mGoogleApiClient, mDriveId);
-//                mFile.setChangeListener(listener);
-//            }
+            // Check for contents change - this is to prevent the view abrubtly changing in the
+            // middle of an extended move, pan, or zoom operation.
+            byte[] currentContents = mFile.getmFileContents();
+            boolean updateContents = false;
+            if (currentContents == null) {
+                updateContents = true;
+            } else {
+                if (currentContents.length != contents.length) {
+                    updateContents = true;
+                } else {
+                    // old and new same length
+                    for (int i=0; i<contents.length; i++) {
+                        if (currentContents[i] != contents[i]) {
+                            // contents have changed
+                            updateContents = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (updateContents) {
+                mFile.setmFileContents(contents);
+                mFile.fileHasChanged = true;
+            }
 
             mFile.setReadRequest(null);
         } catch (Exception e) {

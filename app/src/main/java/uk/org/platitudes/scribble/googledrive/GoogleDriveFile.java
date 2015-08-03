@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 
@@ -37,8 +38,10 @@ public class GoogleDriveFile extends File {
     private byte[] mFileContents;
     private DriveOutputStream pendingWrite;
     private boolean dummyFile;
-//    private fileChangeListener changeListener;
     private AsyncRead readRequest;
+    private CheckMetadata metadataCheck;
+    private long lastModifiedDate;
+    public boolean fileHasChanged;
 
     /**
      * Constructor for existing files.
@@ -49,6 +52,7 @@ public class GoogleDriveFile extends File {
         mParentFolder = parent;
         mGoogleApiClient = mParentFolder.getmGoogleApiClient();
         mDriveId = m.getDriveId();
+        lastModifiedDate = m.getModifiedDate().getTime();
         // We need all the files cached so that we can test for a Scribble file when a  file is being selected
         forceReRead();
         ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(this);
@@ -58,6 +62,10 @@ public class GoogleDriveFile extends File {
         if (readRequest == null) {
             readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
         }
+    }
+
+    public void checkForChange () {
+        metadataCheck = new CheckMetadata(this, mGoogleApiClient, mDriveId);
     }
 
     public InputStream getInputStream () {
@@ -130,8 +138,6 @@ public class GoogleDriveFile extends File {
     public void setmFileContents(byte[] mFileContents) {
         this.mFileContents = mFileContents;
     }
-//    public fileChangeListener getChangeListener() {return changeListener;}
-//    public void setChangeListener(fileChangeListener changeListener) {this.changeListener = changeListener;}
     public String toString () {return mParentFolder.toString()+"/"+mName;}
     public boolean isDirectory () {return false;}
     public boolean canRead () {return true;}
@@ -148,6 +154,9 @@ public class GoogleDriveFile extends File {
     public void setmParentFolder(GoogleDriveFolder mParentFolder) {this.mParentFolder = mParentFolder;}
     public void setPendingWrite(DriveOutputStream pendingWrite) {this.pendingWrite = pendingWrite;}
     public DriveId getmDriveId() {return mDriveId;}
+    public long getLastModifiedDate() {return lastModifiedDate;}
+    public void setLastModifiedDate(long lastModifiedDate) {this.lastModifiedDate = lastModifiedDate;}
+
 
 
     /**

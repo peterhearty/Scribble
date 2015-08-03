@@ -7,11 +7,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
@@ -121,23 +118,6 @@ public class Drawing implements Runnable {
 
     public File getmCurrentlyOpenFile() {return mCurrentlyOpenFile;}
 
-    /**
-     * Check to see if updated google drive file is the open file.
-     */
-//    public void checkDriveFileUpdate (GoogleDriveFile f) {
-//        if (mCurrentlyOpenFile != null) {
-//            try {
-//                String currentPath = mCurrentlyOpenFile.getCanonicalPath();
-//                String comparePath = f.getCanonicalPath();
-//                if (currentPath.equals(comparePath)) {
-//                    mMainActivity.getmGoogleStuff().setFileToReadWhenReady(currentPath);
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
     public void about () {
         String path = "";
         try {
@@ -243,9 +223,12 @@ public class Drawing implements Runnable {
                 } else if (mCurrentlyOpenFile != null && mCurrentlyOpenFile instanceof GoogleDriveFile) {
                     // Read the current file contents
                     GoogleDriveFile gdf = (GoogleDriveFile) mCurrentlyOpenFile;
-                    FileScribbleReader fsr = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
-                    fsr.read(this);
-                    // Set up an async read to update the file contents next time
+                    if (gdf.fileHasChanged) {
+                        gdf.fileHasChanged = false;
+                        FileScribbleReader fsr = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
+                        fsr.read(this);
+                    }
+                    // Force another read of file contents.
                     gdf.forceReRead();
                 }
 

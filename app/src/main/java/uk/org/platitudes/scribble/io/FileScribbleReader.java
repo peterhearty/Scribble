@@ -3,18 +3,14 @@
  */
 package uk.org.platitudes.scribble.io;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
-import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 
 /**
  * File reader.
@@ -30,16 +26,6 @@ public class FileScribbleReader extends ScribbleReader {
     public FileScribbleReader(ScribbleMainActivity sma, File f) {
         super(sma);
         mFile = f;
-    }
-
-    public FileScribbleReader(ScribbleMainActivity sma, String dirName, String fileName) {
-        super(sma);
-        String pathName = dirName+ File.separator+fileName;
-        try {
-            mFile = new File (pathName);
-        } catch (Exception e) {
-            ScribbleMainActivity.log("FileScribbleReader", "readFromFile", e);
-        }
     }
 
     private static InputStream getInputStreamFromFile (File f) {
@@ -74,20 +60,6 @@ public class FileScribbleReader extends ScribbleReader {
             }
         }
     }
-
-//    public void readFromDefaultFile (Drawing drawing) {
-//        try {
-//            synchronized (sDataLock) {
-//                FileInputStream fis = mMainView.getContext().openFileInput(DEFAULT_FILE);
-//                readFromInputStream(fis, drawing);
-//                fis.close();
-//            }
-//        } catch (FileNotFoundException fnfe) {
-//            // do nothing
-//        } catch (IOException e) {
-//            ScribbleMainActivity.log("FileScribbleReader", "readFromDefaultFile", e);
-//        }
-//    }
 
     /**
      * Tests a file to check that it's a Scribble file.

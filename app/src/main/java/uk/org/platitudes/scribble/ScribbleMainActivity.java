@@ -7,36 +7,25 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
-
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.UndoButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
-import uk.org.platitudes.scribble.googledrive.GoogleDriveFile;
-import uk.org.platitudes.scribble.googledrive.GoogleDriveFolder;
 import uk.org.platitudes.scribble.googledrive.GoogleDriveStuff;
 import uk.org.platitudes.scribble.io.BundleScribbleReader;
 import uk.org.platitudes.scribble.io.BundleScribbleWriter;
-import uk.org.platitudes.scribble.io.FileScribbleReader;
-import uk.org.platitudes.scribble.io.ScribbleReader;
 
 
 public class ScribbleMainActivity extends Activity  {
 
     public static final int RESOLVE_CONNECTION_REQUEST_CODE = 10000;
-    public static final int GOOGLE_DRIVE_FILE_SELECT = 10020;
-    public static final int GOOGLE_DRIVE_FILE_CREATE = 10030;
 
     private ScribbleView mMainView;
     private Button mDrawToolButton;
@@ -154,16 +143,6 @@ public class ScribbleMainActivity extends Activity  {
             case RESOLVE_CONNECTION_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
                     mGoogleStuff.connect();
-                }
-                break;
-            case GOOGLE_DRIVE_FILE_SELECT:
-                if (resultCode == RESULT_OK) {
-                    mGoogleStuff.readFromGoogleDrive(data);
-                }
-                break;
-            case GOOGLE_DRIVE_FILE_CREATE:
-                if (resultCode == RESULT_OK) {
-                    mGoogleStuff.writeToGoogleDrive(data);
                 }
                 break;
         }

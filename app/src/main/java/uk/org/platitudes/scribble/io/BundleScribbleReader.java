@@ -19,7 +19,6 @@ public class BundleScribbleReader extends ScribbleReader {
     private Bundle mBundle;
 
     /**
-     * Used when reading or writing.
      */
     public BundleScribbleReader(ScribbleMainActivity sma, Bundle b) {
         super(sma);
@@ -31,13 +30,10 @@ public class BundleScribbleReader extends ScribbleReader {
         byte[] bytes = mBundle.getByteArray(EVERYTHING_KEY);
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         readFromInputStream(bais, drawing);
-//        ScribbleInputStream dis = new ScribbleInputStream(bais);
-//        readMainView(dis, FILE_FORMAT_VERSION, drawing);
         try {
-//            dis.close();
             bais.close();
         } catch (Exception e) {
-            ScribbleMainActivity.log("FileSaver", "read from Bundle", e);
+            ScribbleMainActivity.log("BundleScribbleReader", "read from Bundle", e);
         }
     }
 
