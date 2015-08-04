@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 
 import java.io.DataInputStream;
@@ -28,6 +29,7 @@ public abstract class DrawItem {
     public final static byte COMPRESSED_FREEHAND = 103;
     public final static byte DEFAULT_ITEM = 104;
     public final static byte MOVE = 105;
+    public final static byte GROUP = 106;
 
     /**
      * Used during selection to allow some imprecision in selecting DrawItems.
@@ -82,8 +84,8 @@ public abstract class DrawItem {
     public DrawItem readFromFile (ScribbleInputStream dis, int version) throws IOException {return null;};
 
     /**
-     * Tests a DrawItem's stored coordinates against the given point to see if
-     * the item should be selected. The supplied point will already be converted
+     * Tests a DrawItem's stored coordinates to see if a supplied selection point is
+     * within it's bounds. The supplied point will already be converted
      * to stored coordinates from screen coordinates. i.e. The screen offset and
      * zoom factor will already have been removed. If the DrawItem can be selected
      * by the supplied point then its status will change to selected and it may
@@ -94,9 +96,22 @@ public abstract class DrawItem {
      */
     public boolean selectItem(PointF p) {return false;};
 
+    /**
+     * Tests to see if a DrawItem is fully contained within the given box. The supplied
+     * box is in stored coordinates, with zoom and offset removed. If the test succeeds then
+     * the DrawItem is marked as selected and the method returns true.
+     *
+     */
+    public boolean selectItem (PointF start, PointF end) {return false;}
+
     public void deselectItem () {
         mSelected = false;
         mPaint.setColor(Color.BLACK);
+    }
+
+    public void selectItem () {
+        mSelected = true;
+        mPaint.setColor(Color.RED);
     }
 
     public boolean isSelected() {return mSelected;};
@@ -110,4 +125,9 @@ public abstract class DrawItem {
      */
     public void undo () {}
     public void redo () {}
+
+    /**
+     * Bounds are needed to perform view resizes;
+     */
+    public RectF getBounds () {return null;}
 }

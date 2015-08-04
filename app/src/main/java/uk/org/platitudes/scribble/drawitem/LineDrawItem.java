@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 
 import java.io.DataInputStream;
@@ -34,7 +35,7 @@ public class LineDrawItem  extends DrawItem {
 
     @Override
     public int getHashTag() {
-        int result = (int) (LINE + mStartPoint.x +mStartPoint.y +mEndPoint.x +mEndPoint.y);
+        int result = (int) (LINE*1000 + mStartPoint.x +mStartPoint.y +mEndPoint.x +mEndPoint.y);
         return result;
     }
 
@@ -112,11 +113,33 @@ public class LineDrawItem  extends DrawItem {
         return mSelected;
     }
 
+    public boolean selectItem (PointF start, PointF end) {
+        float minX = Math.min(mStartPoint.x, mEndPoint.x);
+        float maxX = Math.max(mStartPoint.x, mEndPoint.x);
+        float minY = Math.min(mStartPoint.y, mEndPoint.y);
+        float maxY = Math.max(mStartPoint.y, mEndPoint.y);
+        if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
+            mSelected = true;
+            mPaint.setColor(Color.RED);
+        }
+        return mSelected;
+    }
+
+
     public void move(float deltaX, float deltaY) {
         mStartPoint.x += deltaX;
         mStartPoint.y += deltaY;
         mEndPoint.x += deltaX;
         mEndPoint.y += deltaY;
+    }
+
+    public RectF getBounds () {
+        float minX = Math.min(mStartPoint.x, mEndPoint.x);
+        float maxX = Math.max(mStartPoint.x, mEndPoint.x);
+        float minY = Math.min(mStartPoint.y, mEndPoint.y);
+        float maxY = Math.max(mStartPoint.y, mEndPoint.y);
+        RectF result = new RectF(minX, minY, maxX, maxY);
+        return result;
     }
 
 }

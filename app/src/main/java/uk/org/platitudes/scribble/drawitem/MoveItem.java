@@ -91,15 +91,26 @@ public class MoveItem extends DrawItem {
      * Uses a hashtag to identify the target item.
      */
     public void saveToFile (ScribbleOutputStream dos, int version) throws IOException {
+        if (mSelectedItem == null) {
+            // An empty MoveItem or one that has become detached in error.
+            // write as a default item, it will be discarded when next read in.
+            super.saveToFile(dos, version);
+            return;
+        }
+
         dos.writeByte(MOVE);
         dos.writeFloat(mStartPoint.x);
         dos.writeFloat(mStartPoint.y);
         dos.writeFloat(mCurrentPosition.x);
-        dos.writeFloat(mCurrentPosition.x);
+        dos.writeFloat(mCurrentPosition.y);
         int hashTag = mSelectedItem.getHashTag();
         dos.writeInt(hashTag);
     }
 
+    /**
+     * Constructor used when reading in from storage. Uses readFromFile below to do most
+     * of the work.
+     */
     public MoveItem (ScribbleInputStream dis, int version, ScribbleView sv) throws IOException {
         super(null, sv);
         readFromFile(dis, version);
@@ -109,8 +120,8 @@ public class MoveItem extends DrawItem {
         mStartPoint = new PointF();
         mStartPoint.x = dis.readFloat();
         mStartPoint.y = dis.readFloat();
-        //TODO - not quite getting corrdinates right.
         mCurrentPosition = new PointF();
+
         mCurrentPosition.x = dis.readFloat();
         mCurrentPosition.y = dis.readFloat();
         mHashTag = dis.readInt();

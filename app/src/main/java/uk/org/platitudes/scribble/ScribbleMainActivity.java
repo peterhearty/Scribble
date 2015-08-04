@@ -121,7 +121,7 @@ public class ScribbleMainActivity extends Activity  {
     public ZoomButtonHandler getmZoomButtonHandler() {return mZoomButtonHandler;}
     public DrawToolButtonHandler getmDrawToolButtonHandler() {return mDrawToolButtonHandler;}
 
-    private static void makeToast (String s) {
+    public static void makeToast (String s) {
         if (mainActivity != null) {
             Context context = mainActivity.getApplicationContext();
             Toast toast = Toast.makeText(context, s, Toast.LENGTH_SHORT);

@@ -5,9 +5,11 @@ package uk.org.platitudes.scribble.drawitem;
 
 import android.graphics.Canvas;
 import android.graphics.PointF;
+import android.graphics.RectF;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -47,35 +49,41 @@ public class ItemList {
     public ItemList (ScribbleInputStream dis, int version, ScribbleView scribbleView) throws IOException {
         int numItems = dis.readInt();
         mList = new ArrayList<>(numItems+20);
-        for (int i=0; i<numItems; i++) {
-            DrawItem item = null;
-            byte itemType = dis.readByte();
-            switch (itemType) {
-                case DrawItem.FREEHAND:
+        try {
+            for (int i=0; i<numItems; i++) {
+                DrawItem item = null;
+                byte itemType = dis.readByte();
+                switch (itemType) {
+                    case DrawItem.FREEHAND:
 //                    item = new FreehandDrawItem(dis, version, scribbleView);
-                    break;
-                case DrawItem.LINE:
-                    item = new LineDrawItem(dis, version, scribbleView);
-                    break;
-                case DrawItem.TEXT:
-                    item = new TextItem(dis, version, scribbleView);
-                    break;
-                case DrawItem.COMPRESSED_FREEHAND:
-                    item = new FreehandCompressedDrawItem(dis, version, scribbleView);
-                    break;
-                case DrawItem.MOVE:
-                    item = new MoveItem(dis, version, scribbleView);
-                    mContainsMoveItems = true;
-                    break;
-                case DrawItem.DEFAULT_ITEM:
-                    // do nothing
-                    break;
-                default:
-                    ScribbleMainActivity.log ("Error reading data file", "", null);
-                    return;
+                        break;
+                    case DrawItem.LINE:
+                        item = new LineDrawItem(dis, version, scribbleView);
+                        break;
+                    case DrawItem.TEXT:
+                        item = new TextItem(dis, version, scribbleView);
+                        break;
+                    case DrawItem.COMPRESSED_FREEHAND:
+                        item = new FreehandCompressedDrawItem(dis, version, scribbleView);
+                        break;
+                    case DrawItem.MOVE:
+                        item = new MoveItem(dis, version, scribbleView);
+                        mContainsMoveItems = true;
+                        break;
+                    case DrawItem.GROUP:
+                        item = new GroupItem(dis, version, scribbleView);
+                    case DrawItem.DEFAULT_ITEM:
+                        // do nothing
+                        break;
+                    default:
+                        ScribbleMainActivity.log ("Error reading data file", "", null);
+                        return;
+                }
+                if (item != null)
+                    mList.add(item);
             }
-            if (item != null)
-                mList.add(item);
+        } catch (EOFException e) {
+            // silently ignore - use the items we've read
         }
     }
 
@@ -124,8 +132,75 @@ public class ItemList {
         return result;
     }
 
+    public ItemList findSelectedItems (PointF start, PointF end) {
+        ItemList result = new ItemList();
+        for (DrawItem d : mList) {
+            boolean itemSelected = d.selectItem(start, end);
+            if (itemSelected) {
+                result.add(d);
+                // return its paint color to black and mark as unselected now that it's been added
+                d.deselectItem();
+            }
+        }
+        return result;
+    }
+
+    public void removeItems (ItemList source) {
+        for (DrawItem d : source.mList) {
+            mList.remove(d);
+        }
+    }
+
+    public void moveFromList (ItemList source) {
+        for (DrawItem d : source.mList) {
+            mList.add(d);
+        }
+        source.mList.clear();
+    }
+
+    public void move(float deltaX, float deltaY) {
+        for (DrawItem d : mList) {
+            d.move(deltaX, deltaY);
+        }
+    }
+
+    public void selectedAll () {
+        for (DrawItem d : mList) {
+            d.selectItem();
+        }
+    }
+
+    public void deSelectedAll () {
+        for (DrawItem d : mList) {
+            d.deselectItem();
+        }
+    }
+
     public void clear () {
         mList.clear();
+    }
+
+    public RectF getBounds () {
+        RectF result = null;
+        for (DrawItem d : mList) {
+            RectF itemBounds = d.getBounds();
+            if (itemBounds == null)
+                continue;
+            if (result == null) {
+                // first bounds
+                result = itemBounds;
+            } else {
+                if (itemBounds.left < result.left)
+                    result.left = itemBounds.left;
+                if (itemBounds.top < result.top)
+                    result.top = itemBounds.top;
+                if (itemBounds.right > result.right)
+                    result.right = itemBounds.right;
+                if (itemBounds.bottom > result.bottom)
+                    result.bottom = itemBounds.bottom;
+            }
+        }
+        return result;
     }
 
 }

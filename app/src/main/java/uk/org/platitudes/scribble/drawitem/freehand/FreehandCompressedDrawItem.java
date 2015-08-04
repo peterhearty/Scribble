@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 
 import java.io.DataInputStream;
@@ -50,7 +51,7 @@ public class FreehandCompressedDrawItem extends DrawItem {
 
     @Override
     public int getHashTag() {
-        int result = (int) (COMPRESSED_FREEHAND + x.min +lastX+y.min+lastY);
+        int result = (int) (COMPRESSED_FREEHAND*1000 + x.min +lastX+y.min+lastY);
         return result;
     }
 
@@ -149,6 +150,24 @@ public class FreehandCompressedDrawItem extends DrawItem {
         }
         return mSelected;
     }
+
+    public boolean selectItem (PointF start, PointF end) {
+        float minX = x.min;
+        float maxX = x.max;
+        float minY = y.min;
+        float maxY = y.max;
+        if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
+            mSelected = true;
+            mPaint.setColor(Color.RED);
+        }
+        return mSelected;
+    }
+
+    public RectF getBounds () {
+        RectF result = new RectF(x.min, y.min, x.max, y.max);
+        return result;
+    }
+
 
     public void move(float deltaX, float deltaY) {
         x.moveStart(deltaX);

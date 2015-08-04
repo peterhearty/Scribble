@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 
 import java.io.DataInputStream;
@@ -59,7 +60,7 @@ public class TextItem extends DrawItem {
 
     @Override
     public int getHashTag() {
-        int result = (int) (TEXT + mStartX +mStartY +mText.length());
+        int result = (int) (TEXT*1000 + mStartX +mStartY +mText.length());
         return result;
     }
 
@@ -113,6 +114,29 @@ public class TextItem extends DrawItem {
         }
         return mSelected;
     }
+
+    public boolean selectItem (PointF start, PointF end) {
+        float minX = mStartX;
+        float maxX = mStartX+bounds.right;
+        float minY = mStartY;
+        float maxY = mStartY+bounds.bottom;
+        if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
+            mSelected = true;
+            mPaint.setColor(Color.RED);
+        }
+        return mSelected;
+    }
+
+    public RectF getBounds () {
+        float minX = mStartX;
+        float maxX = mStartX+bounds.right;
+        float minY = mStartY;
+        float maxY = mStartY+bounds.bottom;
+        RectF result = new RectF(minX, minY, maxX, maxY);
+        return result;
+    }
+
+
     public String getmText() {return mText;}
 
     public void setmText(String mText) {
