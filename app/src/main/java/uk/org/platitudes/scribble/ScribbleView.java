@@ -167,6 +167,7 @@ public class ScribbleView extends View {
     }
 
     public ItemList getmDrawItems() {return drawing.getmDrawItems();}
+    public ItemList getUndoItems() {return drawing.getUndoItems();}
     public PointF getmScrollOffset() {return mScrollOffset;}
     public void setmScrollOffset(PointF mScrollOffset) {this.mScrollOffset = mScrollOffset;}
     public void setmScrollOffset(float x,float y) {

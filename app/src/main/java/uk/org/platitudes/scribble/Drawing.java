@@ -208,7 +208,15 @@ public class Drawing implements Runnable {
         mUndoList.clear();
     }
 
+    public synchronized void clearUndos () {
+        int numCleared = mUndoList.clear();
+        numCleared += mDrawItems.clean();
+        modifiedSinceLastWrite = true;
+        ScribbleMainActivity.log ("Cleared "+numCleared, "", null);
+    }
+
     public ItemList getmDrawItems() {return mDrawItems;}
+    public ItemList getUndoItems() {return mUndoList;}
 
     public synchronized void write () {
         modifiedSinceLastWrite = false;

@@ -116,6 +116,20 @@ public class ItemList {
         return result;
     }
 
+    public int clean () {
+        // Have to collect item first
+        ArrayList<DrawItem> cleanedItems = new ArrayList<>(mList.size());
+        for (DrawItem d : mList) {
+            if (d instanceof MoveItem) {
+                cleanedItems.add(d);
+            }
+        }
+        for (DrawItem d : cleanedItems) {
+            mList.remove(d);
+        }
+        return cleanedItems.size();
+    }
+
 
     public DrawItem findFirstSelectedItem (PointF selectionPoint) {
         DrawItem result = null;
@@ -158,6 +172,10 @@ public class ItemList {
         source.mList.clear();
     }
 
+    public void remove (DrawItem d) {
+        mList.remove(d);
+    }
+
     public void move(float deltaX, float deltaY) {
         for (DrawItem d : mList) {
             d.move(deltaX, deltaY);
@@ -176,8 +194,10 @@ public class ItemList {
         }
     }
 
-    public void clear () {
+    public int clear () {
+        int numCleared = mList.size();
         mList.clear();
+        return numCleared;
     }
 
     public RectF getBounds () {

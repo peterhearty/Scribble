@@ -102,7 +102,26 @@ public class GroupItem extends DrawItem {
         return mSelected;
     }
 
-    // TODO groups of groups not working
+    public boolean selectItem (PointF start, PointF end) {
+        mSelected = false;
+        if (mSelectedItems != null) {
+            RectF bounds = mSelectedItems.getBounds();
+            if (bounds != null) {
+                if (bounds.left >= start.x && bounds.right <= end.x && bounds.top >= start.y && bounds.bottom <= end.y) {
+                    mSelected = true;
+                    mSelectedItems.selectedAll();
+                }
+            }
+        }
+        return mSelected;
+    }
+
+    @Override
+    public void selectItem() {
+        if (mSelectedItems != null) {
+            mSelectedItems.selectedAll();
+        }
+    }
 
     public void deselectItem () {
         super.deselectItem();

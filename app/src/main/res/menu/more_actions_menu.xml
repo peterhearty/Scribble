@@ -4,6 +4,7 @@
     <item android:title="save" />
     <item android:title="export" />
     <item android:title="clear" />
+    <item android:title="clear undos" />
     <item android:title="fullscreen" />
     <item android:title="about" />
     <item android:title="exit" />

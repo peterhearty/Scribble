@@ -3,12 +3,18 @@
  */
 package uk.org.platitudes.scribble.drawitem;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
+import android.widget.ImageView;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
+import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
@@ -24,6 +30,11 @@ public class MoveItem extends DrawItem {
     private PointF mPreviousPosition;
     private PointF mCurrentPosition;
     private DrawItem mSelectedItem;
+    private boolean mMoveInProgress;
+    private boolean mDeleteItem;
+
+    private static Bitmap sTrashCan;
+    private static Bitmap sOrangeTrashCan;
 
     /**
      * Used when the MoveItem is read from storage. The hastag is the value provided by
@@ -31,8 +42,6 @@ public class MoveItem extends DrawItem {
      * ScribbleView can match each MoveItem to a target DrawItem.
      */
     private int mHashTag;
-
-
 
     public MoveItem(MotionEvent event, ScribbleView scribbleView) {
         super (event, scribbleView);
@@ -51,10 +60,34 @@ public class MoveItem extends DrawItem {
         }
     }
 
+    @Override
+    public void draw(Canvas c) {
+        // Used to draw a trashcan as the target for deleting DrawItems
+        if (sTrashCan == null) {
+            sTrashCan = BitmapFactory.decodeResource(mScribbleView.getContext().getResources(), R.drawable.waste);
+            sOrangeTrashCan = BitmapFactory.decodeResource(mScribbleView.getContext().getResources(), R.drawable.wasteorange);
+        }
+        if (mMoveInProgress) {
+            float yPosn = mScribbleView.getHeight()/ 2;
+            float screenX = mScribbleView.storedXtoScreen(mCurrentPosition.x);
+            float screenY = mScribbleView.storedYtoScreen(mCurrentPosition.y);
+            int border=mScribbleView.getmMainActivity().mDisplaySize.x/20;
+            if (screenX < sTrashCan.getWidth()+border &&
+                    screenY > yPosn-border  &&
+                    screenY < yPosn+sTrashCan.getHeight()+border) {
+                c.drawBitmap(sOrangeTrashCan, 20, yPosn, mPaint);
+                mDeleteItem = true;
+            } else {
+                c.drawBitmap(sTrashCan, 20, yPosn, mPaint);
+                mDeleteItem = false;
+            }
+        }
+    }
 
     @Override
     public void handleMoveEvent(MotionEvent event) {
         if (mSelectedItem != null) {
+            mMoveInProgress = true;
             addPoint (event.getX(), event.getY(), mScribbleView);
             float deltaX = mCurrentPosition.x - mPreviousPosition.x;
             float deltaY = mCurrentPosition.y - mPreviousPosition.y;
@@ -63,12 +96,24 @@ public class MoveItem extends DrawItem {
         }
     }
 
+
+
     @Override
     public void handleUpEvent(MotionEvent event) {
         if (mSelectedItem != null) {
             mSelectedItem.deselectItem();
-            mScribbleView.addItem(this);
+            if (mDeleteItem) {
+                // delete item - this gets undone be taking off the undo list
+                ItemList drawItems = mScribbleView.getmDrawItems();
+                drawItems.remove(mSelectedItem);
+                ItemList undoItems = mScribbleView.getUndoItems();
+                undoItems.add(mSelectedItem);
+            } else {
+                // moves stay in the list so that they can be undone
+                mScribbleView.addItem(this);
+            }
         }
+        mMoveInProgress = false;
     }
 
     public void undo () {
