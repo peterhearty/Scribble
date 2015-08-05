@@ -103,21 +103,18 @@ public class MoveItem extends DrawItem {
         if (mSelectedItem != null) {
             mSelectedItem.deselectItem();
             if (mDeleteItem) {
-                // delete item - this gets undone be taking off the undo list
-                ItemList drawItems = mScribbleView.getmDrawItems();
-                drawItems.remove(mSelectedItem);
-                ItemList undoItems = mScribbleView.getUndoItems();
-                undoItems.add(mSelectedItem);
-            } else {
-                // moves stay in the list so that they can be undone
-                mScribbleView.addItem(this);
+                mSelectedItem.deleted = true;
             }
         }
+        mScribbleView.addItem(this);
         mMoveInProgress = false;
     }
 
     public void undo () {
         if (mSelectedItem != null) {
+            if (mSelectedItem.deleted) {
+                mSelectedItem.deleted = false;
+            }
             float deltaX = mStartPoint.x - mCurrentPosition.x;
             float deltaY = mStartPoint.y - mCurrentPosition.y;
             mSelectedItem.move(deltaX, deltaY);

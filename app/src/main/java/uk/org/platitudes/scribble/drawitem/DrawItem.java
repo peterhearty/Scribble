@@ -42,6 +42,15 @@ public abstract class DrawItem {
     protected ScribbleView mScribbleView;
     protected boolean mSelected;
 
+    /**
+     * True if item has been moved to waste bin by a move operation. Deleted items don't go
+     * on the undo list. Instead, this flag is set and ItemList just doesn't draw them. The
+     * MoveItem remembers that it performed a delete and simply cancels the flag when a undo
+     * gets executed. If this flag is set when ItemList.clean is called then the item is
+     * deleted permanently.
+     */
+    public boolean deleted;
+
     public DrawItem (MotionEvent event, ScribbleView scribbleView) {
         mScribbleView = scribbleView;
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);

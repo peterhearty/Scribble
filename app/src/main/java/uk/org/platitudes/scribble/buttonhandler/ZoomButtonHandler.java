@@ -88,6 +88,11 @@ public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClick
                 // show everything on screen - first get bounds of all items
                 ItemList drawItems = mScribbleView.getmDrawItems();
                 RectF bounds = drawItems.getBounds();
+                if (bounds == null) {
+                    // nothing to show - goto zoomState 0
+                    onLongClick (v);
+                    return true;
+                }
 
                 // leave a short border around them
                 Point displaySize = ScribbleMainActivity.mainActivity.mDisplaySize;

@@ -42,7 +42,8 @@ public class ItemList {
 
     public void onDraw (Canvas c) {
         for (DrawItem d : mList) {
-            d.draw(c);
+            if (!d.deleted)
+                d.draw(c);
         }
     }
 
@@ -117,10 +118,12 @@ public class ItemList {
     }
 
     public int clean () {
-        // Have to collect item first
+        // Have to collect items first
         ArrayList<DrawItem> cleanedItems = new ArrayList<>(mList.size());
         for (DrawItem d : mList) {
             if (d instanceof MoveItem) {
+                cleanedItems.add(d);
+            } else if (d.deleted) {
                 cleanedItems.add(d);
             }
         }
