@@ -135,11 +135,19 @@ public class ScribbleMainActivity extends Activity  {
             s = s + " " + e;
             Log.e(tag, msg, e);
         }
-        if (!mainActivity.getmMainView().getDrawing().inBackgroundThread()) {
-            // Background thread musn't attempt UI stuff
-            AlertDialog.Builder alert = new AlertDialog.Builder(ScribbleMainActivity.mainActivity);
-            AlertDialog dialog = alert.setMessage(s).setCancelable(true).create();
-            dialog.show();
+        if (mainActivity != null) {
+            ScribbleView v = mainActivity.getmMainView();
+            if (v != null) {
+                Drawing d = v.getDrawing();
+                if (d != null) {
+                    if (!d.inBackgroundThread()) {
+                        // Background thread musn't attempt UI stuff
+                        AlertDialog.Builder alert = new AlertDialog.Builder(ScribbleMainActivity.mainActivity);
+                        AlertDialog dialog = alert.setMessage(s).setCancelable(true).create();
+                        dialog.show();
+                    }
+                }
+            }
         }
 //        makeToast(s);
     }

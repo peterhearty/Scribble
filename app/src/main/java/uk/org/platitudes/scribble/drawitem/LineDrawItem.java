@@ -25,8 +25,8 @@ import uk.org.platitudes.scribble.io.ScribbleOutputStream;
  */
 public class LineDrawItem  extends DrawItem {
 
-    private PointF mStartPoint;
     private PointF mEndPoint;
+    private boolean firstPointAdded;
 
     public LineDrawItem (MotionEvent event, ScribbleView scribbleView) {
         super(event, scribbleView);
@@ -35,25 +35,34 @@ public class LineDrawItem  extends DrawItem {
 
     @Override
     public int getHashTag() {
-        int result = (int) (LINE*1000 + mStartPoint.x +mStartPoint.y +mEndPoint.x +mEndPoint.y);
+        int result = (int) (LINE*1000 + mStart.x +mStart.y +mEndPoint.x +mEndPoint.y);
         return result;
     }
 
     @Override
     public void draw(Canvas c) {
-        if (mStartPoint == null || mEndPoint == null) return;
-        float startX = mScribbleView.storedXtoScreen(mStartPoint.x);
-        float startY = mScribbleView.storedYtoScreen(mStartPoint.y);
-        float endX   = mScribbleView.storedXtoScreen(mEndPoint.x);
-        float endY   = mScribbleView.storedYtoScreen(mEndPoint.y);
+        if (mStart == null || mEndPoint == null) return;
+        float startX = mScribbleView.storedXtoScreen(mStart.x);
+        float startY = mScribbleView.storedYtoScreen(mStart.y);
+
+        float deltaX = mEndPoint.x - mStart.x;
+        float deltaY = mEndPoint.y - mStart.y;
+
+        float zoomedX = mStart.x + deltaX * mZoom;
+        float zoomedY = mStart.y + deltaY * mZoom;
+
+        float endX   = mScribbleView.storedXtoScreen(zoomedX);
+        float endY   = mScribbleView.storedYtoScreen(zoomedY);
+
         c.drawLine(startX, startY, endX, endY, mPaint);
     }
 
     private void addPoint (float x, float y, ScribbleView scribbleView) {
-        float storedX = scribbleView.screenXtoStored(x);
-        float storedY = scribbleView.screenYtoStored(y);
-        if (mStartPoint == null) {
-            mStartPoint = new PointF (storedX, storedY);
+        float storedX = mScribbleView.screenXtoStored(x);
+        float storedY = mScribbleView.screenYtoStored(y);
+        if (!firstPointAdded) {
+            mStart = new PointF (storedX, storedY);
+            firstPointAdded = true;
         } else {
             mEndPoint = new PointF(storedX, storedY);
         }
@@ -75,7 +84,6 @@ public class LineDrawItem  extends DrawItem {
      */
     public LineDrawItem (ScribbleInputStream dis, int version, ScribbleView sv) {
         super(null, sv);
-        mStartPoint = new PointF();
         mEndPoint = new PointF();
         try {
             readFromFile(dis, version);
@@ -86,15 +94,24 @@ public class LineDrawItem  extends DrawItem {
 
     public void saveToFile (ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(LINE);
-        dos.writeFloat(mStartPoint.x);
-        dos.writeFloat(mStartPoint.y);
+        dos.writeFloat(mZoom);
+        dos.writeByte(deleted ? 1:0);
+        dos.writeFloat(mStart.x);
+        dos.writeFloat(mStart.y);
         dos.writeFloat(mEndPoint.x);
         dos.writeFloat(mEndPoint.y);
     }
 
     public DrawItem readFromFile (ScribbleInputStream dis, int version) throws IOException {
-        mStartPoint.x = dis.readFloat();
-        mStartPoint.y = dis.readFloat();
+        if (version >= 1002) {
+            mZoom = dis.readFloat();
+            byte deletedByte = dis.readByte();
+            if (deletedByte==1) {
+                deleted = true;
+            }
+        }
+        mStart.x = dis.readFloat();
+        mStart.y = dis.readFloat();
         mEndPoint.x = dis.readFloat();
         mEndPoint.y = dis.readFloat();
         return this;
@@ -102,10 +119,10 @@ public class LineDrawItem  extends DrawItem {
 
     @Override
     public boolean selectItem(PointF p) {
-        float minX = Math.min(mStartPoint.x, mEndPoint.x)-FUZZY;
-        float maxX = Math.max(mStartPoint.x, mEndPoint.x)+FUZZY;
-        float minY = Math.min(mStartPoint.y, mEndPoint.y)-FUZZY;
-        float maxY = Math.max(mStartPoint.y, mEndPoint.y)+FUZZY;
+        float minX = Math.min(mStart.x, mEndPoint.x)-FUZZY;
+        float maxX = Math.max(mStart.x, mEndPoint.x)+FUZZY;
+        float minY = Math.min(mStart.y, mEndPoint.y)-FUZZY;
+        float maxY = Math.max(mStart.y, mEndPoint.y)+FUZZY;
         if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
             mSelected = true;
             mPaint.setColor(Color.RED);
@@ -114,10 +131,10 @@ public class LineDrawItem  extends DrawItem {
     }
 
     public boolean selectItem (PointF start, PointF end) {
-        float minX = Math.min(mStartPoint.x, mEndPoint.x);
-        float maxX = Math.max(mStartPoint.x, mEndPoint.x);
-        float minY = Math.min(mStartPoint.y, mEndPoint.y);
-        float maxY = Math.max(mStartPoint.y, mEndPoint.y);
+        float minX = Math.min(mStart.x, mEndPoint.x);
+        float maxX = Math.max(mStart.x, mEndPoint.x);
+        float minY = Math.min(mStart.y, mEndPoint.y);
+        float maxY = Math.max(mStart.y, mEndPoint.y);
         if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
             mSelected = true;
             mPaint.setColor(Color.RED);
@@ -127,17 +144,17 @@ public class LineDrawItem  extends DrawItem {
 
 
     public void move(float deltaX, float deltaY) {
-        mStartPoint.x += deltaX;
-        mStartPoint.y += deltaY;
+        mStart.x += deltaX;
+        mStart.y += deltaY;
         mEndPoint.x += deltaX;
         mEndPoint.y += deltaY;
     }
 
     public RectF getBounds () {
-        float minX = Math.min(mStartPoint.x, mEndPoint.x);
-        float maxX = Math.max(mStartPoint.x, mEndPoint.x);
-        float minY = Math.min(mStartPoint.y, mEndPoint.y);
-        float maxY = Math.max(mStartPoint.y, mEndPoint.y);
+        float minX = Math.min(mStart.x, mEndPoint.x);
+        float maxX = Math.max(mStart.x, mEndPoint.x);
+        float minY = Math.min(mStart.y, mEndPoint.y);
+        float maxY = Math.max(mStart.y, mEndPoint.y);
         RectF result = new RectF(minX, minY, maxX, maxY);
         return result;
     }

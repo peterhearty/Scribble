@@ -17,6 +17,8 @@ import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
+import uk.org.platitudes.scribble.drawitem.MoveItem;
+import uk.org.platitudes.scribble.drawitem.ResizeItem;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
 
 /**
@@ -43,8 +45,15 @@ public class ScribbleView extends View {
      */
     private Drawing drawing;
 
+    /**
+     * The main activity.
+     */
     private ScribbleMainActivity mMainActivity;
 
+    /**
+     * Set when an existing item is selected.
+     */
+    private DrawItem mSelectedItem;
 
     public ScribbleView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -84,25 +93,79 @@ public class ScribbleView extends View {
         invalidate();
     }
 
+    // NOTE, we have to store the down coords as floats. Don't store the MotionEvent
+    // object as these seem to get reused.
+    private PointF downLocation;
+
+    private boolean nearLastDownEvent (MotionEvent e) {
+        if (downLocation == null) {
+            return false;
+        }
+        if (Math.abs(e.getX()-downLocation.x) < 2 && Math.abs(e.getY()-downLocation.y) < 2 ) {
+            return true;
+        } else {
+            // there has been some motion
+//            lastDownEvent = null;
+        }
+        return false;
+    }
+
+    private boolean longClick (MotionEvent e) {
+        if (nearLastDownEvent(e)) {
+            if (e.getEventTime() - e.getDownTime() > 1000) {
+                downLocation = null; // prevent further lon clicks registering
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event){
 
         int action = MotionEventCompat.getActionMasked(event);
 
+        if (mSelectedItem != null) {
+            // check for changes in its status
+            if (!mSelectedItem.isSelected() || mSelectedItem.deleted) {
+                mSelectedItem = null;
+            }
+        }
+
         int pointerCount = event.getPointerCount();
-        if (pointerCount == 2 && mCurrentItem != null && !(mCurrentItem instanceof ScrollItem)) {
-//            mCurrentItem.handleUpEvent(event);
-            mCurrentItem = new ScrollItem(event, this);
-            return true;
+        if (pointerCount == 2) {
+            if (mSelectedItem != null) {
+                // resize applies to selected item only
+                if (mCurrentItem != null && !(mCurrentItem instanceof ResizeItem)) {
+                    mCurrentItem = new ResizeItem(event, mSelectedItem, this);
+                }
+            } else {
+                // resize applies to whole view
+                if (mCurrentItem != null && !(mCurrentItem instanceof ScrollItem)) {
+                    mCurrentItem = new ScrollItem(event, this);
+                    return true;
+                }
+            }
         }
 
         switch(action) {
             case (MotionEvent.ACTION_DOWN) :
+                downLocation = new PointF(event.getX(), event.getY());
+
                 if (mCurrentItem != null) {
                     // no UP event received - pretend we got one
                     mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;
                 }
+
+                if (mSelectedItem != null) {
+//                    mSelectedItem.deselectItem();
+//                    mSelectedItem = null;
+                    // deselected item means click has been handled
+                    mCurrentItem = new MoveItem(event.getX(), event.getY(), mSelectedItem, this);
+                    break;
+                }
+
                 if (mMainActivity != null) {
                     DrawToolButtonHandler dth = mMainActivity.getmDrawToolButtonHandler();
                     // The draw tool button knows what type of draw tool is currently selected
@@ -110,6 +173,24 @@ public class ScribbleView extends View {
                 }
                 break;
             case (MotionEvent.ACTION_MOVE) :
+                if (longClick(event)) {
+                    if (mSelectedItem != null) {
+                        mSelectedItem.deselectItem();
+                        mSelectedItem = null;
+                        break;
+                    }
+
+                    PointF coords = eventToStoredCoordinates(event);
+                    mSelectedItem = getmDrawItems().findFirstSelectedItem(coords);
+                    if (mSelectedItem != null) {
+                        // discard any drawitem being built and replace with move
+                        mCurrentItem = new MoveItem(event.getX(), event.getY(), mSelectedItem, this);
+//                        mCurrentItem = null;
+                        // selected item means click has been handled
+                        break;
+                    }
+                }
+
                 if (mCurrentItem != null) {
                     mCurrentItem.handleMoveEvent(event);
                 }
@@ -156,6 +237,13 @@ public class ScribbleView extends View {
     public float screenYtoStored (float screenY) {
         float zoom = ZoomButtonHandler.getsZoom();
         float result = screenY/zoom+mScrollOffset.y;
+        return result;
+    }
+
+    public PointF eventToStoredCoordinates (MotionEvent event) {
+        PointF result = new PointF();
+        result.x = screenXtoStored(event.getX());
+        result.y = screenYtoStored(event.getY());
         return result;
     }
 

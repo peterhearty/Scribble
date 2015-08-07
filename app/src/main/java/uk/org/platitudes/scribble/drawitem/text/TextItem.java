@@ -25,10 +25,8 @@ import uk.org.platitudes.scribble.io.ScribbleOutputStream;
  */
 public class TextItem extends DrawItem {
 
-    private static final float DEFAULT_TEXT_SIZE = 200.0f;
+    private static final float DEFAULT_TEXT_SIZE = 100.0f;
     private float mTextSize;
-    private float mStartX;
-    private float mStartY;
     private String mText;
     private Rect bounds = new Rect();
 
@@ -45,8 +43,8 @@ public class TextItem extends DrawItem {
 
         float screenX = event.getX();
         float screenY = event.getY();
-        mStartX = scribbleView.screenXtoStored(screenX);
-        mStartY = scribbleView.screenYtoStored(screenY);
+        mStart.x = mScribbleView.screenXtoStored(screenX);
+        mStart.y = mScribbleView.screenYtoStored(screenY);
 
         mText = "";
         bounds = new Rect();
@@ -60,7 +58,7 @@ public class TextItem extends DrawItem {
 
     @Override
     public int getHashTag() {
-        int result = (int) (TEXT*1000 + mStartX +mStartY +mText.length());
+        int result = (int) (TEXT*1000 + mStart.x +mStart.y +mText.length());
         return result;
     }
 
@@ -68,10 +66,10 @@ public class TextItem extends DrawItem {
 
     @Override
     public void draw(Canvas c) {
-        float screenX = mScribbleView.storedXtoScreen(mStartX);
-        float screenY = mScribbleView.storedYtoScreen(mStartY);
+        float screenX = mScribbleView.storedXtoScreen(mStart.x);
+        float screenY = mScribbleView.storedYtoScreen(mStart.y);
 
-        float zoom = ZoomButtonHandler.getsZoom();
+        float zoom = ZoomButtonHandler.getsZoom() *mZoom;
         mPaint.setTextSize(mTextSize * zoom);
         c.drawText(mText, screenX, screenY, mPaint);
     }
@@ -79,8 +77,10 @@ public class TextItem extends DrawItem {
     @Override
     public void saveToFile(ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(TEXT);
-        dos.writeFloat(mStartX);
-        dos.writeFloat(mStartY);
+        dos.writeFloat(mZoom);
+        dos.writeByte(deleted ? 1:0);
+        dos.writeFloat(mStart.x);
+        dos.writeFloat(mStart.y);
         dos.writeUTF(mText);
     }
 
@@ -89,14 +89,22 @@ public class TextItem extends DrawItem {
         mTextSize = DEFAULT_TEXT_SIZE;
         mPaint.setTextSize(mTextSize);
 
+        if (version >= 1002) {
+            mZoom = dis.readFloat();
+            byte deletedByte = dis.readByte();
+            if (deletedByte==1) {
+                deleted = true;
+            }
+        }
+
         readFromFile(dis, version);
     }
 
     @Override
     public DrawItem readFromFile(ScribbleInputStream dis, int version) throws IOException {
         mTextSize = DEFAULT_TEXT_SIZE;
-        mStartX = dis.readFloat();
-        mStartY = dis.readFloat();
+        mStart.x = dis.readFloat();
+        mStart.y = dis.readFloat();
         String s = dis.readUTF();
         setmText(s);
         return null;
@@ -104,10 +112,10 @@ public class TextItem extends DrawItem {
 
     @Override
     public boolean selectItem(PointF p) {
-        float minX = mStartX-FUZZY;
-        float maxX = mStartX+bounds.right+FUZZY;
-        float minY = mStartY-FUZZY;
-        float maxY = mStartY+bounds.bottom+FUZZY;
+        float minX = mStart.x-FUZZY;
+        float maxX = mStart.x+bounds.right+FUZZY;
+        float minY = mStart.y-FUZZY;
+        float maxY = mStart.y+bounds.bottom+FUZZY;
         if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
             mSelected = true;
             mPaint.setColor(Color.RED);
@@ -116,10 +124,10 @@ public class TextItem extends DrawItem {
     }
 
     public boolean selectItem (PointF start, PointF end) {
-        float minX = mStartX;
-        float maxX = mStartX+bounds.right;
-        float minY = mStartY;
-        float maxY = mStartY+bounds.bottom;
+        float minX = mStart.x;
+        float maxX = mStart.x+bounds.right;
+        float minY = mStart.y;
+        float maxY = mStart.y+bounds.bottom;
         if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
             mSelected = true;
             mPaint.setColor(Color.RED);
@@ -128,10 +136,10 @@ public class TextItem extends DrawItem {
     }
 
     public RectF getBounds () {
-        float minX = mStartX;
-        float maxX = mStartX+bounds.right;
-        float minY = mStartY;
-        float maxY = mStartY+bounds.bottom;
+        float minX = mStart.x;
+        float maxX = mStart.x+bounds.right;
+        float minY = mStart.y;
+        float maxY = mStart.y+bounds.bottom;
         RectF result = new RectF(minX, minY, maxX, maxY);
         return result;
     }
@@ -141,13 +149,13 @@ public class TextItem extends DrawItem {
 
     public void setmText(String mText) {
         this.mText = mText;
-        mPaint.setTextSize(mTextSize);
+        mPaint.setTextSize(mTextSize*mZoom);
         mPaint.getTextBounds(mText, 0, mText.length(), bounds);
     }
 
     public void move(float deltaX, float deltaY) {
-        mStartX += deltaX;
-        mStartY += deltaY;
+        mStart.x += deltaX;
+        mStart.y += deltaY;
     }
 
 

@@ -42,9 +42,18 @@ public class ItemList {
 
     public void onDraw (Canvas c) {
         for (DrawItem d : mList) {
-            if (!d.deleted)
+            if (!d.deleted) {
                 d.draw(c);
+            }
         }
+    }
+
+    public int getHashTag () {
+        int result = 0;
+        for (DrawItem d : mList) {
+            result += d.getHashTag();
+        }
+        return result;
     }
 
     public ItemList (ScribbleInputStream dis, int version, ScribbleView scribbleView) throws IOException {
@@ -125,12 +134,27 @@ public class ItemList {
                 cleanedItems.add(d);
             } else if (d.deleted) {
                 cleanedItems.add(d);
+            } else if (d instanceof GroupItem) {
+                GroupItem g = (GroupItem) d;
+                if (g.isEmpty()) {
+                    cleanedItems.add(d);
+                }
             }
         }
         for (DrawItem d : cleanedItems) {
             mList.remove(d);
         }
         return cleanedItems.size();
+    }
+
+    public boolean isEmpty () {
+        boolean result = true;
+        if (mList != null) {
+            if (mList.size() > 0) {
+                result = false;
+            }
+        }
+        return result;
     }
 
 

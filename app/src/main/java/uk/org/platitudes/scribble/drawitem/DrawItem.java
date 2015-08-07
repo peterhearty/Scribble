@@ -15,6 +15,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
@@ -41,6 +42,8 @@ public abstract class DrawItem {
     protected Paint mPaint;
     protected ScribbleView mScribbleView;
     protected boolean mSelected;
+    protected float mZoom = 1.0f;
+    protected PointF mStart;
 
     /**
      * True if item has been moved to waste bin by a move operation. Deleted items don't go
@@ -57,6 +60,7 @@ public abstract class DrawItem {
         mPaint.setColor(Color.BLACK);
         mPaint.setStrokeWidth(5f);
         mSelected = false;
+        mStart = new PointF();
     }
 
 
@@ -139,4 +143,5 @@ public abstract class DrawItem {
      * Bounds are needed to perform view resizes;
      */
     public RectF getBounds () {return null;}
+
 }

@@ -43,16 +43,15 @@ public class MoveItem extends DrawItem {
      */
     private int mHashTag;
 
-    public MoveItem(MotionEvent event, ScribbleView scribbleView) {
-        super (event, scribbleView);
-        addPoint(event.getX(), event.getY(), scribbleView);
-        ItemList drawItems = scribbleView.getmDrawItems();
-        mSelectedItem = drawItems.findFirstSelectedItem(mStartPoint);
+    public MoveItem(float startX, float startY, DrawItem selected, ScribbleView scribbleView) {
+        super (null, scribbleView);
+        addPoint(startX, startY);
+        mSelectedItem = selected;
     }
 
-    private void addPoint (float x, float y, ScribbleView scribbleView) {
-        float storedX = scribbleView.screenXtoStored(x);
-        float storedY = scribbleView.screenYtoStored(y);
+    private void addPoint (float x, float y) {
+        float storedX = mScribbleView.screenXtoStored(x);
+        float storedY = mScribbleView.screenYtoStored(y);
         if (mStartPoint == null) {
             mStartPoint = mPreviousPosition = new PointF (storedX, storedY);
         } else {
@@ -88,7 +87,7 @@ public class MoveItem extends DrawItem {
     public void handleMoveEvent(MotionEvent event) {
         if (mSelectedItem != null) {
             mMoveInProgress = true;
-            addPoint (event.getX(), event.getY(), mScribbleView);
+            addPoint (event.getX(), event.getY());
             float deltaX = mCurrentPosition.x - mPreviousPosition.x;
             float deltaY = mCurrentPosition.y - mPreviousPosition.y;
             mPreviousPosition = mCurrentPosition;
@@ -101,10 +100,14 @@ public class MoveItem extends DrawItem {
     @Override
     public void handleUpEvent(MotionEvent event) {
         if (mSelectedItem != null) {
-            mSelectedItem.deselectItem();
+//            mSelectedItem.deselectItem();
             if (mDeleteItem) {
                 mSelectedItem.deleted = true;
+                mSelectedItem.deselectItem();
             }
+        }
+        if (mCurrentPosition == null) {
+            addPoint(event.getX(), event.getY());
         }
         mScribbleView.addItem(this);
         mMoveInProgress = false;
@@ -140,12 +143,18 @@ public class MoveItem extends DrawItem {
             return;
         }
 
+        int hashTag = mSelectedItem.getHashTag();
+        if (mStartPoint == null || mCurrentPosition == null || hashTag == 0) {
+            ScribbleMainActivity.log("Cannot save Move", "", null);
+            super.saveToFile(dos, version);
+            return;
+        }
+
         dos.writeByte(MOVE);
         dos.writeFloat(mStartPoint.x);
         dos.writeFloat(mStartPoint.y);
         dos.writeFloat(mCurrentPosition.x);
         dos.writeFloat(mCurrentPosition.y);
-        int hashTag = mSelectedItem.getHashTag();
         dos.writeInt(hashTag);
     }
 

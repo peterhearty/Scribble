@@ -119,9 +119,8 @@ public class floatAndDeltas {
 
     public void moveStart (float delta) {
         mStart += delta;
-        min = max = mStart;
-        // min and max get adjusted when next draw takes place and nextFloat
-        // gets repeatedly called
+        min += delta;
+        max += delta;
     }
 
     public void addPoint(float f) {
@@ -180,20 +179,23 @@ public class floatAndDeltas {
 
     public void write(ScribbleOutputStream dos) throws IOException {
         dos.writeFloat(mStart);
+        dos.writeFloat(min);
+        dos.writeFloat(max);
         dos.writeInt(mNextFreeDelta);
         dos.write(mDeltas, 0, mNextFreeDelta);
     }
 
-    public void read(ScribbleInputStream dis) throws IOException {
+    public void read(ScribbleInputStream dis, int version) throws IOException {
         mStart = dis.readFloat();
+        if (version >= 1003) {
+            min = dis.readFloat();
+            max = dis.readFloat();
+        }
         mNextFreeDelta = dis.readInt();
         mDeltas = new byte[mNextFreeDelta];
         //noinspection ResultOfMethodCallIgnored
         dis.read(mDeltas, 0, mNextFreeDelta);
         firstPointAdded = true;
-
-        // Calc min, max
-        min = max = firstFloat();
     }
 
     public float firstFloat() {
@@ -203,7 +205,7 @@ public class floatAndDeltas {
         return mStart;
     }
 
-    public float nextFloat() {
+    public float nextFloat(float zoom) {
         byte b = mDeltas[mPointer++];
         while (b == 127) {
             mCurrentMultiplier *= 10;
@@ -213,9 +215,8 @@ public class floatAndDeltas {
             mCurrentMultiplier /= 10;
             b = mDeltas[mPointer++];
         }
-        float result = mLastCalculated + b * mCurrentMultiplier;
+        float result = mLastCalculated + b * mCurrentMultiplier * zoom;
         mLastCalculated = result;
-        // Every draw causes min max to recalculate - handles movements and reads from disk
         checkMinMax();
         return result;
     }

@@ -3,6 +3,5 @@
     <item android:title="free" />
     <item android:title="line" />
     <item android:title="text" />
-    <item android:title="move" />
     <item android:title="group" />
 </menu>

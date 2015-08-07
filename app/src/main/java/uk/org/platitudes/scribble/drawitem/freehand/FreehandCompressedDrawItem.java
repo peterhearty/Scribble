@@ -51,7 +51,9 @@ public class FreehandCompressedDrawItem extends DrawItem {
 
     @Override
     public int getHashTag() {
-        int result = (int) (COMPRESSED_FREEHAND*1000 + x.min +lastX+y.min+lastY);
+        // Note - use start x/y vals not min or max.
+        // Latter don't get calculated on being first read in.
+        int result = (int) (COMPRESSED_FREEHAND*1000 + x.firstFloat() + y.firstFloat());
         return result;
     }
 
@@ -61,12 +63,19 @@ public class FreehandCompressedDrawItem extends DrawItem {
     public void draw(Canvas c) {
         float x_val = x.firstFloat();
         float y_val = y.firstFloat();
+
         float startX = mScribbleView.storedXtoScreen(x_val);
         float startY = mScribbleView.storedYtoScreen(y_val);
 
+        if (numPoints == 1) {
+            // draw a small dot at teh single point
+            c.drawCircle(startX, startY, 5, mPaint);
+            return;
+        }
+
         for (int i=0; i<numPoints-1; i++) {
-            float nextX = x.nextFloat();
-            float nextY = y.nextFloat();
+            float nextX = x.nextFloat(mZoom);
+            float nextY = y.nextFloat(mZoom);
 
             float endX   = mScribbleView.storedXtoScreen(nextX);
             float endY   = mScribbleView.storedYtoScreen(nextY);
@@ -78,8 +87,8 @@ public class FreehandCompressedDrawItem extends DrawItem {
     }
 
     private void addPoint (float x_val, float y_val, ScribbleView scribbleView) {
-        float storedX = scribbleView.screenXtoStored(x_val);
-        float storedY = scribbleView.screenYtoStored(y_val);
+        float storedX = mScribbleView.screenXtoStored(x_val);
+        float storedY = mScribbleView.screenYtoStored(y_val);
 
         if (numPoints == 0) {
             // This is the first point in the curve
@@ -117,13 +126,14 @@ public class FreehandCompressedDrawItem extends DrawItem {
 
     @Override
     public void handleUpEvent(MotionEvent event) {
-        if (numPoints > 1)
-            mScribbleView.addItem(this);
+        mScribbleView.addItem(this);
     }
 
     @Override
     public void saveToFile(ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(COMPRESSED_FREEHAND);
+        dos.writeFloat(mZoom);
+        dos.writeByte(deleted ? 1:0);
         dos.writeInt(numPoints);
         x.write(dos);
         y.write(dos);
@@ -131,9 +141,16 @@ public class FreehandCompressedDrawItem extends DrawItem {
 
     @Override
     public DrawItem readFromFile(ScribbleInputStream dis, int version) throws IOException {
+        if (version >= 1002) {
+            mZoom = dis.readFloat();
+            byte deletedByte = dis.readByte();
+            if (deletedByte==1) {
+                deleted = true;
+            }
+        }
         numPoints = dis.readInt();
-        x.read(dis);
-        y.read(dis);
+        x.read(dis, version);
+        y.read(dis, version);
 
         return null;
     }

@@ -3,6 +3,7 @@
  */
 package uk.org.platitudes.scribble.drawitem;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -33,13 +34,22 @@ public class GroupItem extends DrawItem {
 
 
     private void addPoint (float x, float y, ScribbleView scribbleView) {
-        float storedX = scribbleView.screenXtoStored(x);
-        float storedY = scribbleView.screenYtoStored(y);
+        float storedX = mScribbleView.screenXtoStored(x);
+        float storedY = mScribbleView.screenYtoStored(y);
         if (mStartPoint == null) {
             mStartPoint = new PointF (storedX, storedY);
         } else {
             mCurrentPosition = new PointF(storedX, storedY);
         }
+    }
+
+    @Override
+    public int getHashTag() {
+        int result = 0;
+        if (mSelectedItems != null) {
+            result = mSelectedItems.getHashTag();
+        }
+        return result;
     }
 
     @Override
@@ -81,7 +91,19 @@ public class GroupItem extends DrawItem {
             c.drawLine(endX, endY, endX, startY, mPaint);
             c.drawLine(endX, startY, startX, startY, mPaint);
         } else {
-            mSelectedItems.onDraw(c);
+            RectF bounds = mSelectedItems.getBounds();
+            if (bounds == null || mZoom == 1.0f) {
+                mSelectedItems.onDraw(c);
+            } else {
+                Bitmap b = Bitmap.createBitmap((int) bounds.width() + 1, (int) bounds.height() + 1, Bitmap.Config.ARGB_8888);
+                Canvas scaleCanvas = new Canvas(b);
+                mSelectedItems.onDraw(scaleCanvas);
+
+                float newRight = bounds.left + bounds.width() * mZoom;
+                float newBottom = bounds.top + bounds.height() * mZoom;
+                RectF newBounds = new RectF(bounds.left, bounds.top, newRight, newBottom);
+                c.drawBitmap(b, null, newBounds, mPaint);
+            }
         }
     }
 
@@ -89,6 +111,16 @@ public class GroupItem extends DrawItem {
         if (mSelectedItems == null) return;
 
         mSelectedItems.move(deltaX, deltaY);
+    }
+
+    public boolean isEmpty () {
+        boolean result = true;
+        if (mSelectedItems != null) {
+            if (!mSelectedItems.isEmpty()) {
+                result = false;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -136,6 +168,8 @@ public class GroupItem extends DrawItem {
         if (mSelectedItems == null) return;
 
         dos.writeByte(GROUP);
+        dos.writeFloat(mZoom);
+        dos.writeByte(deleted ? 1:0);
         mSelectedItems.write(dos, version);
     }
 
@@ -152,12 +186,20 @@ public class GroupItem extends DrawItem {
     }
 
     public DrawItem readFromFile (ScribbleInputStream dis, int version) throws IOException {
+        if (version >= 1002) {
+            mZoom = dis.readFloat();
+            byte deletedByte = dis.readByte();
+            if (deletedByte==1) {
+                deleted = true;
+            }
+        }
         mSelectedItems = new ItemList(dis, version, mScribbleView);
         return this;
     }
 
     public void undo () {
         if (mSelectedItems != null) {
+            deselectItem();
             mScribbleView.getmDrawItems().moveFromList(mSelectedItems);
             // At the moment, undoing a group is irreversible
             mSelectedItems = null;
