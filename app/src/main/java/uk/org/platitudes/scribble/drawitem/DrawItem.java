@@ -163,8 +163,8 @@ public abstract class DrawItem {
     public RectF getBounds () {return null;}
 
     public void drawBounds (Canvas c) {
-        if (true) {
-            if (mScribbleView == null) return;
+        if (mScribbleView == null) return;
+        if (mSelected || mScribbleView.drawAllBorders) {
 
             RectF bounds = getBounds();
             if (bounds == null) return;

@@ -21,7 +21,11 @@ import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 import uk.org.platitudes.scribble.io.ScribbleReader;
 
 /**
- * Holds the list of DrawItems for a drawing.
+ * Holds the list of DrawItems for a drawing. Also holds the storage file
+ * that backs them up. There is always a storage file, even if it is the
+ * default file. The file can be local or on the Google Drive. The latter
+ * involves a lot of asynchronous activity. A separate background thread
+ * handles most of this as well as file writes.
  */
 public class Drawing implements Runnable {
 
@@ -36,7 +40,10 @@ public class Drawing implements Runnable {
      */
     private ItemList mUndoList;
 
-    //
+    /**
+      * Gets set true whenever anything is added, moved etc from the draw list.
+      * Writes don't happen immediately but when the background thread wakes up.
+      */
     private boolean modifiedSinceLastWrite;
 
     private ScribbleView mScribbleView;
@@ -107,6 +114,9 @@ public class Drawing implements Runnable {
         setmCurrentlyOpenFile(f);
     }
 
+    /**
+     * Sets the currently stored PREFERENCE.
+     */
     public void setmCurrentlyOpenFile(File f) {
         if (f == null) return;
 
@@ -169,7 +179,8 @@ public class Drawing implements Runnable {
             mUndoList.tieMoveItemsToTargets(mUndoList);
 
             // The background thread reads Google Drive files, so invalidate cannot
-            // be called directly.
+            // be called directly. The " post" method is similar to Handler.post for 
+            // to a thread's message queue.
             mScribbleView.post(new Runnable() {
                 @Override
                 public void run() {
@@ -179,6 +190,11 @@ public class Drawing implements Runnable {
         }
     }
 
+    /*
+     * Undo always involves a move from the draw list to the undo list.
+     * For real drawing items this is all that is needed. Virtual items, like
+     * MoveItem, need to perform additional actions via their undo method.
+     */
     public synchronized void undo () {
         DrawItem movedItem = mDrawItems.moveLastTo(mUndoList);
         if (movedItem != null) {
@@ -222,6 +238,7 @@ public class Drawing implements Runnable {
 
     public synchronized void write () {
         modifiedSinceLastWrite = false;
+// What's wrong with mMainActivity below???
         ScribbleMainActivity activity = ScribbleMainActivity.mainActivity;
         if (mCurrentlyOpenFile != null) {
             if (writeInProgress) {

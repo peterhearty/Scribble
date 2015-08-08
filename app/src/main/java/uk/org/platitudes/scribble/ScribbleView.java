@@ -55,6 +55,11 @@ public class ScribbleView extends View {
      */
     private DrawItem mSelectedItem;
 
+    /**
+     * Set true when it's useful to have borders visible, e.g. when a group is being created.
+     */
+    public boolean drawAllBorders;
+
     public ScribbleView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setup();
@@ -200,7 +205,6 @@ public class ScribbleView extends View {
                 }
 
                 if (mSelectedItem != null) {
-                    // deselected item means click has been handled
                     mCurrentItem = new MoveItem(event.getX(), event.getY(), mSelectedItem, this);
                     break;
                 }
@@ -222,6 +226,7 @@ public class ScribbleView extends View {
                 }
                 break;
             case (MotionEvent.ACTION_UP) :
+                drawAllBorders = false;
                 if (mCurrentItem != null) {
                     mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;

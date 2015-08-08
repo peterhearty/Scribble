@@ -30,6 +30,7 @@ public class GroupItem extends DrawItem {
 
     public GroupItem(MotionEvent event, ScribbleView scribbleView) {
         super(event, scribbleView);
+        scribbleView.drawAllBorders = true;
         addPoint(event.getX(), event.getY(), scribbleView);
     }
 
@@ -76,6 +77,9 @@ public class GroupItem extends DrawItem {
         mSelectedItems = drawItems.findSelectedItems(mStartPoint, mCurrentPosition);
         drawItems.removeItems(mSelectedItems);
         mScribbleView.addItem(this);
+
+        mScribbleView.drawAllBorders = false;
+
     }
 
     @Override
@@ -152,26 +156,32 @@ public class GroupItem extends DrawItem {
 
     @Override
     public boolean selectItem(PointF p) {
-        mSelected = false;
-        DrawItem selectedItem = mSelectedItems.findFirstSelectedItem(p);
-        if (selectedItem != null) {
-            mSelected = true;
+        mSelected = super.selectItem(p);
+        if (mSelected) {
             mSelectedItems.selectedAll();
         }
+//        DrawItem selectedItem = mSelectedItems.findFirstSelectedItem(p);
+//        if (selectedItem != null) {
+//            mSelected = true;
+//            mSelectedItems.selectedAll();
+//        }
         return mSelected;
     }
 
     public boolean selectItem (PointF start, PointF end) {
-        mSelected = false;
-        if (mSelectedItems != null) {
-            RectF bounds = mSelectedItems.getBounds();
-            if (bounds != null) {
-                if (bounds.left >= start.x && bounds.right <= end.x && bounds.top >= start.y && bounds.bottom <= end.y) {
-                    mSelected = true;
-                    mSelectedItems.selectedAll();
-                }
-            }
+        mSelected = super.selectItem(start, end);
+        if (mSelected) {
+            mSelectedItems.selectedAll();
         }
+//        if (mSelectedItems != null) {
+//            RectF bounds = mSelectedItems.getBounds();
+//            if (bounds != null) {
+//                if (bounds.left >= start.x && bounds.right <= end.x && bounds.top >= start.y && bounds.bottom <= end.y) {
+//                    mSelected = true;
+//                    mSelectedItems.selectedAll();
+//                }
+//            }
+//        }
         return mSelected;
     }
 
