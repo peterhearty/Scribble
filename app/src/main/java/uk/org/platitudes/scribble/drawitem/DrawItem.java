@@ -107,7 +107,16 @@ public abstract class DrawItem {
      * @param p     The stored coordinate point to test.
      * @return      true if the DrawItem has been selected by the call.
      */
-    public boolean selectItem(PointF p) {return false;};
+    public boolean selectItem(PointF p) {
+        RectF bounds = getBounds();
+        if (bounds != null) {
+            if (bounds.left < p.x && p.x < bounds.right && bounds.top < p.y && p.y < bounds.bottom) {
+                mSelected = true;
+                mPaint.setColor(Color.RED);
+            }
+        }
+        return mSelected;
+    };
 
     /**
      * Tests to see if a DrawItem is fully contained within the given box. The supplied
@@ -115,7 +124,16 @@ public abstract class DrawItem {
      * the DrawItem is marked as selected and the method returns true.
      *
      */
-    public boolean selectItem (PointF start, PointF end) {return false;}
+    public boolean selectItem (PointF start, PointF end) {
+        RectF bounds = getBounds();
+        if (bounds != null) {
+            if (bounds.left >= start.x && bounds.right<=end.x && bounds.top >= start.y && bounds.bottom <= end.y) {
+                mSelected = true;
+                mPaint.setColor(Color.RED);
+            }
+        }
+        return mSelected;
+    }
 
     public void deselectItem () {
         mSelected = false;
@@ -143,5 +161,26 @@ public abstract class DrawItem {
      * Bounds are needed to perform view resizes;
      */
     public RectF getBounds () {return null;}
+
+    public void drawBounds (Canvas c) {
+        if (true) {
+            if (mScribbleView == null) return;
+
+            RectF bounds = getBounds();
+            if (bounds == null) return;
+            float screenTop = mScribbleView.storedYtoScreen(bounds.top);
+            float screenBottom = mScribbleView.storedYtoScreen(bounds.bottom);
+            float screenLeft = mScribbleView.storedXtoScreen(bounds.left);
+            float screenRight = mScribbleView.storedXtoScreen(bounds.right);
+            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+            p.setColor(Color.LTGRAY);
+            p.setStrokeWidth(3f);
+
+            c.drawLine(screenLeft, screenTop, screenRight, screenTop, p);
+            c.drawLine(screenRight, screenTop, screenRight, screenBottom, p);
+            c.drawLine(screenRight, screenBottom,screenLeft, screenBottom, p);
+            c.drawLine(screenLeft, screenBottom, screenLeft, screenTop, p);
+        }
+    }
 
 }

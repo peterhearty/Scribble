@@ -48,19 +48,6 @@ public class ResizeItem extends DrawItem {
             float zoom = newYdiff/mStartYdiff;
             mSelectedItem.mZoom = zoom;
 
-            // the zoom moves the object so try to bring it back
-//            if (mInitialItemBounds != null) {
-//                // Get the stored values we'd like to have
-//                float newStoredY = storedYtoScreen(mInitialScreenTop);
-//                float newStoredX = screenXtoStored(mInitialScreenLeft);
-//
-//                // Get the stored values we currently have
-//                RectF currentBounds = mSelectedItem.getBounds();
-//
-//                float deltaX = newStoredX - currentBounds.left;
-//                float deltaY = newStoredY - currentBounds.top;
-//                mSelectedItem.move(deltaX, deltaY);
-//            }
         }
     }
 

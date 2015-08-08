@@ -28,7 +28,6 @@ public class TextItem extends DrawItem {
     private static final float DEFAULT_TEXT_SIZE = 100.0f;
     private float mTextSize;
     private String mText;
-    private Rect bounds = new Rect();
 
     public TextItem (MotionEvent event, ScribbleView scribbleView) {
         super (event, scribbleView);
@@ -47,7 +46,6 @@ public class TextItem extends DrawItem {
         mStart.y = mScribbleView.screenYtoStored(screenY);
 
         mText = "";
-        bounds = new Rect();
 
         EditTextDialog dialog = new EditTextDialog();
         dialog.setTextItem(this);
@@ -72,13 +70,15 @@ public class TextItem extends DrawItem {
         float zoom = ZoomButtonHandler.getsZoom() *mZoom;
         mPaint.setTextSize(mTextSize * zoom);
         c.drawText(mText, screenX, screenY, mPaint);
+
+        drawBounds(c);
     }
 
     @Override
     public void saveToFile(ScribbleOutputStream dos, int version) throws IOException {
         dos.writeByte(TEXT);
         dos.writeFloat(mZoom);
-        dos.writeByte(deleted ? 1:0);
+        dos.writeByte(deleted ? 1 : 0);
         dos.writeFloat(mStart.x);
         dos.writeFloat(mStart.y);
         dos.writeUTF(mText);
@@ -110,36 +110,15 @@ public class TextItem extends DrawItem {
         return null;
     }
 
-    @Override
-    public boolean selectItem(PointF p) {
-        float minX = mStart.x-FUZZY;
-        float maxX = mStart.x+bounds.right+FUZZY;
-        float minY = mStart.y-FUZZY;
-        float maxY = mStart.y+bounds.bottom+FUZZY;
-        if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
-            mSelected = true;
-            mPaint.setColor(Color.RED);
-        }
-        return mSelected;
-    }
-
-    public boolean selectItem (PointF start, PointF end) {
-        float minX = mStart.x;
-        float maxX = mStart.x+bounds.right;
-        float minY = mStart.y;
-        float maxY = mStart.y+bounds.bottom;
-        if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
-            mSelected = true;
-            mPaint.setColor(Color.RED);
-        }
-        return mSelected;
-    }
-
     public RectF getBounds () {
+        mPaint.setTextSize(mTextSize * mZoom);
+        Rect bounds = new Rect();
+        mPaint.getTextBounds(mText, 0, mText.length(), bounds);
+
         float minX = mStart.x;
         float maxX = mStart.x+bounds.right;
-        float minY = mStart.y;
-        float maxY = mStart.y+bounds.bottom;
+        float minY = mStart.y+bounds.top; // getTextBounds relative to the BOTTOM left, not TOP left
+        float maxY = mStart.y;
         RectF result = new RectF(minX, minY, maxX, maxY);
         return result;
     }
@@ -149,8 +128,9 @@ public class TextItem extends DrawItem {
 
     public void setmText(String mText) {
         this.mText = mText;
-        mPaint.setTextSize(mTextSize*mZoom);
-        mPaint.getTextBounds(mText, 0, mText.length(), bounds);
+        if (mText.length() == 0) {
+            deleted = true;
+        }
     }
 
     public void move(float deltaX, float deltaY) {

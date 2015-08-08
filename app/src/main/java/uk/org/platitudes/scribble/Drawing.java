@@ -168,6 +168,8 @@ public class Drawing implements Runnable {
             mUndoList.tieMoveItemsToTargets(mDrawItems);
             mUndoList.tieMoveItemsToTargets(mUndoList);
 
+            // The background thread reads Google Drive files, so invalidate cannot
+            // be called directly.
             mScribbleView.post(new Runnable() {
                 @Override
                 public void run() {

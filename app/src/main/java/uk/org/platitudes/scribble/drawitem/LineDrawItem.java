@@ -41,6 +41,8 @@ public class LineDrawItem  extends DrawItem {
 
     @Override
     public void draw(Canvas c) {
+        drawBounds(c);
+
         if (mStart == null || mEndPoint == null) return;
         float startX = mScribbleView.storedXtoScreen(mStart.x);
         float startY = mScribbleView.storedYtoScreen(mStart.y);
@@ -117,32 +119,6 @@ public class LineDrawItem  extends DrawItem {
         return this;
     }
 
-    @Override
-    public boolean selectItem(PointF p) {
-        float minX = Math.min(mStart.x, mEndPoint.x)-FUZZY;
-        float maxX = Math.max(mStart.x, mEndPoint.x)+FUZZY;
-        float minY = Math.min(mStart.y, mEndPoint.y)-FUZZY;
-        float maxY = Math.max(mStart.y, mEndPoint.y)+FUZZY;
-        if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
-            mSelected = true;
-            mPaint.setColor(Color.RED);
-        }
-        return mSelected;
-    }
-
-    public boolean selectItem (PointF start, PointF end) {
-        float minX = Math.min(mStart.x, mEndPoint.x);
-        float maxX = Math.max(mStart.x, mEndPoint.x);
-        float minY = Math.min(mStart.y, mEndPoint.y);
-        float maxY = Math.max(mStart.y, mEndPoint.y);
-        if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
-            mSelected = true;
-            mPaint.setColor(Color.RED);
-        }
-        return mSelected;
-    }
-
-
     public void move(float deltaX, float deltaY) {
         mStart.x += deltaX;
         mStart.y += deltaY;
@@ -151,10 +127,25 @@ public class LineDrawItem  extends DrawItem {
     }
 
     public RectF getBounds () {
-        float minX = Math.min(mStart.x, mEndPoint.x);
-        float maxX = Math.max(mStart.x, mEndPoint.x);
-        float minY = Math.min(mStart.y, mEndPoint.y);
-        float maxY = Math.max(mStart.y, mEndPoint.y);
+        if (mStart == null || mEndPoint == null) return null;
+
+        float deltaX = mEndPoint.x - mStart.x;
+        float deltaY = mEndPoint.y - mStart.y;
+
+        float zoomedX = mStart.x + deltaX * mZoom;
+        float zoomedY = mStart.y + deltaY * mZoom;
+
+        float minX = Math.min(mStart.x, zoomedX);
+        float maxX = Math.max(mStart.x, zoomedX);
+        float minY = Math.min(mStart.y, zoomedY);
+        float maxY = Math.max(mStart.y, zoomedY);
+
+        maxX = maxX+FUZZY;
+        minX = minX-FUZZY;
+        maxY = maxY+FUZZY;
+        minY = minY-FUZZY;
+
+
         RectF result = new RectF(minX, minY, maxX, maxY);
         return result;
     }

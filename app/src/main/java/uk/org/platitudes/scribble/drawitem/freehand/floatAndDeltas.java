@@ -201,7 +201,7 @@ public class floatAndDeltas {
     public float firstFloat() {
         mPointer = 0;
         mCurrentMultiplier = 1;
-        mLastCalculated = mStart;
+        min = max = mLastCalculated = mStart;
         return mStart;
     }
 

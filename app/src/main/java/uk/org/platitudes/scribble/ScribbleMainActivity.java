@@ -67,7 +67,7 @@ public class ScribbleMainActivity extends Activity  {
         mDisplaySize = new Point();
         display.getSize(mDisplaySize);
         int max = Math.max(mDisplaySize.x, mDisplaySize.y);
-        DrawItem.FUZZY = max/20;
+        DrawItem.FUZZY = max/200;
     }
 
     private void setupButtonHandlers () {

@@ -57,10 +57,10 @@ public class FreehandCompressedDrawItem extends DrawItem {
         return result;
     }
 
-
-
     @Override
     public void draw(Canvas c) {
+        drawBounds(c);
+
         float x_val = x.firstFloat();
         float y_val = y.firstFloat();
 
@@ -153,31 +153,6 @@ public class FreehandCompressedDrawItem extends DrawItem {
         y.read(dis, version);
 
         return null;
-    }
-
-    @Override
-    public boolean selectItem(PointF p) {
-        float minX = x.min-FUZZY;
-        float maxX = x.max+FUZZY;
-        float minY = y.min-FUZZY;
-        float maxY = y.max+FUZZY;
-        if (minX < p.x && p.x < maxX && minY < p.y && p.y < maxY) {
-            mSelected = true;
-            mPaint.setColor(Color.RED);
-        }
-        return mSelected;
-    }
-
-    public boolean selectItem (PointF start, PointF end) {
-        float minX = x.min;
-        float maxX = x.max;
-        float minY = y.min;
-        float maxY = y.max;
-        if (minX >= start.x && maxX<=end.x && minY >= start.y && maxY <= end.y) {
-            mSelected = true;
-            mPaint.setColor(Color.RED);
-        }
-        return mSelected;
     }
 
     public RectF getBounds () {

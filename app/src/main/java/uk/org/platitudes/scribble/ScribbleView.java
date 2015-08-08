@@ -113,17 +113,57 @@ public class ScribbleView extends View {
     private boolean longClick (MotionEvent e) {
         if (nearLastDownEvent(e)) {
             if (e.getEventTime() - e.getDownTime() > 1000) {
-                downLocation = null; // prevent further lon clicks registering
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * There are two ways of getting here.
+     *
+     * 1. A DOWN, followed by nothing for a while.
+     * 2. A DOWN followed by a MOVE that's very close by.
+     *
+     */
+    private void handleLongClick () {
+        if (downLocation == null) return;
+
+        if (mSelectedItem != null) {
+            mSelectedItem.deselectItem();
+            mSelectedItem = null;
+        } else {
+            PointF coords = pointToStoredCoordinates(downLocation);
+            mSelectedItem = getmDrawItems().findFirstSelectedItem(coords);
+            if (mSelectedItem != null) {
+                // discard any drawitem being built and replace with move
+                mCurrentItem = new MoveItem(downLocation.x, downLocation.y, mSelectedItem, this);
+//                        mCurrentItem = null;
+                // selected item means click has been handled
+            }
+        }
+        invalidate();
+        downLocation = null;
+    }
+
+    /**
+     * This gets added to the View message queue with a delay when a DOWN event is detected.
+     * It gets removed if any other event is received.
+     */
+    private Runnable longClickDetector = new Runnable() {
+        @Override
+        public void run() {
+            handleLongClick();
+        }
+    };
+
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event){
 
         int action = MotionEventCompat.getActionMasked(event);
+
+        // remove any long click callback added by a DOWN event
+        removeCallbacks(longClickDetector);
 
         if (mSelectedItem != null) {
             // check for changes in its status
@@ -151,6 +191,7 @@ public class ScribbleView extends View {
         switch(action) {
             case (MotionEvent.ACTION_DOWN) :
                 downLocation = new PointF(event.getX(), event.getY());
+                postDelayed(longClickDetector, 1000);
 
                 if (mCurrentItem != null) {
                     // no UP event received - pretend we got one
@@ -159,8 +200,6 @@ public class ScribbleView extends View {
                 }
 
                 if (mSelectedItem != null) {
-//                    mSelectedItem.deselectItem();
-//                    mSelectedItem = null;
                     // deselected item means click has been handled
                     mCurrentItem = new MoveItem(event.getX(), event.getY(), mSelectedItem, this);
                     break;
@@ -174,21 +213,8 @@ public class ScribbleView extends View {
                 break;
             case (MotionEvent.ACTION_MOVE) :
                 if (longClick(event)) {
-                    if (mSelectedItem != null) {
-                        mSelectedItem.deselectItem();
-                        mSelectedItem = null;
-                        break;
-                    }
-
-                    PointF coords = eventToStoredCoordinates(event);
-                    mSelectedItem = getmDrawItems().findFirstSelectedItem(coords);
-                    if (mSelectedItem != null) {
-                        // discard any drawitem being built and replace with move
-                        mCurrentItem = new MoveItem(event.getX(), event.getY(), mSelectedItem, this);
-//                        mCurrentItem = null;
-                        // selected item means click has been handled
-                        break;
-                    }
+                    handleLongClick();
+                    break;
                 }
 
                 if (mCurrentItem != null) {
@@ -240,10 +266,10 @@ public class ScribbleView extends View {
         return result;
     }
 
-    public PointF eventToStoredCoordinates (MotionEvent event) {
+    public PointF pointToStoredCoordinates (PointF point) {
         PointF result = new PointF();
-        result.x = screenXtoStored(event.getX());
-        result.y = screenYtoStored(event.getY());
+        result.x = screenXtoStored(point.x);
+        result.y = screenYtoStored(point.y);
         return result;
     }
 

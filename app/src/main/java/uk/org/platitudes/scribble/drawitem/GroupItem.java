@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
@@ -91,18 +92,44 @@ public class GroupItem extends DrawItem {
             c.drawLine(endX, endY, endX, startY, mPaint);
             c.drawLine(endX, startY, startX, startY, mPaint);
         } else {
+            // Note we use the contents (unscaled by this group) bounds here
             RectF bounds = mSelectedItems.getBounds();
+            drawBounds(c);
+
             if (bounds == null || mZoom == 1.0f) {
                 mSelectedItems.onDraw(c);
             } else {
                 Bitmap b = Bitmap.createBitmap((int) bounds.width() + 1, (int) bounds.height() + 1, Bitmap.Config.ARGB_8888);
                 Canvas scaleCanvas = new Canvas(b);
-                mSelectedItems.onDraw(scaleCanvas);
 
-                float newRight = bounds.left + bounds.width() * mZoom;
-                float newBottom = bounds.top + bounds.height() * mZoom;
-                RectF newBounds = new RectF(bounds.left, bounds.top, newRight, newBottom);
+                // Save view offset and set view offset to 0,0. DrawItems don't realise they're
+                // not drawing on the view so write most of it off the bitmap.
+                PointF currentOffset = mScribbleView.getmScrollOffset();
+                float currentX = currentOffset.x;
+                float currentY = currentOffset.y;
+                mScribbleView.setmScrollOffset(bounds.left, bounds.top);
+                float currentViewZoom = ZoomButtonHandler.getsZoom();
+                ZoomButtonHandler zbh = mScribbleView.getmMainActivity().getmZoomButtonHandler();
+                zbh.setsZoom(1.0f);
+
+                // Draw on the bitmap then reset view offset
+                mSelectedItems.onDraw(scaleCanvas);
+                mScribbleView.setmScrollOffset(currentX, currentY);
+                zbh.setsZoom(currentViewZoom);
+
+                float newTop = bounds.top;
+                float newLeft = bounds.left;
+                float newRight = newLeft + bounds.width() * mZoom;
+                float newBottom = newTop + bounds.height() * mZoom;
+
+                newTop = mScribbleView.storedYtoScreen(newTop);
+                newBottom = mScribbleView.storedYtoScreen(newBottom);
+                newRight = mScribbleView.storedXtoScreen(newRight);
+                newLeft = mScribbleView.storedXtoScreen(newLeft);
+
+                RectF newBounds = new RectF(newLeft, newTop, newRight, newBottom);
                 c.drawBitmap(b, null, newBounds, mPaint);
+
             }
         }
     }
@@ -210,6 +237,10 @@ public class GroupItem extends DrawItem {
     public RectF getBounds () {
         if (mSelectedItems != null) {
             RectF result = mSelectedItems.getBounds();
+            if (mZoom != 1.0) {
+                result.right = result.left + result.width() * mZoom;
+                result.bottom = result.top + result.height() * mZoom;
+            }
             return result;
         }
         return null;
