@@ -28,6 +28,7 @@ public class TextItem extends DrawItem {
     private static final float DEFAULT_TEXT_SIZE = 100.0f;
     private float mTextSize;
     private String mText;
+    private boolean editTextDialogVisible;
 
     public TextItem (MotionEvent event, ScribbleView scribbleView) {
         super (event, scribbleView);
@@ -47,9 +48,7 @@ public class TextItem extends DrawItem {
 
         mText = "";
 
-        EditTextDialog dialog = new EditTextDialog();
-        dialog.setTextItem(this);
-        dialog.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
+        showEditTextDialog();
 
         scribbleView.addItem(this);
     }
@@ -60,6 +59,20 @@ public class TextItem extends DrawItem {
         return result;
     }
 
+    private void showEditTextDialog () {
+        // prevent multiple dialogs.
+        if (editTextDialogVisible) return;
+
+        editTextDialogVisible = true;
+        EditTextDialog dialog = new EditTextDialog();
+        dialog.setTextItem(this);
+        dialog.show(ScribbleMainActivity.mainActivity.getFragmentManager(), "");
+
+    }
+
+    public void clearEditTextDialogFlag () {
+        editTextDialogVisible = false;
+    }
 
 
     @Override
@@ -69,9 +82,34 @@ public class TextItem extends DrawItem {
 
         float zoom = ZoomButtonHandler.getsZoom() *mZoom;
         mPaint.setTextSize(mTextSize * zoom);
-        c.drawText(mText, screenX, screenY, mPaint);
+
+        String[] tokens = mText.split("\n");
+        for (String line: tokens) {
+            c.drawText(line, screenX, screenY, mPaint);
+            screenY += mPaint.descent() - mPaint.ascent();
+        }
+
+//        c.drawText(mText, screenX, screenY, mPaint);
 
         drawBounds(c);
+
+        if (mSelected)
+            drawHandles(c);
+    }
+
+    @Override
+    public void addHandles() {
+        addHandle(mStart);
+    }
+
+    @Override
+    public boolean handleEditEvent(PointF motionStart, MotionEvent event) {
+        if (nearHandle(event) != null) {
+            // we only have one handle any click on it is a request to edit the text.
+            showEditTextDialog();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -106,6 +144,9 @@ public class TextItem extends DrawItem {
         mStart.x = dis.readFloat();
         mStart.y = dis.readFloat();
         String s = dis.readUTF();
+        if (s.length()==0) {
+            deleted = true;
+        }
         setmText(s);
         return null;
     }
@@ -131,6 +172,8 @@ public class TextItem extends DrawItem {
         if (mText.length() == 0) {
             deleted = true;
         }
+        // Can't do invalidate here as might not be in the UI thread
+//        mScribbleView.invalidate();
     }
 
     public void move(float deltaX, float deltaY) {

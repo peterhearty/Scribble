@@ -6,16 +6,16 @@ package uk.org.platitudes.scribble.drawitem;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.MotionEvent;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
-import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
@@ -24,6 +24,7 @@ public abstract class DrawItem {
     /**
      * DrawItem types used when saving to a DataOutputStream.
      */
+    public final static byte LOWEST_TYPE = 100;
     public final static byte LINE = 100;
     public final static byte FREEHAND = 101;
     public final static byte TEXT = 102;
@@ -31,6 +32,7 @@ public abstract class DrawItem {
     public final static byte DEFAULT_ITEM = 104;
     public final static byte MOVE = 105;
     public final static byte GROUP = 106;
+    public final static byte HIGHEST_TYPE = 106;
 
     /**
      * Used during selection to allow some imprecision in selecting DrawItems.
@@ -44,6 +46,7 @@ public abstract class DrawItem {
     protected boolean mSelected;
     protected float mZoom = 1.0f;
     protected PointF mStart;
+    private ArrayList<Handle> handles;
 
     /**
      * True if item has been moved to waste bin by a move operation. Deleted items don't go
@@ -112,6 +115,7 @@ public abstract class DrawItem {
         if (bounds != null) {
             if (bounds.left < p.x && p.x < bounds.right && bounds.top < p.y && p.y < bounds.bottom) {
                 mSelected = true;
+                addHandles();
                 mPaint.setColor(Color.RED);
             }
         }
@@ -129,6 +133,7 @@ public abstract class DrawItem {
         if (bounds != null) {
             if (bounds.left >= start.x && bounds.right<=end.x && bounds.top >= start.y && bounds.bottom <= end.y) {
                 mSelected = true;
+                addHandles();
                 mPaint.setColor(Color.RED);
             }
         }
@@ -137,11 +142,13 @@ public abstract class DrawItem {
 
     public void deselectItem () {
         mSelected = false;
+        removeHandles();
         mPaint.setColor(Color.BLACK);
     }
 
     public void selectItem () {
         mSelected = true;
+        addHandles();
         mPaint.setColor(Color.RED);
     }
 
@@ -181,6 +188,95 @@ public abstract class DrawItem {
             c.drawLine(screenRight, screenBottom,screenLeft, screenBottom, p);
             c.drawLine(screenLeft, screenBottom, screenLeft, screenTop, p);
         }
+    }
+
+
+    /**
+     * Subclasses should override this if they want to add handles when the item is selected.
+     * They should call addHandle (PointF) for each handle they need to add.
+     */
+    public void addHandles () {}
+
+    /**
+     * Subclasses call this method from their own addHandles method.
+     */
+    public void addHandle (PointF point) {
+        if (handles == null) {
+            handles = new ArrayList<>();
+        }
+        Handle h = new Handle(point, mScribbleView);
+        handles.add(h);
+    }
+
+    public void drawHandles (Canvas c) {
+        if (handles == null) return;
+
+        for (Handle h: handles) {
+            h.drawSelectionHandle(c);
+        }
+    }
+
+    public void removeHandles () {
+        handles = null;
+    }
+
+    /**
+     * Tests to see if a Motionevent is on top of one of the DrawItem's handles.
+     * If it is then it returns the Handle, otherwise returns null.
+     */
+    public Handle nearHandle (MotionEvent event) {
+        Handle result = null;
+
+        if (handles != null) {
+            for (Handle h: handles) {
+                if (h.nearPoint(event, false)) {
+                    result = h;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Test each handle to see if any of them are under the supplied MotionEvent.
+     *
+     * @param event If set true then a matching handle will update itself to use the
+     *              supplied MotionEvent location. This can be used to automatically
+     *              adjust handle positions.
+     * @return      True if one of the handles is under the MotionEvent.
+     */
+    public boolean updateUsingHandles (MotionEvent event) {
+        if (handles == null) return false;
+
+        boolean result = false;
+
+        for (Handle h: handles) {
+            result = h.nearPoint(event, true);
+            if (result) break;
+        }
+
+        return result;
+    }
+
+    /**
+     * When a long click on the main view selects an item, any movement causes a
+     * MoveItem to be created for the selected item. The MoveItem handles overall
+     * movement of the object. Before performing a move it gives the object itself
+     * a chance to handle the event. For example, a user might click on a handle
+     * of a selected item in order to reshape it without moving the item's location.
+     *
+     * If the item handles the event then it should return true, othwerwise it
+     * should return false and allow the MoveItem to consume the event instead.
+     *
+     * @param motionStart   The position where the DOWN event happened.
+     * @param event         The current move event.
+     *
+     * @return
+     */
+    public boolean handleEditEvent (PointF motionStart, MotionEvent event) {
+        return false;
     }
 
 }

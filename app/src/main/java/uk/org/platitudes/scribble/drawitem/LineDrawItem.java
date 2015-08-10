@@ -28,8 +28,14 @@ public class LineDrawItem  extends DrawItem {
     private PointF mEndPoint;
     private boolean firstPointAdded;
 
-    public LineDrawItem (MotionEvent event, ScribbleView scribbleView) {
+    /**
+     * When true, draw a box instead of a line.
+     */
+    private boolean mDrawBox;
+
+    public LineDrawItem (MotionEvent event, ScribbleView scribbleView, boolean drawBox) {
         super(event, scribbleView);
+        mDrawBox = drawBox;
         handleMoveEvent(event);
     }
 
@@ -44,6 +50,7 @@ public class LineDrawItem  extends DrawItem {
         drawBounds(c);
 
         if (mStart == null || mEndPoint == null) return;
+
         float startX = mScribbleView.storedXtoScreen(mStart.x);
         float startY = mScribbleView.storedYtoScreen(mStart.y);
 
@@ -56,7 +63,27 @@ public class LineDrawItem  extends DrawItem {
         float endX   = mScribbleView.storedXtoScreen(zoomedX);
         float endY   = mScribbleView.storedYtoScreen(zoomedY);
 
-        c.drawLine(startX, startY, endX, endY, mPaint);
+        if (mDrawBox) {
+            // draw a box
+            c.drawLine(startX, startY, startX, endY, mPaint);
+            c.drawLine(startX, endY, endX, endY, mPaint);
+            c.drawLine(endX, endY, endX, startY, mPaint);
+            c.drawLine(endX, startY, startX, startY, mPaint);
+        } else {
+            // draw a line
+            c.drawLine(startX, startY, endX, endY, mPaint);
+        }
+
+        if (mSelected) {
+            // draw selection handles
+            drawHandles(c);
+        }
+    }
+
+    @Override
+    public void addHandles() {
+        addHandle(mStart);
+        addHandle(mEndPoint);
     }
 
     private void addPoint (float x, float y, ScribbleView scribbleView) {
@@ -73,12 +100,27 @@ public class LineDrawItem  extends DrawItem {
     @Override
     public void handleMoveEvent(MotionEvent event) {
         addPoint(event.getX(), event.getY(), mScribbleView);
-
     }
 
     public void handleUpEvent (MotionEvent event) {
         addPoint(event.getX(), event.getY(), mScribbleView);
         mScribbleView.addItem(this);
+    }
+
+    /**
+     * Called by a MoveItem when this item has been selected. This allows the object to test
+     * if any of its handles are being moved. A single call to updateUsingHandles tests the
+     * start and end point handles and updates them if the user is moving across them.
+     *
+     * works for lines and boxes.
+     */
+    @Override
+    public boolean handleEditEvent(PointF motionStart, MotionEvent event) {
+        boolean result = updateUsingHandles(event);
+        if (result) {
+            mScribbleView.getDrawing().requestWrite();
+        }
+        return result;
     }
 
     /**
@@ -102,6 +144,7 @@ public class LineDrawItem  extends DrawItem {
         dos.writeFloat(mStart.y);
         dos.writeFloat(mEndPoint.x);
         dos.writeFloat(mEndPoint.y);
+        dos.writeByte(mDrawBox ? 1:0);
     }
 
     public DrawItem readFromFile (ScribbleInputStream dis, int version) throws IOException {
@@ -116,6 +159,12 @@ public class LineDrawItem  extends DrawItem {
         mStart.y = dis.readFloat();
         mEndPoint.x = dis.readFloat();
         mEndPoint.y = dis.readFloat();
+        if (version >= 1004) {
+            byte boxByte = dis.readByte();
+            if (boxByte==1) {
+                mDrawBox = true;
+            }
+        }
         return this;
     }
 
@@ -144,7 +193,6 @@ public class LineDrawItem  extends DrawItem {
         minX = minX-FUZZY;
         maxY = maxY+FUZZY;
         minY = minY-FUZZY;
-
 
         RectF result = new RectF(minX, minY, maxX, maxY);
         return result;

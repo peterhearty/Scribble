@@ -29,9 +29,9 @@ abstract public class ScribbleWriter {
 
     public abstract void write ();
 
-    public void writeToOutputStream(OutputStream fos) {
+    public void writeToOutputStream(OutputStream fos, boolean asText) {
         try {
-            ScribbleOutputStream dos = new ScribbleOutputStream(fos, false);
+            ScribbleOutputStream dos = new ScribbleOutputStream(fos, asText);
             dos.writeLong(ScribbleReader.MAGIC_NUMBER);
             dos.writeInt(ScribbleReader.FILE_FORMAT_VERSION);
             dos.writeByte(++changeByte);

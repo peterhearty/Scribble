@@ -58,7 +58,11 @@ public class FileScribbleWriter extends ScribbleWriter {
                 os = new FileOutputStream(pathName);
                 lastSuccessfulFileWrite = new File (mdir, mfilename);
             }
-            writeToOutputStream(os);
+            boolean asText = false;
+            if (mfilename.toLowerCase().endsWith(".txt")) {
+                asText = true;
+            }
+            writeToOutputStream(os, asText);
             os.close();
         } catch (Exception e) {
             lastSuccessfulFileWrite = null;

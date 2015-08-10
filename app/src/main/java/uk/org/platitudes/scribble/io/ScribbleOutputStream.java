@@ -104,7 +104,8 @@ public class ScribbleOutputStream {
     public void writeUTF (String s) {
         try {
             if (asText) {
-                writeString(s);
+                dos.writeUTF(s);
+//                writeString(s);
             } else {
                 dos.writeUTF(s);
             }

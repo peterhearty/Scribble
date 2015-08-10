@@ -2,6 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="free" />
     <item android:title="line" />
+    <item android:title="box" />
     <item android:title="text" />
     <item android:title="group" />
 </menu>

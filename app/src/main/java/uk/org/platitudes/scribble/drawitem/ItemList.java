@@ -58,11 +58,19 @@ public class ItemList {
 
     public ItemList (ScribbleInputStream dis, int version, ScribbleView scribbleView) throws IOException {
         int numItems = dis.readInt();
+        if (numItems > 100000) {
+            // assume this to be an error
+            numItems = 10000;
+        }
         mList = new ArrayList<>(numItems+20);
-        try {
-            for (int i=0; i<numItems; i++) {
-                DrawItem item = null;
-                byte itemType = dis.readByte();
+        for (int i=0; i<numItems; i++) {
+            DrawItem item = null;
+            byte itemType = dis.readByte();
+            while ((itemType < DrawItem.LOWEST_TYPE) || (itemType > DrawItem.HIGHEST_TYPE)) {
+                // error reading file, try to find a valid object
+                itemType = dis.readByte();
+            }
+            try {
                 switch (itemType) {
                     case DrawItem.FREEHAND:
 //                    item = new FreehandDrawItem(dis, version, scribbleView);
@@ -86,14 +94,14 @@ public class ItemList {
                         // do nothing
                         break;
                     default:
-                        ScribbleMainActivity.log ("Error reading data file", "", null);
-                        return;
+                        throw new Exception ("Error reading data file");
                 }
                 if (item != null)
                     mList.add(item);
+            } catch (Exception e) {
+                ScribbleMainActivity.log("Read error", "type="+itemType, e);
+                // any exception - scan for any further items
             }
-        } catch (EOFException e) {
-            // silently ignore - use the items we've read
         }
     }
 

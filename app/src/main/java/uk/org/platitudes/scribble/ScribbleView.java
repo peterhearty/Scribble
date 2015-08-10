@@ -226,7 +226,7 @@ public class ScribbleView extends View {
                 }
                 break;
             case (MotionEvent.ACTION_UP) :
-                drawAllBorders = false;
+//                drawAllBorders = false;
                 if (mCurrentItem != null) {
                     mCurrentItem.handleUpEvent(event);
                     mCurrentItem = null;

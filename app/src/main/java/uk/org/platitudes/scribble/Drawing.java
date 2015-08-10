@@ -252,6 +252,10 @@ public class Drawing implements Runnable {
         }
     }
 
+    public void requestWrite () {
+        modifiedSinceLastWrite = true;
+    }
+
     @Override
     public void run() {
         while (!stopBackgroundThread) {

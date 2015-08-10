@@ -86,6 +86,10 @@ public class MoveItem extends DrawItem {
     @Override
     public void handleMoveEvent(MotionEvent event) {
         if (mSelectedItem != null) {
+            if (mSelectedItem.handleEditEvent(mStart, event)) {
+                // draw item has consumed the event
+                return;
+            }
             mMoveInProgress = true;
             addPoint (event.getX(), event.getY());
             float deltaX = mCurrentPosition.x - mPreviousPosition.x;

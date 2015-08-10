@@ -117,8 +117,9 @@ public class ScribbleInputStream {
     public String readUTF () throws IOException {
         String result = "";
         if (asText) {
-            String s = readLine();
-            result = s;
+            result = dis.readUTF();
+//            String s = readLine();
+//            result = s;
         } else {
             result = dis.readUTF();
         }

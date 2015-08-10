@@ -30,7 +30,7 @@ public class BundleScribbleWriter extends ScribbleWriter{
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
 //        ScribbleOutputStream dos = new ScribbleOutputStream(baos, false);
 
-        writeToOutputStream(baos);
+        writeToOutputStream(baos, false);
 //        writeMainView(dos);
         byte[] bytes = baos.toByteArray();
         mBundle.putByteArray(ScribbleReader.EVERYTHING_KEY, bytes);

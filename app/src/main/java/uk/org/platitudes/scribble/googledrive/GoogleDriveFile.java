@@ -58,7 +58,7 @@ public class GoogleDriveFile extends File {
     }
 
     public void forceReRead() {
-        if (readRequest == null) {
+        if (readRequest == null && mDriveId != null) {
             readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
         }
     }
