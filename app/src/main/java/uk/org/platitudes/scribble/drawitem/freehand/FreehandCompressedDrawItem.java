@@ -156,7 +156,7 @@ public class FreehandCompressedDrawItem extends DrawItem {
     }
 
     public RectF getBounds () {
-        RectF result = new RectF(x.min, y.min, x.max, y.max);
+        RectF result = new RectF(x.min-FUZZY, y.min-FUZZY, x.max+FUZZY, y.max+FUZZY);
         return result;
     }
 

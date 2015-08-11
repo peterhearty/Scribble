@@ -145,15 +145,6 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
 
         } else if (menuTitle.equals("exit")) {
             mActivity.finish();
-        } else if (menuTitle.equals("outlines")) {
-            ScribbleView scribbleView = mActivity.getmMainView();
-            if (scribbleView.drawAllBorders ) {
-                scribbleView.drawAllBorders = false;
-            } else {
-                scribbleView.drawAllBorders = true;
-            }
-            scribbleView.invalidate();
-
         } else if (menuTitle.equals("clear")) {
             mActivity.getmMainView().clear();
         } else if (menuTitle.equals("clear undos")) {

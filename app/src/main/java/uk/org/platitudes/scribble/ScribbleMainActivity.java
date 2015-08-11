@@ -14,9 +14,11 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Display;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
+import uk.org.platitudes.scribble.buttonhandler.GridButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.MoreButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.UndoButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
@@ -84,6 +86,11 @@ public class ScribbleMainActivity extends Activity  {
         b = (Button) findViewById(R.id.zoom_in_button);
         mZoomButtonHandler = new ZoomButtonHandler(mMainView, b);
         b.setOnClickListener(mZoomButtonHandler);
+
+        ImageButton ib = (ImageButton) findViewById(R.id.grid_button);
+        GridButtonHandler gbh = new GridButtonHandler(mMainView, ib);
+        ib.setOnClickListener(gbh);
+
     }
 
     @Override

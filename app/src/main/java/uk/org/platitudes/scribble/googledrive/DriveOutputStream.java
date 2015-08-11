@@ -77,7 +77,9 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
         OutputStream os = driveContents.getOutputStream();
         try {
             byte[] contents = mGoogleDriveFile.getmFileContents();
-            os.write(contents, 0, contents.length);
+            synchronized (contents) {
+                os.write(contents, 0, contents.length);
+            }
         } catch (Exception e) {
             ScribbleMainActivity.log("DriveOutputStream", "onResult", e);
         }

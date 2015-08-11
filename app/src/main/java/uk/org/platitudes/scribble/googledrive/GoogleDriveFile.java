@@ -72,8 +72,12 @@ public class GoogleDriveFile extends File {
             // file contents have not been fetched.
             return null;
         }
-        ByteArrayInputStream bais = new ByteArrayInputStream(mFileContents);
-        return bais;
+        synchronized (mFileContents) {
+            // Synchronized to make sure AsyncRead doesn't overwrite while we're reading this.
+            byte[] contentsCopy = mFileContents.clone();
+            ByteArrayInputStream bais = new ByteArrayInputStream(mFileContents);
+            return bais;
+        }
     }
 
     public OutputStream getOutputStream () {
@@ -135,7 +139,10 @@ public class GoogleDriveFile extends File {
     public boolean isDummyFile() {return dummyFile;}
     public void setDummyFile(boolean dummyFile) {this.dummyFile = dummyFile;}
     public void setmFileContents(byte[] mFileContents) {
-        this.mFileContents = mFileContents;
+        synchronized (mFileContents) {
+            // AsyncRead and DriveOutputStream can access this from different threads.
+            this.mFileContents = mFileContents;
+        }
     }
     public String toString () {return mParentFolder.toString()+"/"+mName;}
     public boolean isDirectory () {return false;}

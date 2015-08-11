@@ -89,8 +89,6 @@ public class TextItem extends DrawItem {
             screenY += mPaint.descent() - mPaint.ascent();
         }
 
-//        c.drawText(mText, screenX, screenY, mPaint);
-
         drawBounds(c);
 
         if (mSelected)
@@ -153,13 +151,29 @@ public class TextItem extends DrawItem {
 
     public RectF getBounds () {
         mPaint.setTextSize(mTextSize * mZoom);
-        Rect bounds = new Rect();
-        mPaint.getTextBounds(mText, 0, mText.length(), bounds);
+        float height = mPaint.ascent() - mPaint.descent();
+        String[] tokens = mText.split("\n");
+        int numLines = tokens.length;
 
+        float minY = mStart.y + height;
+        float maxY = minY - numLines * height;
         float minX = mStart.x;
-        float maxX = mStart.x+bounds.right;
-        float minY = mStart.y+bounds.top; // getTextBounds relative to the BOTTOM left, not TOP left
-        float maxY = mStart.y;
+        float maxX = minX; // temporary allocation - updated below
+
+        Rect bounds = new Rect();
+        for (String line: tokens) {
+            mPaint.getTextBounds(line, 0, line.length(), bounds);
+            float lineXmax = mStart.x+bounds.right;
+            if (lineXmax > maxX) {
+                maxX = lineXmax;
+            }
+        }
+
+//        mPaint.getTextBounds(mText, 0, mText.length(), bounds);
+//        float minX = mStart.x;
+//        float maxX = mStart.x+bounds.right;
+//        float minY = mStart.y+bounds.top; // getTextBounds relative to the BOTTOM left, not TOP left
+//        float maxY = mStart.y;
         RectF result = new RectF(minX, minY, maxX, maxY);
         return result;
     }

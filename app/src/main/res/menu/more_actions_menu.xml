@@ -2,7 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="open" />
     <item android:title="save" />
-    <item android:title="outlines" />
     <item android:title="export" />
     <item android:title="clear" />
     <item android:title="clear undos" />

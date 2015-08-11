@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
+import uk.org.platitudes.scribble.buttonhandler.GridButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.ItemList;
@@ -279,6 +280,11 @@ public class ScribbleView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
+        GridButtonHandler gbh = GridButtonHandler.gridButtonHandler;
+        if (gbh != null) {
+            gbh.onDraw(canvas);
+        }
+
         drawing.getmDrawItems().onDraw(canvas);
         if (mCurrentItem != null) {
             mCurrentItem.draw(canvas);

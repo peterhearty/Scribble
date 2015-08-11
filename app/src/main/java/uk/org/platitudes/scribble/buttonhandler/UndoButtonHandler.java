@@ -3,9 +3,13 @@
  */
 package uk.org.platitudes.scribble.buttonhandler;
 
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
+import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleView;
 
 public class UndoButtonHandler implements View.OnClickListener, View.OnLongClickListener {
@@ -31,10 +35,14 @@ public class UndoButtonHandler implements View.OnClickListener, View.OnLongClick
     public boolean onLongClick(View v) {
         Button b = (Button) v;
         if (mRedo) {
+//            b.setImageResource(R.drawable.undo);
             b.setText("undo");
+            b.setBackgroundColor(Color.WHITE);
             mRedo = false;
         } else {
+//            b.setImageResource(R.drawable.redo);
             b.setText("redo");
+            b.setBackgroundColor(Color.LTGRAY);
             mRedo = true;
         }
         return true;
