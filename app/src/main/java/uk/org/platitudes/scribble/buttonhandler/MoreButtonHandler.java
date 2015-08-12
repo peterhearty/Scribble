@@ -12,6 +12,7 @@ import android.graphics.RectF;
 import android.os.Environment;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.PopupMenu;
@@ -26,7 +27,7 @@ import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.ItemList;
 import uk.org.platitudes.scribble.file.FileChooser;
 
-public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener, View.OnTouchListener {
 
     private Button mMoreButton;
     private ScribbleMainActivity mActivity;
@@ -34,6 +35,8 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
     public MoreButtonHandler (Button b, ScribbleMainActivity sma) {
         mMoreButton = b;
         mActivity = sma;
+        mMoreButton.setBackgroundColor(ScribbleMainActivity.grey);
+        mMoreButton.setOnTouchListener(this);
     }
 
 
@@ -44,6 +47,21 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
         popup.setOnMenuItemClickListener(this);
         popup.show();
     }
+
+    /**
+     * A simple color change on being pressed.
+     */
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN){
+            mMoreButton.setBackgroundColor(Color.LTGRAY);
+        }
+        if (event.getAction() == MotionEvent.ACTION_UP){
+            mMoreButton.setBackgroundColor(ScribbleMainActivity.grey);
+        }
+        return false;
+    }
+
 
 
     @Override

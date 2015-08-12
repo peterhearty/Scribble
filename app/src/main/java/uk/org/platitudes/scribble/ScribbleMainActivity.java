@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -31,6 +32,9 @@ import uk.org.platitudes.scribble.io.BundleScribbleWriter;
 public class ScribbleMainActivity extends Activity  {
 
     public static final int RESOLVE_CONNECTION_REQUEST_CODE = 10000;
+
+    // Button background color
+    public static final int grey = Color.argb(255, 222, 222, 222);
 
     private ScribbleView mMainView;
     private Button mDrawToolButton;

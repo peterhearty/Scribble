@@ -1,8 +1,10 @@
 package uk.org.platitudes.scribble.buttonhandler;
 
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -11,7 +13,7 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.ItemList;
 
-public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClickListener {
+public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener {
 
     private static float sZoom = 1.0f;
     private ScribbleView mScribbleView;
@@ -29,7 +31,24 @@ public class ZoomButtonHandler implements View.OnClickListener, View.OnLongClick
         mButton = b;
         mButton.setOnLongClickListener(this);
         zoomState = 0;
+        mButton.setBackgroundColor(ScribbleMainActivity.grey);
+        mButton.setOnTouchListener(this);
     }
+
+    /**
+     * A simple color change on being pressed.
+     */
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN){
+            v.setBackgroundColor(Color.LTGRAY);
+        }
+        if (event.getAction() == MotionEvent.ACTION_UP){
+            v.setBackgroundColor(ScribbleMainActivity.grey);
+        }
+        return false;
+    }
+
 
     private void setButtonText () {
         String zoomSize = Float.toString(sZoom);

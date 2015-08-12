@@ -3,6 +3,7 @@
  */
 package uk.org.platitudes.scribble.buttonhandler;
 
+import android.graphics.Color;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -11,6 +12,7 @@ import android.widget.Button;
 import android.widget.PopupMenu;
 
 import uk.org.platitudes.scribble.R;
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.GroupItem;
@@ -21,12 +23,14 @@ import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.ScrollItem;
 import uk.org.platitudes.scribble.drawitem.text.TextItem;
 
-public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener, View.OnTouchListener {
 
     private Button mDrawToolButton;
 
     public DrawToolButtonHandler (Button b) {
         mDrawToolButton = b;
+        mDrawToolButton.setBackgroundColor(ScribbleMainActivity.grey);
+        mDrawToolButton.setOnTouchListener(this);
     }
 
     @Override
@@ -67,5 +71,19 @@ public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.On
         CharSequence menuTitle = item.getTitle();
         mDrawToolButton.setText(menuTitle);
         return true;
+    }
+
+    /**
+     * A simple color change on being pressed.
+     */
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN){
+            mDrawToolButton.setBackgroundColor(Color.LTGRAY);
+        }
+        if (event.getAction() == MotionEvent.ACTION_UP){
+            mDrawToolButton.setBackgroundColor(ScribbleMainActivity.grey);
+        }
+        return false;
     }
 }

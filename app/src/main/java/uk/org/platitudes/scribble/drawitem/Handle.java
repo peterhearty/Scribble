@@ -10,6 +10,7 @@ import android.graphics.PointF;
 import android.view.MotionEvent;
 
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.buttonhandler.GridButtonHandler;
 
 /**
  * A handle is a small square added to a DrawItem when it has been selected.
@@ -92,7 +93,14 @@ public class Handle {
         float x = mScribbleView.screenXtoStored(screenx);
         float y = mScribbleView.screenYtoStored(screeny);
         boolean result = nearPoint(x,y);
-        if (result) {
+        if (result && update) {
+            // This is the wrong place for this, has to go on an UP event.
+//            if (GridButtonHandler.sGridStatus == GridButtonHandler.GRID_ON) {
+//                // snap to nearest grid point
+//                PointF nearestGridPoint = GridButtonHandler.nearestGridPoint(x,y);
+//                x = nearestGridPoint.x;
+//                y = nearestGridPoint.y;
+//            }
             mPosition.x = x;
             mPosition.y = y;
         }

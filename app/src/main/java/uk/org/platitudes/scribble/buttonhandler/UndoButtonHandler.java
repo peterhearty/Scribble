@@ -5,14 +5,16 @@ package uk.org.platitudes.scribble.buttonhandler;
 
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 
 import uk.org.platitudes.scribble.R;
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 
-public class UndoButtonHandler implements View.OnClickListener, View.OnLongClickListener {
+public class UndoButtonHandler implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener {
 
     private ScribbleView mScribbleView;
     private boolean mRedo;
@@ -21,6 +23,8 @@ public class UndoButtonHandler implements View.OnClickListener, View.OnLongClick
 
         mScribbleView = v;
         b.setOnLongClickListener(this);
+        b.setBackgroundColor(ScribbleMainActivity.grey);
+        b.setOnTouchListener(this);
     }
 
     @Override
@@ -31,18 +35,33 @@ public class UndoButtonHandler implements View.OnClickListener, View.OnLongClick
             mScribbleView.undo();
     }
 
+    /**
+     * A simple color change on being pressed.
+     */
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN){
+            v.setBackgroundColor(Color.LTGRAY);
+        }
+        if (event.getAction() == MotionEvent.ACTION_UP){
+            v.setBackgroundColor(ScribbleMainActivity.grey);
+        }
+        return false;
+    }
+
+
     @Override
     public boolean onLongClick(View v) {
         Button b = (Button) v;
         if (mRedo) {
 //            b.setImageResource(R.drawable.undo);
+            b.setBackgroundColor(ScribbleMainActivity.grey);
             b.setText("undo");
-            b.setBackgroundColor(Color.WHITE);
             mRedo = false;
         } else {
 //            b.setImageResource(R.drawable.redo);
             b.setText("redo");
-            b.setBackgroundColor(Color.LTGRAY);
+            b.setBackgroundColor(Color.WHITE);
             mRedo = true;
         }
         return true;
