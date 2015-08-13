@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.buttonhandler.GridButtonHandler;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
@@ -26,13 +27,52 @@ import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 public class MoveItem extends DrawItem {
 
 
+    /**
+     * The position of the selected item when the move starts. An UNDO operation will move it back to here.
+     */
     private PointF mStartPoint;
+
+    /**
+     * Used while the move is being constructed to provide intermediate small moves. Note stored
+     * permanently and not used in UNDO or REDO operations.
+     */
     private PointF mPreviousPosition;
+
+    /**
+     * The final position when the move completes. A REDO operation will also move the selected
+     * item to here.
+     */
     private PointF mCurrentPosition;
+
+    /**
+     * The item being moved.
+     */
     private DrawItem mSelectedItem;
+
+    /**
+     * Set when a MOVE event is first received, cleared when an UP is received. Used to display the
+     * waste bin when the selected item begins to move. Note that this is not set when the selected
+     * item handles its own move events (e.g. when it tracks an edit handle).
+     */
     private boolean mMoveInProgress;
+
+    /**
+     * Gets set if the selected item moves over the waste bin. If it is still set when the UP
+     * event is received then the selected item is marked as deleted. Deleted items can be
+     * undeleted via an UNDO operation.
+     */
     private boolean mDeleteItem;
 
+    /**
+     * Set if the selected item is handling the move itself. We need to know this so that
+     * UNDO events can also be passed to the selected item. This object still records the start
+     * and end positions for UNDO/REDO events.
+     */
+    private Handle mSelectionHandle;
+
+    /**
+     * Icons for the waste bin.
+     */
     private static Bitmap sTrashCan;
     private static Bitmap sOrangeTrashCan;
 
@@ -86,35 +126,50 @@ public class MoveItem extends DrawItem {
     @Override
     public void handleMoveEvent(MotionEvent event) {
         if (mSelectedItem != null) {
-            if (mSelectedItem.handleEditEvent(mStart, event)) {
-                // draw item has consumed the event
-                return;
-            }
             mMoveInProgress = true;
+
             addPoint (event.getX(), event.getY());
             float deltaX = mCurrentPosition.x - mPreviousPosition.x;
             float deltaY = mCurrentPosition.y - mPreviousPosition.y;
             mPreviousPosition = mCurrentPosition;
-            mSelectedItem.move(deltaX, deltaY);
+
+            // Give the selected item an opportunity to handle the move
+            // e.g. by movin one of its handles
+            mSelectionHandle = mSelectedItem.handleEditEvent(mStart, event.getX(), event.getY());
+            if (mSelectionHandle == null) {
+                // item did not handle the move, so we move the whole item
+                mSelectedItem.move(deltaX, deltaY);
+            }
         }
     }
 
-
-
     @Override
     public void handleUpEvent(MotionEvent event) {
-        if (mSelectedItem != null) {
-//            mSelectedItem.deselectItem();
-            if (mDeleteItem) {
-                mSelectedItem.deleted = true;
-                mSelectedItem.deselectItem();
-            }
-        }
         if (mCurrentPosition == null) {
             addPoint(event.getX(), event.getY());
         }
         mScribbleView.addItem(this);
         mMoveInProgress = false;
+
+        if (mSelectedItem != null) {
+            if (mDeleteItem) {
+                // item was moved to the waste bin
+                mSelectedItem.deleted = true;
+                mSelectedItem.deselectItem();
+            }
+            if (mSelectionHandle != null) {
+                // This object did not move the selected item.
+                // The selected item did it itself. We now check for
+                // presence of a grid to snap to.
+                if (GridButtonHandler.sGridStatus == GridButtonHandler.GRID_ON) {
+                    // snap to nearest grid point
+                    PointF nearestGridPoint = GridButtonHandler.nearestGridPoint(mCurrentPosition.x, mCurrentPosition.y);
+                    mSelectionHandle.setPosition(nearestGridPoint.x, nearestGridPoint.y);
+                    mCurrentPosition = nearestGridPoint;
+                }
+
+            }
+        }
     }
 
     public void undo () {
@@ -122,17 +177,29 @@ public class MoveItem extends DrawItem {
             if (mSelectedItem.deleted) {
                 mSelectedItem.deleted = false;
             }
-            float deltaX = mStartPoint.x - mCurrentPosition.x;
-            float deltaY = mStartPoint.y - mCurrentPosition.y;
-            mSelectedItem.move(deltaX, deltaY);
+            if (mSelectionHandle != null) {
+                // selected item handled it itself
+                mSelectionHandle.setPosition(mStartPoint.x, mStartPoint.y);
+            } else {
+                // move whole object back
+                float deltaX = mStartPoint.x - mCurrentPosition.x;
+                float deltaY = mStartPoint.y - mCurrentPosition.y;
+                mSelectedItem.move(deltaX, deltaY);
+            }
         }
     }
 
     public void redo () {
         if (mSelectedItem != null) {
-            float deltaX = mCurrentPosition.x - mStartPoint.x;
-            float deltaY = mCurrentPosition.y - mStartPoint.y;
-            mSelectedItem.move(deltaX, deltaY);
+            if (mSelectionHandle != null) {
+                // move a selection handle
+                mSelectionHandle.setPosition(mCurrentPosition.x, mCurrentPosition.y);
+            } else {
+                // move whole object
+                float deltaX = mCurrentPosition.x - mStartPoint.x;
+                float deltaY = mCurrentPosition.y - mStartPoint.y;
+                mSelectedItem.move(deltaX, deltaY);
+            }
         }
     }
 

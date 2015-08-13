@@ -115,9 +115,9 @@ public class LineDrawItem  extends DrawItem {
      * works for lines and boxes.
      */
     @Override
-    public boolean handleEditEvent(PointF motionStart, MotionEvent event) {
-        boolean result = updateUsingHandles(event);
-        if (result) {
+    public Handle handleEditEvent(PointF motionStart, float screenx, float screeny) {
+        Handle result = updateUsingHandles(screenx, screeny);
+        if (result != null) {
             mScribbleView.getDrawing().requestWrite();
         }
         return result;

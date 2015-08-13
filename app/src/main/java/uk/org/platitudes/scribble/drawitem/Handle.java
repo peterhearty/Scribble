@@ -87,25 +87,20 @@ public class Handle {
      * handle to set itself to the event location. This is used by LineDrawItem to
      * handle move events on handles when it has been selected.
      */
-    public boolean nearPoint (MotionEvent event, boolean update) {
-        float screenx = event.getX();
-        float screeny = event.getY();
+    public boolean nearPoint (float screenx, float screeny, boolean update) {
         float x = mScribbleView.screenXtoStored(screenx);
         float y = mScribbleView.screenYtoStored(screeny);
         boolean result = nearPoint(x,y);
         if (result && update) {
-            // This is the wrong place for this, has to go on an UP event.
-//            if (GridButtonHandler.sGridStatus == GridButtonHandler.GRID_ON) {
-//                // snap to nearest grid point
-//                PointF nearestGridPoint = GridButtonHandler.nearestGridPoint(x,y);
-//                x = nearestGridPoint.x;
-//                y = nearestGridPoint.y;
-//            }
             mPosition.x = x;
             mPosition.y = y;
         }
         return result;
     }
 
+    public void setPosition (float x, float y) {
+        mPosition.x = x;
+        mPosition.y = y;
+    }
 
 }

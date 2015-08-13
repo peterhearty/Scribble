@@ -18,6 +18,7 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.buttonhandler.ZoomButtonHandler;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
+import uk.org.platitudes.scribble.drawitem.Handle;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
@@ -101,13 +102,13 @@ public class TextItem extends DrawItem {
     }
 
     @Override
-    public boolean handleEditEvent(PointF motionStart, MotionEvent event) {
-        if (nearHandle(event) != null) {
+    public Handle handleEditEvent(PointF motionStart, float screenx, float screeny) {
+        Handle result = nearHandle(screenx, screeny);
+        if (result != null) {
             // we only have one handle any click on it is a request to edit the text.
             showEditTextDialog();
-            return true;
         }
-        return false;
+        return result;
     }
 
     @Override

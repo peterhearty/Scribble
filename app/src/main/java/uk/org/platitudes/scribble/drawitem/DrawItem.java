@@ -224,12 +224,12 @@ public abstract class DrawItem {
      * Tests to see if a Motionevent is on top of one of the DrawItem's handles.
      * If it is then it returns the Handle, otherwise returns null.
      */
-    public Handle nearHandle (MotionEvent event) {
+    public Handle nearHandle (float screenx, float screeny) {
         Handle result = null;
 
         if (handles != null) {
             for (Handle h: handles) {
-                if (h.nearPoint(event, false)) {
+                if (h.nearPoint(screenx, screeny, false)) {
                     result = h;
                     break;
                 }
@@ -242,19 +242,18 @@ public abstract class DrawItem {
     /**
      * Test each handle to see if any of them are under the supplied MotionEvent.
      *
-     * @param event If set true then a matching handle will update itself to use the
-     *              supplied MotionEvent location. This can be used to automatically
-     *              adjust handle positions.
      * @return      True if one of the handles is under the MotionEvent.
      */
-    public boolean updateUsingHandles (MotionEvent event) {
-        if (handles == null) return false;
+    public Handle updateUsingHandles (float screenx, float screeny) {
+        if (handles == null) return null;
 
-        boolean result = false;
+        Handle result = null;
 
         for (Handle h: handles) {
-            result = h.nearPoint(event, true);
-            if (result) break;
+            if (h.nearPoint(screenx, screeny, true)) {
+                result = h;
+                break;
+            }
         }
 
         return result;
@@ -271,12 +270,12 @@ public abstract class DrawItem {
      * should return false and allow the MoveItem to consume the event instead.
      *
      * @param motionStart   The position where the DOWN event happened.
-     * @param event         The current move event.
+     * @param screenx         The current move event.
      *
      * @return
      */
-    public boolean handleEditEvent (PointF motionStart, MotionEvent event) {
-        return false;
+    public Handle handleEditEvent (PointF motionStart, float screenx, float screeny) {
+        return null;
     }
 
 }
