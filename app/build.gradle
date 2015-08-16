@@ -37,4 +37,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
     // https://developers.google.com/android/guides/setup
     compile 'com.google.android.gms:play-services-drive:7.5.0'
+    testCompile 'junit:junit:4.12'
+    testCompile "org.robolectric:robolectric:3.0"
 }
