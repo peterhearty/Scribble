@@ -7,10 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.view.MotionEvent;
 
 import uk.org.platitudes.scribble.ScribbleView;
-import uk.org.platitudes.scribble.buttonhandler.GridButtonHandler;
 
 /**
  * A handle is a small square added to a DrawItem when it has been selected.
