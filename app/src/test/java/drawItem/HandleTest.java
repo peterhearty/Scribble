@@ -1,3 +1,5 @@
+package drawItem;
+
 import android.graphics.PointF;
 import android.os.Build;
 
@@ -42,7 +44,7 @@ import uk.org.platitudes.scribble.drawitem.Handle;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(sdk = Build.VERSION_CODES.JELLY_BEAN, constants = BuildConfig.class)
-public class Tester extends TestCase{
+public class HandleTest extends TestCase{
 
     private ScribbleView scribbleView;
     private ScribbleMainActivity activity;
@@ -58,7 +60,7 @@ public class Tester extends TestCase{
     @Test
     public void testNearHandle () {
         PointF p = new PointF(20f, 20f);
-        Handle h = new Handle(p, scribbleView);
+        uk.org.platitudes.scribble.drawitem.Handle h = new uk.org.platitudes.scribble.drawitem.Handle(p, scribbleView);
         boolean result = h.nearPoint(21f, 21f);
         assertTrue(result);
     }
@@ -66,12 +68,13 @@ public class Tester extends TestCase{
     @Test
     public void testHandleDraw () {
         PointF p = new PointF(20f, 20f);
-        Handle h = new Handle(p, scribbleView);
+        uk.org.platitudes.scribble.drawitem.Handle h = new uk.org.platitudes.scribble.drawitem.Handle(p, scribbleView);
 
         TestCanvas c = new TestCanvas();
         h.drawSelectionHandle(c);
 
         assertTrue(c.history.size() == 4);
     }
+
 
 }
