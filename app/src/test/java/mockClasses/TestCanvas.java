@@ -25,17 +25,17 @@ public class TestCanvas extends Canvas {
 
     @Override
     public void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
-        if (startX < 0 || startY < 0 || stopX > MAXIMUM || stopY > MAXIMUM) {
+        if (startX < -MAXIMUM || startY < -MAXIMUM || stopX > MAXIMUM || stopY > MAXIMUM) {
             hasFailed = true;
             // Note - we still record the out of bounds points below
         }
-        RectF line = new RectF(startX, startY, stopX, startY);
+        RectF line = new RectF(startX, startY, stopX, stopY);
         history.add(line);
     }
 
     @Override
     public void drawCircle(float cx, float cy, float radius, Paint paint) {
-        if (cx < 0 || cy < 0 || radius < 0 || radius > MAXIMUM) {
+        if (cx < -MAXIMUM || cy < -MAXIMUM || radius < 0 || radius > MAXIMUM) {
             hasFailed = true;
             // Note - we still record the out of bounds points below
         }
@@ -43,8 +43,41 @@ public class TestCanvas extends Canvas {
         history.add(line);
     }
 
+    // Methods that are not part of android.graphics.Canvas are prefixed with the word "test".
+
     public void testReset () {
         history.clear();
         hasFailed = false;
+    }
+
+    public boolean testDrawCount (int expected) {
+        if (history.size() == expected) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean testStartPosition (int drawNumber, float expectedX, float expectedY) {
+        RectF singleDraw = history.get(drawNumber);
+        boolean result = true;
+        if (singleDraw.top != expectedY) {
+            result = false;
+        }
+        if (singleDraw.left != expectedX) {
+            result = false;
+        }
+        return result;
+    }
+
+    public boolean testEndPosition (int drawNumber, float expectedX, float expectedY) {
+        RectF singleDraw = history.get(drawNumber);
+        boolean result = true;
+        if (singleDraw.bottom != expectedY) {
+            result = false;
+        }
+        if (singleDraw.right != expectedX) {
+            result = false;
+        }
+        return result;
     }
 }
