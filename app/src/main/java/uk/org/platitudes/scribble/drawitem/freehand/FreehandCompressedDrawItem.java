@@ -4,19 +4,13 @@
 package uk.org.platitudes.scribble.drawitem.freehand;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.MotionEvent;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
-import uk.org.platitudes.scribble.drawitem.freehand.floatAndDeltas;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 

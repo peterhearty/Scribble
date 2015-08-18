@@ -1,3 +1,6 @@
+/**
+ * This source code is not owned by anybody. You can can do what you like with it.
+ */
 package drawItem;
 
 import android.graphics.PointF;
@@ -44,7 +47,7 @@ import uk.org.platitudes.scribble.drawitem.Handle;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(sdk = Build.VERSION_CODES.JELLY_BEAN, constants = BuildConfig.class)
-public class HandleTest extends TestCase{
+public class HandleTest extends TestCase {
 
     private ScribbleView scribbleView;
     private ScribbleMainActivity activity;

@@ -3,7 +3,6 @@
  */
 package uk.org.platitudes.scribble.io;
 
-import java.io.DataOutputStream;
 import java.io.OutputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;

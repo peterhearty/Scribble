@@ -16,11 +16,8 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.drawitem.GroupItem;
-import uk.org.platitudes.scribble.drawitem.MoveItem;
-import uk.org.platitudes.scribble.drawitem.ResizeItem;
-import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
 import uk.org.platitudes.scribble.drawitem.LineDrawItem;
-import uk.org.platitudes.scribble.drawitem.ScrollItem;
+import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
 import uk.org.platitudes.scribble.drawitem.text.TextItem;
 
 public class DrawToolButtonHandler implements View.OnClickListener, PopupMenu.OnMenuItemClickListener, View.OnTouchListener {

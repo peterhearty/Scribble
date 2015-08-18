@@ -4,16 +4,11 @@
 package uk.org.platitudes.scribble.drawitem;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.MotionEvent;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
@@ -22,6 +17,8 @@ import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
 /**
  * Draws a straight line.
+ * Can optionally be configured to draw a box. everything is the same for drawing a box except
+ * the actual drawing. Resizing. moving, number of points are all the same.
  */
 public class LineDrawItem  extends DrawItem {
 

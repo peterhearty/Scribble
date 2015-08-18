@@ -32,29 +32,29 @@ public class ScribbleView extends View {
      * draw tool selection. Moved to the draw item list when an UP, or a new
      * DOWN is received.
      */
-    private DrawItem mCurrentItem;
+    protected DrawItem mCurrentItem;
 
     /**
      * Coords of all DrawItems are based on a zoom value of 1.0 (no zoom).
      * The screen displays a window on the DrawItems, starting at this
      * member variable.
      */
-    private PointF mScrollOffset;
+    protected PointF mScrollOffset;
 
     /**
      * The items to draw
      */
-    private Drawing drawing;
+    protected Drawing drawing;
 
     /**
      * The main activity.
      */
-    private ScribbleMainActivity mMainActivity;
+    protected ScribbleMainActivity mMainActivity;
 
     /**
      * Set when an existing item is selected.
      */
-    private DrawItem mSelectedItem;
+    protected DrawItem mSelectedItem;
 
     /**
      * Set true when it's useful to have borders visible, e.g. when a group is being created.
@@ -70,7 +70,6 @@ public class ScribbleView extends View {
         super(context, attrs, defStyleAttr);
         setup();
     }
-
 
     private void setup () {
         drawing = new Drawing(this);

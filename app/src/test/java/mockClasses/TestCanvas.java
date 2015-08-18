@@ -1,6 +1,8 @@
-package mockClasses; /**
+/**
  * This source code is not owned by anybody. You can can do what you like with it.
  */
+package mockClasses;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -39,5 +41,10 @@ public class TestCanvas extends Canvas {
         }
         RectF line = new RectF(cx, cy, radius, 0);
         history.add(line);
+    }
+
+    public void testReset () {
+        history.clear();
+        hasFailed = false;
     }
 }

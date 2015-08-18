@@ -15,7 +15,6 @@ import android.widget.EditText;
 import uk.org.platitudes.scribble.R;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
-import uk.org.platitudes.scribble.io.FileScribbleWriter;
 
 /**
  * See Android/Sdk/docs/guide/topics/ui/dialogs.html

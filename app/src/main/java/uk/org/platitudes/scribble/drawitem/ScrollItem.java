@@ -3,13 +3,8 @@
  */
 package uk.org.platitudes.scribble.drawitem;
 
-import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.view.MotionEvent;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;

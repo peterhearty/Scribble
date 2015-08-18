@@ -7,9 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.PointF;
-import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
-import android.widget.ImageView;
 
 import java.io.IOException;
 import java.util.ArrayList;

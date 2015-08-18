@@ -3,8 +3,6 @@
  */
 package uk.org.platitudes.scribble.drawitem.freehand;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import uk.org.platitudes.scribble.io.ScribbleInputStream;

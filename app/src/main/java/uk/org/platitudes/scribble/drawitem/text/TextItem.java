@@ -4,14 +4,11 @@
 package uk.org.platitudes.scribble.drawitem.text;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.view.MotionEvent;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;

@@ -5,7 +5,6 @@ package uk.org.platitudes.scribble.drawitem;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.MotionEvent;

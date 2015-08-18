@@ -6,7 +6,6 @@ package uk.org.platitudes.scribble.io;
 import android.os.Bundle;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 
 import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
