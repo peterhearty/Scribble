@@ -11,9 +11,11 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Display;
+import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -45,6 +47,17 @@ public class ScribbleMainActivity extends Activity  {
 //    private File mCurrentlyOpenFile;
 
     public static ScribbleMainActivity mainActivity;
+
+    /**
+     * Used only for testing.
+     */
+//    public ScribbleMainActivity () {
+//        mainActivity = this;
+//        mDisplaySize = new Point(800,480);
+//        DrawItem.FUZZY = 10;
+//
+//        mMainView = new ScribbleView(this, null);
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
