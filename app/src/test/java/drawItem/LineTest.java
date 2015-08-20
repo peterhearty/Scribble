@@ -14,13 +14,23 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowMotionEvent;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import mockClasses.TestCanvas;
 import uk.org.platitudes.scribble.BuildConfig;
+import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.ResizeItem;
+import uk.org.platitudes.scribble.io.ScribbleInputStream;
+import uk.org.platitudes.scribble.io.ScribbleOutputStream;
+import uk.org.platitudes.scribble.io.ScribbleReader;
 
 /**
  */
@@ -82,6 +92,12 @@ public class LineTest extends TestCase {
         assertTrue(canvas.testDrawCount(1));
     }
 
+    private void checkPositions (int expectedDrawCount, float startX, float startY, float endX, float endY) {
+        assertTrue(canvas.testDrawCount(expectedDrawCount));
+        assertTrue(canvas.testStartPosition(0, startX, startY));
+        assertTrue(canvas.testEndPosition(0, endX, endY));
+    }
+
     @Test
     public void moveSizeTest () {
         // create an initial line from (10,10) to (20,20)
@@ -90,67 +106,39 @@ public class LineTest extends TestCase {
         motionEvent.setLocation(20f, 20f);
         line.handleMoveEvent(motionEvent);
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
-        assertTrue(canvas.testStartPosition(0, 10f, 10f));
-        assertTrue(canvas.testEndPosition(0, 20f, 20f));
+        checkPositions(1, 10, 10, 20, 20);
 
         // now we move the view offset
         scribbleView.setmScrollOffset(5, 5);
         canvas.testReset();
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
-        assertTrue(canvas.testStartPosition(0, 5, 5));
-        assertTrue(canvas.testEndPosition(0, 15, 15));
+        checkPositions(1, 5, 5, 15, 15);
 
         // now change the zoom
         activity.getmZoomButtonHandler().setsZoom(2);
         canvas.testReset();
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
-        assertTrue(canvas.testStartPosition(0, 10, 10));
-        assertTrue(canvas.testEndPosition(0, 30, 30));
+        checkPositions(1, 10, 10, 30, 30);
 
         // move the line from [(10,10),(20,20)] to [(15,20),(25,30)]
         // and repeat tests
         resetEverything();
         line.move(5, 10);
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
-        assertTrue(canvas.testStartPosition(0, 15, 20));
-        assertTrue(canvas.testEndPosition(0, 25, 30));
+        checkPositions(1, 15, 20, 25, 30);
 
         // now we move the view offset
         scribbleView.setmScrollOffset(5, 5);
         canvas.testReset();
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
-        assertTrue(canvas.testStartPosition(0, 10, 15));
-        assertTrue(canvas.testEndPosition(0, 20, 25));
+        checkPositions(1, 10, 15, 20, 25);
 
         // now change the zoom
         activity.getmZoomButtonHandler().setsZoom(2);
         canvas.testReset();
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
-        assertTrue(canvas.testStartPosition(0, 20, 30));
-        assertTrue(canvas.testEndPosition(0, 40, 50));
+        checkPositions(1, 20, 30, 40, 50);
     }
-
-//    private MotionEvent.PointerCoords createPointerCoord (float x, float y) {
-//        MotionEvent.PointerCoords pointerCoord = new MotionEvent.PointerCoords();
-//        pointerCoord.x = 10;
-//        pointerCoord.y = 10;
-//        pointerCoord.pressure = 1;
-//        pointerCoord.size = 1;
-//        return pointerCoord;
-//    }
-//
-//    private MotionEvent.PointerProperties createPointerProperties (int id) {
-//        MotionEvent.PointerProperties pointerProperties = new MotionEvent.PointerProperties();
-//        pointerProperties.id = 1;
-//        pointerProperties.toolType = MotionEvent.TOOL_TYPE_FINGER;
-//        return pointerProperties;
-//    }
 
     @Test
     public void localZoom () {
@@ -162,30 +150,55 @@ public class LineTest extends TestCase {
         line.handleMoveEvent(motionEvent);
         zoomLine.handleMoveEvent(motionEvent);
 
-//        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[2];
-//        pointerCoords[0] = createPointerCoord(10,10);
-//        pointerCoords[1] = createPointerCoord(15,15);
-//
-//        MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[2];
-//        pointerProperties[0] = createPointerProperties(0);
-//        pointerProperties[1] = createPointerProperties(1);
-
-        long time = SystemClock.uptimeMillis();
-        float xprecision = 1;
-        float yprecision = 1;
-        int deviceId = 6;
-
         MotionEvent twoPointerEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 10f, 10f, 0);
-
-//        MotionEvent twoPointerEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 2, pointerProperties, pointerCoords, 0, 0, 0, 0, 0, 0, 0, 0);
-//        twoPointerEvent = MotionEvent.obtain(
-//                time, time, MotionEvent.ACTION_POINTER_DOWN, 2,
-//                pointerProperties, pointerCoords, 0, 0, xprecision, yprecision, deviceId, 0, 0, 0);
 
 // Some of the Roboelectric stuff may seem unwieldy, but without it, or without Mockito or PowerMock,
 // you quickly find yourself emulating dozens of classes and hundreds of methods.
-        Shadows.shadowOf(twoPointerEvent).setPointer2(15, 15);
+        ShadowMotionEvent shadowEvent = Shadows.shadowOf(twoPointerEvent);
+        shadowEvent.setPointer2(15, 15);
+
+        // Zoom the line
         ResizeItem resizer = new ResizeItem(twoPointerEvent, zoomLine, scribbleView);
+        shadowEvent.setPointer2(20, 20);
+        resizer.handleMoveEvent(twoPointerEvent);
+
+        line.draw(canvas);
+        zoomLine.draw(canvas);
+        assertTrue(canvas.testDrawCount(2));
+        checkPositions(2, 10, 10, 20, 20);
+        assertTrue(canvas.testStartPosition(1, 10, 10));
+        assertTrue(canvas.testEndPosition(1, 30, 30));
+    }
+
+    @Test
+    public void saveRestore () throws IOException {
+        // Set up a line
+        resetEverything();
+        LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
+        motionEvent.setLocation(20f, 20f);
+        line.handleMoveEvent(motionEvent);
+
+        // We have to do an UP event to add to the Drawing
+        line.handleUpEvent(motionEvent);
+
+        // Create file and save it
+        Drawing drawing = scribbleView.getDrawing();
+        drawing.write();
+//        FileOutputStream fos = new FileOutputStream("/tmp/linesave");
+//        ScribbleOutputStream sos = new ScribbleOutputStream(fos, false);
+//        line.saveToFile(sos, ScribbleReader.FILE_FORMAT_VERSION);
+//        sos.close();
+//        fos.close();
+//
+//        FileInputStream fis = new FileInputStream("/tmp/linesave");
+//        ScribbleInputStream sis = new ScribbleInputStream(fis);
+//        LineDrawItem newLine = new LineDrawItem(sis, ScribbleReader.FILE_FORMAT_VERSION, scribbleView);
+        drawing.openCurrentFile();
+        drawing.getmDrawItems().onDraw(canvas);
+
+        // checking the line position implicitly checks that mDrawBox is false and zoom is 1
+        checkPositions(1, 10, 10, 20, 20);
+//        assertTrue(newLine.deleted == false);
 
     }
 
