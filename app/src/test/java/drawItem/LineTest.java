@@ -1,8 +1,10 @@
+/**
+ * This source code is not owned by anybody. You can can do what you like with it.
+ */
 package drawItem;
 
 import android.graphics.PointF;
 import android.os.Build;
-import android.os.SystemClock;
 import android.view.MotionEvent;
 
 import junit.framework.TestCase;
@@ -16,9 +18,6 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMotionEvent;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import mockClasses.TestCanvas;
@@ -28,9 +27,6 @@ import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.ResizeItem;
-import uk.org.platitudes.scribble.io.ScribbleInputStream;
-import uk.org.platitudes.scribble.io.ScribbleOutputStream;
-import uk.org.platitudes.scribble.io.ScribbleReader;
 
 /**
  */
@@ -184,15 +180,6 @@ public class LineTest extends TestCase {
         // Create file and save it
         Drawing drawing = scribbleView.getDrawing();
         drawing.write();
-//        FileOutputStream fos = new FileOutputStream("/tmp/linesave");
-//        ScribbleOutputStream sos = new ScribbleOutputStream(fos, false);
-//        line.saveToFile(sos, ScribbleReader.FILE_FORMAT_VERSION);
-//        sos.close();
-//        fos.close();
-//
-//        FileInputStream fis = new FileInputStream("/tmp/linesave");
-//        ScribbleInputStream sis = new ScribbleInputStream(fis);
-//        LineDrawItem newLine = new LineDrawItem(sis, ScribbleReader.FILE_FORMAT_VERSION, scribbleView);
         drawing.openCurrentFile();
         drawing.getmDrawItems().onDraw(canvas);
 

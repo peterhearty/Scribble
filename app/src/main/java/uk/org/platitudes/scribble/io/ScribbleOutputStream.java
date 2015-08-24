@@ -24,6 +24,16 @@ public class ScribbleOutputStream {
         asText = writeAsText;
     }
 
+    /**
+     * Utility routine to return a ScribbleOutputStream that has had any necessary
+     * header setup correctly.
+     */
+    public static ScribbleOutputStream newScribbleOutputStream (OutputStream out, boolean writeAsText) {
+        ScribbleOutputStream sos = new ScribbleOutputStream(out, writeAsText);
+        sos.writeLong(ScribbleReader.MAGIC_NUMBER);
+        return sos;
+    }
+
     private void writeString (String s) throws IOException {
         String charsetName = "US_ASCII";
         byte[] bytes = s.getBytes(charsetName);
