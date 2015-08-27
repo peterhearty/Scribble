@@ -15,10 +15,13 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.IOException;
+
 import mockClasses.TestCanvas;
 import uk.org.platitudes.scribble.BuildConfig;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
+import uk.org.platitudes.scribble.drawitem.LineDrawItem;
 import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
 
 /**
@@ -26,9 +29,6 @@ import uk.org.platitudes.scribble.drawitem.freehand.FreehandCompressedDrawItem;
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(sdk = Build.VERSION_CODES.JELLY_BEAN, constants = BuildConfig.class)
 public class FreehandTest extends TestCase{
-
-    private float[] x1s = {0,10,20,30,20,10,0};
-    private float[] y1s = {0,10,20,30,40,50,60};
 
     private ScribbleView scribbleView;
     private ScribbleMainActivity activity;
@@ -78,6 +78,9 @@ public class FreehandTest extends TestCase{
         return result;
     }
 
+    private float[] x1s = {0,10,20,30,20,10,0};
+    private float[] y1s = {0,10,20,30,40,50,60};
+
     @Test
     public void simpleFreehandTest () {
         FreehandCompressedDrawItem free = createFreehand(x1s, y1s);
@@ -85,4 +88,31 @@ public class FreehandTest extends TestCase{
         assertTrue(canvas.testDrawCount(x1s.length-1));
         assertTrue(testCanvasPositions(x1s, y1s));
     }
+
+    @Test
+    public void moveSizeTest () {
+        LineTest.resetEverything(canvas, motionEvent, scribbleView, activity);
+        FreehandCompressedDrawItem line = new FreehandCompressedDrawItem(motionEvent, scribbleView);
+        LineTest.moveSizeTest(motionEvent, scribbleView, line, canvas, activity);
+    }
+
+    @Test
+    public void localZoom () {
+        // 2 lines one zoomed one not
+        LineTest.resetEverything(canvas, motionEvent, scribbleView, activity);
+        FreehandCompressedDrawItem line = new FreehandCompressedDrawItem(motionEvent, scribbleView);
+        FreehandCompressedDrawItem zoomLine = new FreehandCompressedDrawItem(motionEvent, scribbleView);
+        LineTest.localZoom(motionEvent, scribbleView, line, zoomLine, canvas);
+    }
+
+
+    @Test
+    public void saveRestore () throws IOException {
+        // Set up a line
+        LineTest.resetEverything(canvas, motionEvent, scribbleView, activity);
+        FreehandCompressedDrawItem line = new FreehandCompressedDrawItem(motionEvent, scribbleView);
+        LineTest.saveRestore(motionEvent, line, scribbleView, canvas);
+    }
+
+
 }
