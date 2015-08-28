@@ -12,12 +12,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowEnvironment;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import uk.org.platitudes.scribble.BuildConfig;
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.drawitem.freehand.floatAndDeltas;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
@@ -149,4 +151,8 @@ public class FloatAndDeltasTest extends TestCase {
         assertTrue(closeTo(min, 0, 0.1f));
     }
 
+    @Test
+    public void logTest () {
+        ScribbleMainActivity.log ("test tag", "test msg", new Exception("test exception"));
+    }
 }

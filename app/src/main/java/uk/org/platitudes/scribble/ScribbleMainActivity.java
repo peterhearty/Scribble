@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -19,6 +20,12 @@ import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.Date;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.GridButtonHandler;
@@ -43,42 +50,36 @@ public class ScribbleMainActivity extends Activity  {
     private ZoomButtonHandler mZoomButtonHandler;
     private DrawToolButtonHandler mDrawToolButtonHandler;
     private GoogleDriveStuff mGoogleStuff;
+    private static PrintWriter logFile ;
     public Point mDisplaySize;
-//    private File mCurrentlyOpenFile;
 
     public static ScribbleMainActivity mainActivity;
 
-    /**
-     * Used only for testing.
-     */
-//    public ScribbleMainActivity () {
-//        mainActivity = this;
-//        mDisplaySize = new Point(800,480);
-//        DrawItem.FUZZY = 10;
-//
-//        mMainView = new ScribbleView(this, null);
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        try {
+            super.onCreate(savedInstanceState);
+            setupLogFile();
 
-        mainActivity = this;
+            mainActivity = this;
 
-        mGoogleStuff = new GoogleDriveStuff((this));
+            mGoogleStuff = new GoogleDriveStuff((this));
 
-        getDisplaySize();
+            getDisplaySize();
 
-        setContentView(R.layout.activity_scribble_main);
-        mMainView = (ScribbleView) findViewById(R.id.main_content);
-        mMainView.setmMainActivity(this);
+            setContentView(R.layout.activity_scribble_main);
+            mMainView = (ScribbleView) findViewById(R.id.main_content);
+            mMainView.setmMainActivity(this);
 
-        setupButtonHandlers();
+            setupButtonHandlers();
 
-        if (savedInstanceState != null) {
-            readState(savedInstanceState);
+            if (savedInstanceState != null) {
+                readState(savedInstanceState);
+            }
+        } catch (Throwable e) {
+            ScribbleMainActivity.log ("ScribbleMainActivity", "onCreate", e);
         }
-
     }
 
     private void getDisplaySize() {
@@ -110,7 +111,6 @@ public class ScribbleMainActivity extends Activity  {
         ImageButton ib = (ImageButton) findViewById(R.id.grid_button);
         GridButtonHandler gbh = new GridButtonHandler(mMainView, ib);
         ib.setOnClickListener(gbh);
-
     }
 
     @Override
@@ -156,7 +156,45 @@ public class ScribbleMainActivity extends Activity  {
         }
     }
 
-    public static void log (String tag, String msg, Exception e) {
+    private static String intTo2digit (int i) {
+        String result = Integer.toString(i);
+        if (result.length() == 1) {
+            result = "0"+result;
+        }
+        return result;
+    }
+
+    private static void setupLogFile () {
+        if (logFile == null) {
+            File dir = Environment.getExternalStorageDirectory();
+            if (dir != null && dir.canWrite()) {
+                Date d = new Date();
+                int year = d.getYear();
+                int month = d.getMonth();
+                int day = d.getDay();
+//                int hour = d.getHours();
+//                int min = d.getMinutes();
+                String logName = "scribblelog_"
+                        +year+intTo2digit(month)+intTo2digit(day)+".log";
+//                        +intTo2digit(hour)+intTo2digit(min);
+                try {
+                    String dirName = dir.getCanonicalPath();
+                    if (dirName.indexOf("robolectric") != -1) {
+                        // a test system
+                        dirName = "/tmp";
+                    }
+                    String pathName = dirName+ File.separator+logName;
+                    FileOutputStream fos = new FileOutputStream(pathName, true);
+                    logFile = new PrintWriter(fos);
+                } catch (Exception e) {
+                    // ignore
+                }
+
+            }
+        }
+    }
+
+    public static void log (String tag, String msg, Throwable e) {
         String s = tag + " " + msg;
         if (e != null) {
             s = s + " " + e;
@@ -175,6 +213,13 @@ public class ScribbleMainActivity extends Activity  {
                     }
                 }
             }
+        }
+        if (logFile != null) {
+            logFile.println(new Date().toString()+s);
+            if (e != null) {
+                e.printStackTrace(logFile);
+            }
+            logFile.flush();
         }
 //        makeToast(s);
     }
