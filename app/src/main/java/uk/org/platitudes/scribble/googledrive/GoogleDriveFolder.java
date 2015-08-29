@@ -36,7 +36,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
 
     public GoogleDriveFolder(ScribbleMainActivity activity) {
         // Need to cal a super of some kind.
-        super ("/");
+        super("/");
         mGoogleApiClient = activity.getmGoogleStuff().getmGoogleApiClient();
         mDriveFolder = Drive.DriveApi.getRootFolder(mGoogleApiClient);
         mContents = new GoogleDriveFile[0];
@@ -114,6 +114,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
 
     private void requestContents () {
         // Start off an async request to get the children.
+        ScribbleMainActivity.log("GoogleDriveFolder", "requesting countents", null);
         mPendingResult = mDriveFolder.listChildren(mGoogleApiClient);
         mPendingResult.setResultCallback(this);
     }
@@ -121,6 +122,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
     @Override
     public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
         Status status = metadataBufferResult.getStatus();
+        ScribbleMainActivity.log("GoogleDriveFolder", "contents received status="+status.toString(), null);
         if (status.isSuccess()) {
             MetadataBuffer mtb = metadataBufferResult.getMetadataBuffer();
             int count = mtb.getCount();

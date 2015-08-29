@@ -37,6 +37,10 @@ public class ItemList {
         mList.add(item);
     }
 
+    public String toString () {
+        return mList.size()+" items";
+    }
+
     public void onDraw (Canvas c) {
         for (DrawItem d : mList) {
             if (!d.deleted) {

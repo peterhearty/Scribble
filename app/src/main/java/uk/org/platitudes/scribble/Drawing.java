@@ -3,6 +3,7 @@
  */
 package uk.org.platitudes.scribble;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -144,7 +145,9 @@ public class Drawing implements Runnable {
         } catch (IOException e) {
             ScribbleMainActivity.log("ScribbleMainActivity", "about", e);
         }
-        ScribbleMainActivity.log(path, "", null);
+        AlertDialog.Builder alert = new AlertDialog.Builder(ScribbleMainActivity.mainActivity);
+        AlertDialog dialog = alert.setMessage(path).setCancelable(true).create();
+        dialog.show();
     }
 
     public void onDestroy () {
@@ -167,10 +170,13 @@ public class Drawing implements Runnable {
 
     public synchronized void read (ScribbleInputStream dis, int version) throws IOException {
         if (writeInProgress) {
-            ScribbleMainActivity.log ("Read during write", "", null);
+            ScribbleMainActivity.log ("Drawing ", "Read during write", null);
         } else {
+            ScribbleMainActivity.log("Drawing", "Reading file ", null);
             mDrawItems = new ItemList(dis, version, mScribbleView);
             mUndoList = new ItemList(dis, version, mScribbleView);
+            ScribbleMainActivity.log("Drawing", "Item count "+mDrawItems.toString(), null);
+            ScribbleMainActivity.log("Drawing", "Undo count "+mUndoList.toString(), null);
 
             // Each item list has to scan both item lists for MoveItems and matching targets.
             mDrawItems.tieMoveItemsToTargets(mDrawItems);
@@ -241,6 +247,7 @@ public class Drawing implements Runnable {
 // What's wrong with mMainActivity below???
         ScribbleMainActivity activity = ScribbleMainActivity.mainActivity;
         if (mCurrentlyOpenFile != null) {
+            ScribbleMainActivity.log("Drawing", "Writing file "+mCurrentlyOpenFile, null);
             if (writeInProgress) {
                 ScribbleMainActivity.log("Nested write", "", null);
                 return;
@@ -262,11 +269,13 @@ public class Drawing implements Runnable {
             try {
                 Thread.sleep(mThreadWait);
                 if (modifiedSinceLastWrite) {
+                    ScribbleMainActivity.log("Background thread", "Writing file", null);
                     write();
                 } else if (mCurrentlyOpenFile != null && mCurrentlyOpenFile instanceof GoogleDriveFile) {
                     // Read the current file contents
                     GoogleDriveFile gdf = (GoogleDriveFile) mCurrentlyOpenFile;
                     if (gdf.fileHasChanged) {
+                        ScribbleMainActivity.log("Background thread", "Reading file "+gdf, null);
                         gdf.fileHasChanged = false;
                         FileScribbleReader fsr = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
                         fsr.read(this);
@@ -282,6 +291,7 @@ public class Drawing implements Runnable {
                     mThreadWait *= 2;
                 }
             } catch (InterruptedException e) {
+                ScribbleMainActivity.log("Background thread", "Interrupted: exiting", null);
                 stopBackgroundThread = true;
             }
         }

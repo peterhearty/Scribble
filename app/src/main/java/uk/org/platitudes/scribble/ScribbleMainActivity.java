@@ -200,22 +200,13 @@ public class ScribbleMainActivity extends Activity  {
             s = s + " " + e;
             Log.e(tag, msg, e);
         }
-        if (mainActivity != null) {
-            ScribbleView v = mainActivity.getmMainView();
-            if (v != null) {
-                Drawing d = v.getDrawing();
-                if (d != null) {
-                    if (!d.inBackgroundThread()) {
-                        // Background thread musn't attempt UI stuff
-                        AlertDialog.Builder alert = new AlertDialog.Builder(ScribbleMainActivity.mainActivity);
-                        AlertDialog dialog = alert.setMessage(s).setCancelable(true).create();
-                        dialog.show();
-                    }
-                }
-            }
-        }
         if (logFile != null) {
-            logFile.println(new Date().toString()+s);
+            Date d = new Date();
+            int hour = d.getHours();
+            int min = d.getMinutes();
+            int secs = d.getSeconds();
+            String time = intTo2digit(hour)+":"+intTo2digit(min)+":"+intTo2digit(secs)+" ";
+            logFile.println(time+" "+s);
             if (e != null) {
                 e.printStackTrace(logFile);
             }

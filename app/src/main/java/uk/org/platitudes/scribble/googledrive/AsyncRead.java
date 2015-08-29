@@ -29,6 +29,7 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
         mGoogleApiClient = apiClient;
         mDriveId = id;
 
+        ScribbleMainActivity.log("AsyncRead", "read requested "+gdf.toString(), null);
         DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
         driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
                 .setResultCallback(this);
@@ -37,6 +38,7 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
     @Override
     public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
         Status s = driveContentsResult.getStatus();
+        ScribbleMainActivity.log("AsyncRead", "read result "+mFile.toString()+" status = "+s.toString(), null);
         if (!s.isSuccess()) {
             // error
             return;

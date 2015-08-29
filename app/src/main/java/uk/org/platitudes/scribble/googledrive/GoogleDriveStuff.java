@@ -45,6 +45,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
 
     public void connect () {
         if (mGoogleDriveConnectionFailedCount<2) {
+            ScribbleMainActivity.log("GoogleDriveStuff", "trying to connect to google drive", null);
             mGoogleApiClient.connect();
         }
     }
@@ -53,6 +54,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
         if (fileToReadWhenReady == null) return;
 
         if (f.getName().equals(fileToReadWhenReady)) {
+            ScribbleMainActivity.log("GoogleDriveStuff", "file "+f.toString()+" ready to read", null);
             fileToReadWhenReady = null;
             Drawing drawing = mScribbleMainActivity.getmMainView().getDrawing();
             drawing.setmCurrentlyOpenFile(f);
@@ -73,6 +75,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         mGoogleDriveConnectionFailedCount++;
+        ScribbleMainActivity.log("GoogleDriveStuff", "connection failed, failure count="+mGoogleDriveConnectionFailedCount, null);
         // https://developers.google.com/drive/android/auth#connecting_and_authorizing_the_google_drive_android_api
         if (connectionResult.hasResolution()) {
             try {

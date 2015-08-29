@@ -52,6 +52,7 @@ public class GoogleDriveFile extends File {
         mGoogleApiClient = mParentFolder.getmGoogleApiClient();
         mDriveId = m.getDriveId();
         lastModifiedDate = m.getModifiedDate().getTime();
+        ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" File object created", null);
         // We need all the files cached so that we can test for a Scribble file when a  file is being selected
         forceReRead();
         ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(this);
@@ -70,10 +71,12 @@ public class GoogleDriveFile extends File {
     public InputStream getInputStream () {
         if (mFileContents == null) {
             // file contents have not been fetched.
+            ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" cannot read, contents available", null);
             return null;
         }
         synchronized (mFileContents) {
             // Synchronized to make sure AsyncRead doesn't overwrite while we're reading this.
+            ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" copy contents for read", null);
             byte[] contentsCopy = mFileContents.clone();
             ByteArrayInputStream bais = new ByteArrayInputStream(mFileContents);
             return bais;
@@ -98,6 +101,7 @@ public class GoogleDriveFile extends File {
         mName = name;
         mParentFolder = parent;
         mGoogleApiClient = mParentFolder.getmGoogleApiClient();
+        ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" new file created", null);
 
 
         if (createFile) {
@@ -191,6 +195,7 @@ public class GoogleDriveFile extends File {
 
     @Override
     public boolean delete() {
+        ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" delete requested", null);
         if (mDriveId != null) {
 
             ResultCallback<Status> callback = new ResultCallback<Status>() {
@@ -220,6 +225,7 @@ public class GoogleDriveFile extends File {
     @Override
     public boolean renameTo(File newPath) {
         String newName = newPath.getName();
+        ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" rename to +"+newName+" requested", null);
         if (mDriveId != null) {
 
             ResultCallback<DriveResource.MetadataResult> callback = new ResultCallback<DriveResource.MetadataResult>() {
