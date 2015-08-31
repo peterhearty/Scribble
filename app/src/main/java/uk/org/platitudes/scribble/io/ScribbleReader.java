@@ -46,11 +46,11 @@ abstract public class ScribbleReader {
             ScribbleInputStream dis = new ScribbleInputStream(fis);
             long magNumber = dis.readLong();
             if (magNumber != MAGIC_NUMBER) {
-                ScribbleMainActivity.log("Not a scribble file", "", null);
+                ScribbleMainActivity.makeToast("Not a scribble file");
             } else {
                 int fileFormatVersion = dis.readInt();
                 if (fileFormatVersion > FILE_FORMAT_VERSION) {
-                    ScribbleMainActivity.log("Created with a newer version of Sscribble", "", null);
+                    ScribbleMainActivity.makeToast("Created with a newer version of Sscribble");
                     return;
                 }
                 if (fileFormatVersion >= 1001) {

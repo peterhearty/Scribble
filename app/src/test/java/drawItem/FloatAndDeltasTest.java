@@ -151,8 +151,8 @@ public class FloatAndDeltasTest extends TestCase {
         assertTrue(closeTo(min, 0, 0.1f));
     }
 
-    @Test
-    public void logTest () {
-        ScribbleMainActivity.log ("test tag", "test msg", new Exception("test exception"));
-    }
+//    @Test
+//    public void logTest () {
+//        ScribbleMainActivity.log ("test tag", "test msg", new Exception("test exception"));
+//    }
 }

@@ -54,7 +54,7 @@ public class GoogleDriveFile extends File {
         lastModifiedDate = m.getModifiedDate().getTime();
         ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" File object created", null);
         // We need all the files cached so that we can test for a Scribble file when a  file is being selected
-        forceReRead();
+//        forceReRead();
         ScribbleMainActivity.mainActivity.getmGoogleStuff().checkFileLoadPending(this);
     }
 
@@ -71,13 +71,15 @@ public class GoogleDriveFile extends File {
     public InputStream getInputStream () {
         if (mFileContents == null) {
             // file contents have not been fetched.
-            ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" cannot read, contents available", null);
+            ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" cannot read, contents unavailable", null);
             return null;
         }
         synchronized (mFileContents) {
             // Synchronized to make sure AsyncRead doesn't overwrite while we're reading this.
             ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" copy contents for read", null);
             byte[] contentsCopy = mFileContents.clone();
+            // change flage cleared, assume it is being read
+            fileHasChanged = false;
             ByteArrayInputStream bais = new ByteArrayInputStream(mFileContents);
             return bais;
         }

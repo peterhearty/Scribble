@@ -87,11 +87,17 @@ public class Drawing implements Runnable {
                 // google drive file - have to read later
                 // GoogleDriveStuff will call setmCurrentlyOpenFile when the file is available
                 // The backgroundThread will then load the contents shortly afterwards
+                ScribbleMainActivity.log("Drawing", "Will read file later "+currentFilePath, null);
                 mMainActivity.getmGoogleStuff().setFileToReadWhenReady(currentFilePath);
             } else {
-                // a local file, read it now
-                FileScribbleReader fs = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
-                fs.read(this);
+                if (mCurrentlyOpenFile.canRead()) {
+                    // a local file, read it now
+                    ScribbleMainActivity.log("Drawing", "Trying to read local file "+currentFilePath, null);
+                    FileScribbleReader fs = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
+                    fs.read(this);
+                } else {
+                    ScribbleMainActivity.log("File not readable or does not exist: ", currentFilePath, null);
+                }
             }
         } catch (Exception e) {
             ScribbleMainActivity.log("Error opening file ", currentFilePath, e);
@@ -236,7 +242,7 @@ public class Drawing implements Runnable {
         int numCleared = mUndoList.clear();
         numCleared += mDrawItems.clean();
         modifiedSinceLastWrite = true;
-        ScribbleMainActivity.log ("Cleared "+numCleared, "", null);
+        ScribbleMainActivity.makeToast ("Cleared "+numCleared);
     }
 
     public ItemList getmDrawItems() {return mDrawItems;}
@@ -275,8 +281,7 @@ public class Drawing implements Runnable {
                     // Read the current file contents
                     GoogleDriveFile gdf = (GoogleDriveFile) mCurrentlyOpenFile;
                     if (gdf.fileHasChanged) {
-                        ScribbleMainActivity.log("Background thread", "Reading file "+gdf, null);
-                        gdf.fileHasChanged = false;
+                        ScribbleMainActivity.log("Background thread", "File has changed, reading file "+gdf, null);
                         FileScribbleReader fsr = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
                         fsr.read(this);
                     }
@@ -289,6 +294,7 @@ public class Drawing implements Runnable {
 
                 if (mThreadWait < 4000) {
                     mThreadWait *= 2;
+                    ScribbleMainActivity.log("Background thread", "Increased poll interval to "+mThreadWait, null);
                 }
             } catch (InterruptedException e) {
                 ScribbleMainActivity.log("Background thread", "Interrupted: exiting", null);

@@ -5,10 +5,12 @@ import drawItem.FloatAndDeltasTest;
 import drawItem.FreehandTest;
 import drawItem.HandleTest;
 import drawItem.LineTest;
+import drawItem.LocalFileTest;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        LocalFileTest.class,
         FreehandTest.class,
         FloatAndDeltasTest.class,
         HandleTest.class,

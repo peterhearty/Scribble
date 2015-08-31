@@ -65,12 +65,20 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
         File f = (File) o;
         if (f.isDirectory()) return;
         if (!f.canRead()) {
-            ScribbleMainActivity.log ("File not readable", "", null);
+            ScribbleMainActivity.makeToast ("File not readable");
             return;
         }
-        if (!FileScribbleReader.isScribbleFile(f)) {
-            ScribbleMainActivity.log ("Not a Scribble file", "", null);
-            return;
+        if (f instanceof GoogleDriveFile) {
+            // By clicking on a Google drive file, the user might be about to click OK.
+            // So we try to read it in advance.
+            GoogleDriveFile gdf = (GoogleDriveFile) f;
+            gdf.forceReRead();
+        } else {
+            // We only test local files
+            if (!FileScribbleReader.isScribbleFile(f)) {
+                ScribbleMainActivity.makeToast("Not a Scribble file");
+                return;
+            }
         }
 
         mFileName.setText(f.getName());
@@ -101,7 +109,7 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
         if (FileScribbleReader.isScribbleFile(mLongClickedFile)) {
             createMenu(v);
         } else {
-            ScribbleMainActivity.log("Not a Scribble file", "", null);
+            ScribbleMainActivity.makeToast("Not a Scribble file");
             mLongClickedFile = null;
         }
     }
@@ -128,7 +136,7 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
             String targetPath = f.getCanonicalPath();
             String inUse = ScribbleMainActivity.mainActivity.getmMainView().getDrawing().getmCurrentlyOpenFile().getCanonicalPath();
             if (targetPath.equals(inUse)) {
-                ScribbleMainActivity.log("File is open", "", null);
+                ScribbleMainActivity.makeToast("File is open");
                 return true;
             }
         } catch (IOException e) {
@@ -149,7 +157,7 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
                 if (deleted) {
                     mDirList.resetContents();
                 } else {
-                    ScribbleMainActivity.log("Failed to delete ", mLongClickedFile.getName(), null);
+                    ScribbleMainActivity.makeToast("Failed to delete "+mLongClickedFile.getName());
                 }
             } else if (menuText.equals("rename")) {
                 if (inUse(mLongClickedFile)) {
@@ -164,10 +172,10 @@ public class FileList extends SimpleList implements PopupMenu.OnMenuItemClickLis
                     if (renamed) {
                         mDirList.resetContents();
                     } else {
-                        ScribbleMainActivity.log("Failed to rename ", mLongClickedFile.getName(), null);
+                        ScribbleMainActivity.makeToast("Failed to rename "+mLongClickedFile.getName());
                     }
                 } else {
-                    ScribbleMainActivity.log("New name in box above must be filled in", "", null);
+                    ScribbleMainActivity.makeToast("New name in box above must be filled in");
                 }
             } else if (menuText.equals("copy")) {
                 String newFileName = mFileName.getText().toString();

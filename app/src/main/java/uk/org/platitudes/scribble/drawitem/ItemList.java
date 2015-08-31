@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -57,6 +58,15 @@ public class ItemList {
         return result;
     }
 
+    private byte scanForValidType (ScribbleInputStream dis) throws IOException {
+        byte itemType = dis.readByte();
+        while ((itemType < DrawItem.LOWEST_TYPE) || (itemType > DrawItem.HIGHEST_TYPE)) {
+            // error reading file, try to find a valid object
+            itemType = dis.readByte();
+        }
+        return itemType;
+    }
+
     public ItemList (ScribbleInputStream dis, int version, ScribbleView scribbleView) throws IOException {
         int numItems = dis.readInt();
         if (numItems > 100000) {
@@ -65,13 +75,14 @@ public class ItemList {
         }
         mList = new ArrayList<>(numItems+20);
         for (int i=0; i<numItems; i++) {
-            DrawItem item = null;
-            byte itemType = dis.readByte();
-            while ((itemType < DrawItem.LOWEST_TYPE) || (itemType > DrawItem.HIGHEST_TYPE)) {
-                // error reading file, try to find a valid object
-                itemType = dis.readByte();
-            }
+            byte itemType = 0; // declare here to put in scope for "catch" below
             try {
+                // note the point in the input stream where the DrawItem begins
+                // if anything goes wrong we'll reset to here
+                dis.mark();
+
+                DrawItem item = null;
+                itemType = scanForValidType(dis);
                 switch (itemType) {
                     case DrawItem.FREEHAND:
 //                    item = new FreehandDrawItem(dis, version, scribbleView);
@@ -95,13 +106,18 @@ public class ItemList {
                         // do nothing
                         break;
                     default:
-                        throw new Exception ("Error reading data file");
+                        throw new Exception("Error reading data file");
                 }
                 if (item != null)
                     mList.add(item);
+            } catch (EOFException eof) {
+                ScribbleMainActivity.log("Read error", "EOF", eof);
+                return;
             } catch (Exception e) {
-                ScribbleMainActivity.log("Read error", "type="+itemType, e);
-                // any exception - scan for any further items
+                ScribbleMainActivity.log("Read error", "type=" + itemType, e);
+                // go back to start of item that caused the error
+                dis.reset();
+                dis.readByte();  // read the original type byte, next loop iteration will scan forward
             }
         }
     }

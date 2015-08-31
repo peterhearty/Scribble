@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.Calendar;
 import java.util.Date;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
@@ -150,6 +151,7 @@ public class ScribbleMainActivity extends Activity  {
 
     public static void makeToast (String s) {
         if (mainActivity != null) {
+            log ("makeToast", s, null);
             Context context = mainActivity.getApplicationContext();
             Toast toast = Toast.makeText(context, s, Toast.LENGTH_SHORT);
             toast.show();
@@ -168,15 +170,14 @@ public class ScribbleMainActivity extends Activity  {
         if (logFile == null) {
             File dir = Environment.getExternalStorageDirectory();
             if (dir != null && dir.canWrite()) {
-                Date d = new Date();
-                int year = d.getYear();
-                int month = d.getMonth();
-                int day = d.getDay();
-//                int hour = d.getHours();
-//                int min = d.getMinutes();
+
+                Calendar cal = Calendar.getInstance();
+                int year = cal.get(Calendar.YEAR);
+                int month = cal.get (Calendar.MONTH)+1;
+                int day = cal.get(Calendar.DAY_OF_MONTH);
+
                 String logName = "scribblelog_"
                         +year+intTo2digit(month)+intTo2digit(day)+".log";
-//                        +intTo2digit(hour)+intTo2digit(min);
                 try {
                     String dirName = dir.getCanonicalPath();
                     if (dirName.indexOf("robolectric") != -1) {
@@ -201,11 +202,13 @@ public class ScribbleMainActivity extends Activity  {
             Log.e(tag, msg, e);
         }
         if (logFile != null) {
-            Date d = new Date();
-            int hour = d.getHours();
-            int min = d.getMinutes();
-            int secs = d.getSeconds();
-            String time = intTo2digit(hour)+":"+intTo2digit(min)+":"+intTo2digit(secs)+" ";
+            Calendar cal = Calendar.getInstance();
+            int hour = cal.get(Calendar.HOUR);
+            int min = cal.get(Calendar.MINUTE);
+            int secs = cal.get(Calendar.SECOND);
+            int centiseconds = cal.get(Calendar.MILLISECOND)/10;
+
+            String time = intTo2digit(hour)+":"+intTo2digit(min)+":"+intTo2digit(secs)+"."+intTo2digit(centiseconds);
             logFile.println(time+" "+s);
             if (e != null) {
                 e.printStackTrace(logFile);

@@ -4,6 +4,7 @@
 package uk.org.platitudes.scribble.io;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
@@ -23,7 +24,7 @@ public class ScribbleInputStream {
         StringBuilder sb = new StringBuilder();
         do {
             if (dis.available()==0) {
-                break;
+                throw new EOFException();
             }
             int nextByte = dis.read();
             if (nextByte == '\n') {
@@ -57,6 +58,18 @@ public class ScribbleInputStream {
         }
     }
 
+    public void mark () {
+        if (dis.markSupported()) {
+            dis.mark(1024);
+        }
+    }
+
+    public void reset () throws IOException {
+        if (dis.markSupported()) {
+            dis.reset();
+        }
+    }
+
     public long readLong () throws IOException {
         long result = 0;
         if (!firstLongRead) {
@@ -65,7 +78,14 @@ public class ScribbleInputStream {
         } else {
             if (asText) {
                 String s = readLine();
-                result = Long.valueOf(s);
+                try {
+                    result = Long.valueOf(s);
+                } catch (NumberFormatException e) {
+                    // An error wil result in zero being returned
+                    // Eventually this will cause a DrawItem or ItemList error
+                    // Item list should rewind and try to skip past the error
+                    ScribbleMainActivity.log("ScribbleInputStream", "Error reading number: "+s, e);
+                }
             } else {
                 result = dis.readLong();
             }

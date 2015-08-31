@@ -67,9 +67,11 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
             boolean updateContents = false;
             if (currentContents == null) {
                 updateContents = true;
+                ScribbleMainActivity.log("AsyncRead", "File changed, contents previously empty "+mFile.toString(), null);
             } else {
                 if (currentContents.length != contents.length) {
                     updateContents = true;
+                    ScribbleMainActivity.log("AsyncRead", "File changed, length has changed "+mFile.toString(), null);
                 } else {
                     // old and new same length, check contents
                     // Scribble files have a changeByte near the start that changes on each write.
@@ -78,6 +80,7 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
                     for (int i=0; i<contents.length; i++) {
                         if (currentContents[i] != contents[i]) {
                             // contents have changed
+                            ScribbleMainActivity.log("AsyncRead", "File changed at byte "+i+" "+mFile.toString(), null);
                             updateContents = true;
                             break;
                         }
@@ -88,6 +91,8 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
             if (updateContents) {
                 mFile.setmFileContents(contents);
                 mFile.fileHasChanged = true;
+            } else {
+                ScribbleMainActivity.log("AsyncRead", "file has not changed "+mFile.toString(), null);
             }
 
             mFile.setReadRequest(null);
