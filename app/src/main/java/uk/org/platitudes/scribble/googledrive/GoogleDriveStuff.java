@@ -3,6 +3,7 @@
  */
 package uk.org.platitudes.scribble.googledrive;
 
+import android.app.Dialog;
 import android.content.IntentSender;
 import android.os.Bundle;
 
@@ -27,6 +28,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
     private String fileToReadWhenReady;
 
     public GoogleDriveStuff (ScribbleMainActivity scribbleMainActivity) {
+        ScribbleMainActivity.log("GoogleDriveStuff", "constructor", null);
         mScribbleMainActivity = scribbleMainActivity;
 
         // https://developers.google.com/drive/android/auth#connecting_and_authorizing_the_google_drive_android_api
@@ -40,17 +42,20 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
     }
 
     public void setFileToReadWhenReady (String s) {
+        ScribbleMainActivity.log("GoogleDriveStuff", "setFileToReadWhenReady: "+s, null);
         fileToReadWhenReady = GoogleDriveFolder.extractGoogleDriveFilename(s);
     }
 
     public void connect () {
-        if (mGoogleDriveConnectionFailedCount<2) {
+        ScribbleMainActivity.log("GoogleDriveStuff", "connect", null);
+        if (mGoogleDriveConnectionFailedCount<2 && !mGoogleDriveConnected) {
             ScribbleMainActivity.log("GoogleDriveStuff", "trying to connect to google drive", null);
             mGoogleApiClient.connect();
         }
     }
 
     public void checkFileLoadPending (GoogleDriveFile f) {
+        ScribbleMainActivity.log("GoogleDriveStuff", "checkFileLoadPending: "+f.toString(), null);
         if (fileToReadWhenReady == null) return;
 
         if (f.getName().equals(fileToReadWhenReady)) {
@@ -63,19 +68,21 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
 
     @Override
     public void onConnected(Bundle bundle) {
+        ScribbleMainActivity.log("GoogleDriveStuff", "onConnected", null);
         mGoogleDriveConnected = true;
         mRootGoogleDriveFolder = new GoogleDriveFolder(mScribbleMainActivity);
     }
 
     @Override
     public void onConnectionSuspended(int i) {
+        ScribbleMainActivity.log("GoogleDriveStuff", "onConnectionSuspended", null);
         mGoogleDriveConnected = false;
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         mGoogleDriveConnectionFailedCount++;
-        ScribbleMainActivity.log("GoogleDriveStuff", "connection failed, failure count="+mGoogleDriveConnectionFailedCount, null);
+        ScribbleMainActivity.log("GoogleDriveStuff", "connection failed, failure count="+mGoogleDriveConnectionFailedCount+" result = "+connectionResult, null);
         // https://developers.google.com/drive/android/auth#connecting_and_authorizing_the_google_drive_android_api
         if (connectionResult.hasResolution()) {
             try {
@@ -84,7 +91,13 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
                 // Unable to resolve, message user appropriately
             }
         } else {
-            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), mScribbleMainActivity, 0).show();
+            int errCode = connectionResult.getErrorCode();
+            try {
+                Dialog d = GooglePlayServicesUtil.getErrorDialog(errCode, mScribbleMainActivity, 0);
+                d.show();
+            } catch (Exception e) {
+                ScribbleMainActivity.log("GoogleDriveStuff", "onConnectionFailed", e);
+            }
         }
 
     }

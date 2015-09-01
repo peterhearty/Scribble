@@ -6,6 +6,8 @@ package uk.org.platitudes.scribble.io;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.SortedMap;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
 
@@ -16,6 +18,7 @@ public class ScribbleOutputStream {
 
     private boolean asText;
     private DataOutputStream dos;
+    private static String charsetName;
 
     /**
      */
@@ -34,8 +37,39 @@ public class ScribbleOutputStream {
         return sos;
     }
 
+    // These are all supposed to be supported
+    // http://docs.oracle.com/javase/7/docs/api/java/nio/charset/Charset.html
+    private static final String[] possibleCharsets = {"US-ASCII", "US_ASCII", "ISO-8859-1", "ISO-LATIN-1", "UTF-8"};
+
+    private void checkCharset () {
+        if (charsetName == null) {
+            for (String name : possibleCharsets) {
+                if (Charset.isSupported(name)) {
+                    charsetName = name;
+                    break;
+                }
+            }
+        }
+        if (charsetName == null) {
+            SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
+            for (String entryName : charsetMap.keySet()) {
+                // Some use US_ASCII instead of US-ASCII
+                if (entryName.indexOf("ASCII") != -1) {
+                    charsetName = entryName;
+                    break;
+                }
+            }
+        }
+        if (charsetName == null) {
+            ScribbleMainActivity.log ("ScribbleOutputStream", "Could not find a supported charset", null);
+        }
+//        charsetName = "US_ASCII";
+    }
+
     private void writeString (String s) throws IOException {
-        String charsetName = "US_ASCII";
+        if (charsetName == null) {
+            checkCharset();
+        }
         byte[] bytes = s.getBytes(charsetName);
         dos.write(bytes);
         dos.writeByte('\n');

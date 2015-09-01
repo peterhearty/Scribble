@@ -65,6 +65,7 @@ public class ScribbleMainActivity extends Activity  {
 
             mainActivity = this;
 
+            ScribbleMainActivity.log ("ScribbleMainActivity", "onCreate", null);
             mGoogleStuff = new GoogleDriveStuff((this));
 
             getDisplaySize();
@@ -116,12 +117,14 @@ public class ScribbleMainActivity extends Activity  {
 
     @Override
     protected void onDestroy() {
+        ScribbleMainActivity.log ("ScribbleMainActivity", "onDestroy", null);
         super.onDestroy();
         mMainView.getDrawing().onDestroy();
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
+        ScribbleMainActivity.log ("ScribbleMainActivity", "onSaveInstanceState", null);
         super.onSaveInstanceState(outState);
 
         outState.putFloat("zoom", ZoomButtonHandler.getsZoom());
@@ -221,6 +224,7 @@ public class ScribbleMainActivity extends Activity  {
     @Override
     protected void onStart() {
         // https://developers.google.com/drive/android/auth#connecting_and_authorizing_the_google_drive_android_api
+        ScribbleMainActivity.log("ScribbleMainActivity", "onStart", null);
         super.onStart();
         mGoogleStuff.connect();
     }
@@ -228,6 +232,7 @@ public class ScribbleMainActivity extends Activity  {
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        ScribbleMainActivity.log("ScribbleMainActivity", "onActivityResult", null);
         switch (requestCode) {
             case RESOLVE_CONNECTION_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {

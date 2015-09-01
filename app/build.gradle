@@ -39,4 +39,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-drive:7.5.0'
     testCompile 'junit:junit:4.12'
     testCompile "org.robolectric:robolectric:3.0"
+    testCompile "org.robolectric:shadows-play-services:3.0"
 }

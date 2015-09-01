@@ -12,6 +12,7 @@ import java.util.ArrayList;
 /**
  * A basic mock Canvas object.
  */
+@Deprecated // Roboelectric does it better, use Android's Canvas and  ShadowCanvas shadowCanvas = Shadows.shadowOf(canvas);
 public class TestCanvas extends Canvas {
 
     public static int MAXIMUM = 10000;

@@ -3,6 +3,7 @@
  */
 package drawItem;
 
+import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.os.Build;
 import android.view.MotionEvent;
@@ -16,6 +17,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowCanvas;
 import org.robolectric.shadows.ShadowMotionEvent;
 
 import java.io.IOException;
@@ -38,7 +40,8 @@ public class LineTest extends TestCase {
     private ScribbleView scribbleView;
     private ScribbleMainActivity activity;
     private MotionEvent motionEvent;
-    private TestCanvas canvas;
+    private Canvas canvas;
+    private ShadowCanvas shadowCanvas;
 
     @Before
     @Override
@@ -48,11 +51,12 @@ public class LineTest extends TestCase {
 //activity = new ScribbleMainActivity();
         scribbleView = activity.getmMainView();
         motionEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 10f, 10f, 0);
-        canvas = new TestCanvas();
+        canvas = new Canvas();
+        shadowCanvas = Shadows.shadowOf(canvas);
     }
 
-    public static void resetEverything(TestCanvas canvas, MotionEvent motionEvent, ScribbleView scribbleView, ScribbleMainActivity activity) {
-        canvas.testReset();
+    public static void resetEverything(ShadowCanvas sc, MotionEvent motionEvent, ScribbleView scribbleView, ScribbleMainActivity activity) {
+        sc.resetCanvasHistory();
         motionEvent.setLocation(10f, 10f);
         scribbleView.setmScrollOffset(0, 0);
         activity.getmZoomButtonHandler().setsZoom(1);
@@ -60,12 +64,12 @@ public class LineTest extends TestCase {
 
     @Test
     public void testBasicLine () {
-        resetEverything(canvas, motionEvent, scribbleView, activity);
+        resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
 
         // No end point means the line should not draw anything
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(0));
+        assertTrue(shadowCanvas.getLinePaintHistoryCount() == 0);
 
         // complete the line
         motionEvent.setLocation(20f, 20f);
@@ -73,26 +77,30 @@ public class LineTest extends TestCase {
 
         // check that it draws
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
+        assertTrue(shadowCanvas.getLinePaintHistoryCount()==1);
 
         // select the line - should draw line (1 line), border, (4 lines), 2 handles (2x4 = 8 lines)
         PointF selectionPoint = new PointF(15f, 15f);
         line.selectItem(selectionPoint);
-        canvas.testReset();
+        shadowCanvas.resetCanvasHistory();
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(13));
+        assertTrue(shadowCanvas.getLinePaintHistoryCount() == 13);
 
         // deslect should return to just drawing the line
         line.deselectItem();
-        canvas.testReset();
+        shadowCanvas.resetCanvasHistory();
         line.draw(canvas);
-        assertTrue(canvas.testDrawCount(1));
+        assertTrue(shadowCanvas.getLinePaintHistoryCount()==1);
     }
 
-    public static void checkPositions (TestCanvas canvas, int expectedDrawCount, float startX, float startY, float endX, float endY) {
-        assertTrue(canvas.testDrawCount(expectedDrawCount));
-        assertTrue(canvas.testStartPosition(0, startX, startY));
-        assertTrue(canvas.testEndPosition(0, endX, endY));
+    public static void checkPositions (ShadowCanvas sc, int expectedDrawCount, float startX, float startY, float endX, float endY) {
+        assertTrue(sc.getLinePaintHistoryCount()==expectedDrawCount);
+
+        ShadowCanvas.LinePaintHistoryEvent line = sc.getDrawnLine(0);
+        assertTrue(line.startX==startX);
+        assertTrue(line.startY==startY);
+        assertTrue(line.stopX==endX);
+        assertTrue(line.stopY==endY);
     }
 
     /**
@@ -103,51 +111,52 @@ public class LineTest extends TestCase {
             MotionEvent event,
             ScribbleView view,
             DrawItem drawItem,
-            TestCanvas canvas,
+            Canvas canvas,
             ScribbleMainActivity activity
     ) {
         // create an initial line from (10,10) to (20,20)
         event.setLocation(20f, 20f);
         drawItem.handleMoveEvent(event);
         drawItem.draw(canvas);
-        checkPositions(canvas, 1, 10, 10, 20, 20);
+        ShadowCanvas sc = Shadows.shadowOf(canvas);
+        checkPositions(sc, 1, 10, 10, 20, 20);
 
         // now we move the view offset
         view.setmScrollOffset(5, 5);
-        canvas.testReset();
+        sc.resetCanvasHistory();
         drawItem.draw(canvas);
-        checkPositions(canvas, 1, 5, 5, 15, 15);
+        checkPositions(sc, 1, 5, 5, 15, 15);
 
         // now change the zoom
         activity.getmZoomButtonHandler().setsZoom(2);
-        canvas.testReset();
+        sc.resetCanvasHistory();
         drawItem.draw(canvas);
-        checkPositions(canvas, 1, 10, 10, 30, 30);
+        checkPositions(sc, 1, 10, 10, 30, 30);
 
         // move the line from [(10,10),(20,20)] to [(15,20),(25,30)]
         // and repeat tests
-        resetEverything(canvas, event, view, activity);
+        resetEverything(sc, event, view, activity);
         drawItem.move(5, 10);
         drawItem.draw(canvas);
-        checkPositions(canvas, 1, 15, 20, 25, 30);
+        checkPositions(sc, 1, 15, 20, 25, 30);
 
         // now we move the view offset
         view.setmScrollOffset(5, 5);
-        canvas.testReset();
+        sc.resetCanvasHistory();
         drawItem.draw(canvas);
-        checkPositions(canvas, 1, 10, 15, 20, 25);
+        checkPositions(sc, 1, 10, 15, 20, 25);
 
         // now change the zoom
         activity.getmZoomButtonHandler().setsZoom(2);
-        canvas.testReset();
+        sc.resetCanvasHistory();
         drawItem.draw(canvas);
-        checkPositions(canvas, 1, 20, 30, 40, 50);
+        checkPositions(sc, 1, 20, 30, 40, 50);
 
     }
 
     @Test
     public void moveSizeTest () {
-        resetEverything(canvas, motionEvent, scribbleView, activity);
+        resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
         LineTest.moveSizeTest(motionEvent, scribbleView, line, canvas, activity);
     }
@@ -157,7 +166,7 @@ public class LineTest extends TestCase {
             ScribbleView view,
             DrawItem drawItem,
             DrawItem zoomItem,
-            TestCanvas canvas
+            Canvas canvas
     ) {
         event.setLocation(20f, 20f);
         drawItem.handleMoveEvent(event);
@@ -177,23 +186,28 @@ public class LineTest extends TestCase {
 
         drawItem.draw(canvas);
         zoomItem.draw(canvas);
-        assertTrue(canvas.testDrawCount(2));
-        checkPositions(canvas, 2, 10, 10, 20, 20);
-        assertTrue(canvas.testStartPosition(1, 10, 10));
-        assertTrue(canvas.testEndPosition(1, 30, 30));
 
+        ShadowCanvas sc = Shadows.shadowOf(canvas);
+        assertTrue(sc.getLinePaintHistoryCount() == 2);
+        checkPositions(sc, 2, 10, 10, 20, 20);
+
+        ShadowCanvas.LinePaintHistoryEvent line = sc.getDrawnLine(1);
+        assertTrue(line.startX==10);
+        assertTrue(line.startY==10);
+        assertTrue(line.stopX==30);
+        assertTrue(line.stopY==30);
     }
 
     @Test
     public void localZoom () {
         // 2 lines one zoomed one not
-        resetEverything(canvas, motionEvent, scribbleView, activity);
+        resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
         LineDrawItem zoomLine = new LineDrawItem(motionEvent, scribbleView, false);
         localZoom(motionEvent, scribbleView, line, zoomLine, canvas);
     }
 
-    public static void saveRestore (MotionEvent motionEvent, DrawItem drawItem, ScribbleView scribbleView, TestCanvas canvas) throws IOException {
+    public static void saveRestore (MotionEvent motionEvent, DrawItem drawItem, ScribbleView scribbleView, Canvas canvas) throws IOException {
         motionEvent.setLocation(20f, 20f);
         drawItem.handleMoveEvent(motionEvent);
 
@@ -207,14 +221,15 @@ public class LineTest extends TestCase {
         drawing.getmDrawItems().onDraw(canvas);
 
         // checking the line position implicitly checks that mDrawBox is false and zoom is 1
-        checkPositions(canvas, 1, 10, 10, 20, 20);
+        ShadowCanvas sc = Shadows.shadowOf(canvas);
+        checkPositions(sc, 1, 10, 10, 20, 20);
 //        assertTrue(newLine.deleted == false);
     }
 
     @Test
     public void saveRestore () throws IOException {
         // Set up a line
-        resetEverything(canvas, motionEvent, scribbleView, activity);
+        resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
         saveRestore(motionEvent, line, scribbleView, canvas);
     }

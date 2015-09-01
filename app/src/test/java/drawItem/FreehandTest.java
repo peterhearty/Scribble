@@ -3,6 +3,7 @@
  */
 package drawItem;
 
+import android.graphics.Canvas;
 import android.os.Build;
 import android.view.MotionEvent;
 
@@ -13,7 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowCanvas;
 
 import java.io.IOException;
 
@@ -33,7 +36,8 @@ public class FreehandTest extends TestCase{
     private ScribbleView scribbleView;
     private ScribbleMainActivity activity;
     private MotionEvent motionEvent;
-    private TestCanvas canvas;
+    private Canvas canvas;
+    private ShadowCanvas shadowCanvas;
 
     @Before
     @Override
@@ -43,11 +47,12 @@ public class FreehandTest extends TestCase{
 //activity = new ScribbleMainActivity();
         scribbleView = activity.getmMainView();
         motionEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 10f, 10f, 0);
-        canvas = new TestCanvas();
+        canvas = new Canvas();
+        shadowCanvas = Shadows.shadowOf(canvas);
     }
 
     private void resetEverything() {
-        canvas.testReset();
+        shadowCanvas.resetCanvasHistory();
         motionEvent.setLocation(10f, 10f);
         scribbleView.setmScrollOffset(0, 0);
         activity.getmZoomButtonHandler().setsZoom(1);
@@ -66,11 +71,20 @@ public class FreehandTest extends TestCase{
     private boolean testCanvasPositions (float[] xs, float[] ys) {
         boolean result = true;
         for (int i=0; i<xs.length-1; i++) {
-            if (!canvas.testStartPosition(i, xs[i], ys[i])) {
+            ShadowCanvas.LinePaintHistoryEvent line = shadowCanvas.getDrawnLine(i);
+            if (line.startX != xs[i]) {
                 result = false;
                 break;
             }
-            if (!canvas.testEndPosition(i, xs[i+1], ys[i+1])) {
+            if (line.startY != ys[i]) {
+                result = false;
+                break;
+            }
+            if (line.stopX != xs[i+1]) {
+                result = false;
+                break;
+            }
+            if (line.stopY != ys[i+1]) {
                 result = false;
                 break;
             }
@@ -85,13 +99,13 @@ public class FreehandTest extends TestCase{
     public void simpleFreehandTest () {
         FreehandCompressedDrawItem free = createFreehand(x1s, y1s);
         free.draw(canvas);
-        assertTrue(canvas.testDrawCount(x1s.length-1));
+        assertTrue(shadowCanvas.getLinePaintHistoryCount()==x1s.length-1);
         assertTrue(testCanvasPositions(x1s, y1s));
     }
 
     @Test
     public void moveSizeTest () {
-        LineTest.resetEverything(canvas, motionEvent, scribbleView, activity);
+        LineTest.resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         FreehandCompressedDrawItem line = new FreehandCompressedDrawItem(motionEvent, scribbleView);
         LineTest.moveSizeTest(motionEvent, scribbleView, line, canvas, activity);
     }
@@ -99,7 +113,7 @@ public class FreehandTest extends TestCase{
     @Test
     public void localZoom () {
         // 2 lines one zoomed one not
-        LineTest.resetEverything(canvas, motionEvent, scribbleView, activity);
+        LineTest.resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         FreehandCompressedDrawItem line = new FreehandCompressedDrawItem(motionEvent, scribbleView);
         FreehandCompressedDrawItem zoomLine = new FreehandCompressedDrawItem(motionEvent, scribbleView);
         LineTest.localZoom(motionEvent, scribbleView, line, zoomLine, canvas);
@@ -109,7 +123,7 @@ public class FreehandTest extends TestCase{
     @Test
     public void saveRestore () throws IOException {
         // Set up a line
-        LineTest.resetEverything(canvas, motionEvent, scribbleView, activity);
+        LineTest.resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         FreehandCompressedDrawItem line = new FreehandCompressedDrawItem(motionEvent, scribbleView);
         LineTest.saveRestore(motionEvent, line, scribbleView, canvas);
     }
