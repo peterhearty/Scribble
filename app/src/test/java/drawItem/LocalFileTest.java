@@ -8,25 +8,23 @@ import android.os.Build;
 import android.view.MotionEvent;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import junit.framework.TestCase;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.Shadow;
 import org.robolectric.shadows.ShadowCanvas;
 import org.robolectric.shadows.gms.ShadowGooglePlayServicesUtil;
 import org.robolectric.util.ActivityController;
 
 import java.io.File;
 
-import mockClasses.TestCanvas;
 import uk.org.platitudes.scribble.BuildConfig;
 import uk.org.platitudes.scribble.Drawing;
 import uk.org.platitudes.scribble.ScribbleMainActivity;
@@ -47,13 +45,19 @@ public class LocalFileTest extends TestCase {
     @Before
     @Override
     public void setUp() throws Exception {
+        ScribbleMainActivity.log("<<<<<<<<<< LocalFileTest", "setUp >>>>>>>>>>>>>", null);
         super.setUp();
-//        ShadowGooglePlayServicesUtil.setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
-//        ActivityController<ScribbleMainActivity> activityController =  Robolectric.buildActivity(ScribbleMainActivity.class);
-//        activityController.create();
-//        activityController.start();
-//        activity = activityController.get();
-        activity = Robolectric.buildActivity(ScribbleMainActivity.class).create().start().get();
+        // Don't try and set a breakpoint and step over any of the ActivityController lines - seems to hang
+        ActivityController<ScribbleMainActivity> activityController =  Robolectric.buildActivity(ScribbleMainActivity.class);
+        activityController.create();
+        try {
+            ShadowGooglePlayServicesUtil.setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
+            activityController.start();
+        } catch (Throwable t) {
+            ScribbleMainActivity.log("LocalFileTest", "setUp", t);
+        }
+        activity = activityController.get();
+//        activity = Robolectric.buildActivity(ScribbleMainActivity.class).create().start().resume().visible().get();
 //activity = new ScribbleMainActivity();
         scribbleView = activity.getmMainView();
         motionEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 10f, 10f, 0);
@@ -70,6 +74,7 @@ public class LocalFileTest extends TestCase {
 
     @Test
     public void loadComplexFile () {
+        ScribbleMainActivity.log ("-- LocalFileTest", "loadComplexFile --", null);
         Drawing drawing = scribbleView.getDrawing();
         File f = new File("/home/pete/Dropbox/AndroidDev/testFiles/vectorcalculus");
         drawing.setmCurrentlyOpenFile(f);

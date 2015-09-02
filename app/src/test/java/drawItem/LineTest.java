@@ -46,9 +46,10 @@ public class LineTest extends TestCase {
     @Before
     @Override
     public void setUp() throws Exception {
+        ScribbleMainActivity.log("<<<<<<<<<< LineTest", "setUp >>>>>>>>>>>>>", null);
         super.setUp();
         activity = Robolectric.buildActivity(ScribbleMainActivity.class).create().get();
-//activity = new ScribbleMainActivity();
+        //activity = new ScribbleMainActivity();
         scribbleView = activity.getmMainView();
         motionEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 10f, 10f, 0);
         canvas = new Canvas();
@@ -64,6 +65,7 @@ public class LineTest extends TestCase {
 
     @Test
     public void testBasicLine () {
+        ScribbleMainActivity.log ("-- LineTest", "testBasicLine --", null);
         resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
 
@@ -156,6 +158,7 @@ public class LineTest extends TestCase {
 
     @Test
     public void moveSizeTest () {
+        ScribbleMainActivity.log ("-- LineTest", "setUp --", null);
         resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
         LineTest.moveSizeTest(motionEvent, scribbleView, line, canvas, activity);
@@ -200,6 +203,7 @@ public class LineTest extends TestCase {
 
     @Test
     public void localZoom () {
+        ScribbleMainActivity.log ("-- LineTest", "localZoom --", null);
         // 2 lines one zoomed one not
         resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);
@@ -228,6 +232,7 @@ public class LineTest extends TestCase {
 
     @Test
     public void saveRestore () throws IOException {
+        ScribbleMainActivity.log ("-- LineTest", "saveRestore --", null);
         // Set up a line
         resetEverything(shadowCanvas, motionEvent, scribbleView, activity);
         LineDrawItem line = new LineDrawItem(motionEvent, scribbleView, false);

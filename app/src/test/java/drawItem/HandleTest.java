@@ -55,6 +55,7 @@ public class HandleTest extends TestCase {
     @Before
     @Override
     public void setUp() throws Exception {
+        ScribbleMainActivity.log ("<<<<<<<<<< HandleTest", "setUp >>>>>>>>>>>>>", null);
         super.setUp();
         activity = Robolectric.buildActivity(ScribbleMainActivity.class).create().get();
         scribbleView = activity.getmMainView();
@@ -62,6 +63,7 @@ public class HandleTest extends TestCase {
 
     @Test
     public void testNearHandle () {
+        ScribbleMainActivity.log ("-- testNearHandle", "setUp --", null);
         PointF p = new PointF(20f, 20f);
         uk.org.platitudes.scribble.drawitem.Handle h = new uk.org.platitudes.scribble.drawitem.Handle(p, scribbleView);
         boolean result = h.nearPoint(21f, 21f);
@@ -70,6 +72,7 @@ public class HandleTest extends TestCase {
 
     @Test
     public void testHandleDraw () {
+        ScribbleMainActivity.log ("-- testHandleDraw", "setUp --", null);
         PointF p = new PointF(20f, 20f);
         uk.org.platitudes.scribble.drawitem.Handle h = new uk.org.platitudes.scribble.drawitem.Handle(p, scribbleView);
 

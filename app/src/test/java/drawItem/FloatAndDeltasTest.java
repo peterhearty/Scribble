@@ -8,8 +8,10 @@ import android.os.Build;
 import junit.framework.TestCase;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowEnvironment;
@@ -39,6 +41,7 @@ public class FloatAndDeltasTest extends TestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        ScribbleMainActivity.log("<<<<<<<<<< FloatAndDeltasTest", "setUp >>>>>>>>>>>>>", null);
 //        activity = Robolectric.buildActivity(ScribbleMainActivity.class).create().get();
 //        scribbleView = activity.getmMainView();
     }
@@ -98,6 +101,7 @@ public class FloatAndDeltasTest extends TestCase {
 
     @Test
     public void basicTest () {
+        ScribbleMainActivity.log ("-- FloatAndDeltasTest", "basicTest --", null);
         // start with a single point
         floatAndDeltas floats = addFloats(basicFloats);
         verifyFloats(floats, basicFloats, basicFloatTolerances);
@@ -116,6 +120,7 @@ public class FloatAndDeltasTest extends TestCase {
      */
     @Test
     public void basicLargeTest () {
+        ScribbleMainActivity.log ("-- FloatAndDeltasTest", "basicLargeTest --", null);
         // start with a single point
         floatAndDeltas floats = addFloats(largeFloats);
         verifyFloats(floats, largeFloats, largeFloatTolerances);
@@ -127,6 +132,7 @@ public class FloatAndDeltasTest extends TestCase {
 
     @Test
     public void saveRestore () throws IOException {
+        ScribbleMainActivity.log ("-- FloatAndDeltasTest", "saveRestore --", null);
         // Use another test to setup some data
         floatAndDeltas floats = addFloats(basicFloats);
 

@@ -61,7 +61,7 @@ public class ScribbleMainActivity extends Activity  {
     protected void onCreate(Bundle savedInstanceState) {
         try {
             super.onCreate(savedInstanceState);
-            setupLogFile();
+//            setupLogFile();
 
             mainActivity = this;
 
@@ -203,6 +203,9 @@ public class ScribbleMainActivity extends Activity  {
         if (e != null) {
             s = s + " " + e;
             Log.e(tag, msg, e);
+        }
+        if (logFile == null) {
+            setupLogFile();
         }
         if (logFile != null) {
             Calendar cal = Calendar.getInstance();
