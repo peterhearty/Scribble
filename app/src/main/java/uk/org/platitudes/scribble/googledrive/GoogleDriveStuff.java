@@ -49,6 +49,10 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
     public void connect () {
         ScribbleMainActivity.log("GoogleDriveStuff", "connect", null);
         if (mGoogleDriveConnectionFailedCount<2 && !mGoogleDriveConnected) {
+            int serviceCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mScribbleMainActivity);
+            if (serviceCode != ConnectionResult.SUCCESS) {
+                ScribbleMainActivity.log("GoogleDriveStuff", "connect, service availabiliy="+serviceCode, null);
+            }
             ScribbleMainActivity.log("GoogleDriveStuff", "trying to connect to google drive", null);
             mGoogleApiClient.connect();
         }
