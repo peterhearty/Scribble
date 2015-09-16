@@ -3,6 +3,7 @@
  */
 package uk.org.platitudes.scribble.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -19,6 +20,9 @@ public class ScribbleInputStream {
     private DataInputStream dis;
     private long firstLong;
     private boolean firstLongRead;
+    private int lineNumber;
+
+    private byte[] buffer;
 
     private String readLine () throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -36,13 +40,47 @@ public class ScribbleInputStream {
                 sb.append((char)nextByte);
             }
         } while (true);
+        lineNumber++;
         String result = sb.toString();
         return result;
+    }
+
+    /**
+     * We copy the input stream to an internal byte[] buffer. This guarantees that we can
+     * do mark() and reset() operations.
+     */
+    private InputStream readWholeInputStream (InputStream is) throws IOException {
+        int totalSize = 0;
+        int available = is.available();
+        while (available > 0) {
+            // read in the available bytes
+            byte[] availableBytes = new byte[available];
+            is.read(availableBytes);
+            totalSize += available;
+
+            // add them to any bytes read in a previous loop
+            if (buffer == null) {
+                // first bytes read
+                buffer = availableBytes;
+            } else {
+                // add them to previous bytes
+                byte[] newBuffer = new byte[totalSize];
+                System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+                System.arraycopy(availableBytes, 0, newBuffer, buffer.length, availableBytes.length);
+            }
+
+            available = is.available();
+        }
+        ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
+        return bais;
     }
 
     public ScribbleInputStream (InputStream is) throws IOException {
         firstLongRead = false;
         asText = false;
+
+        is = readWholeInputStream(is);
+
         dis = new DataInputStream(is);
         firstLong = dis.readLong();
         if (firstLong != ScribbleReader.MAGIC_NUMBER) {
@@ -84,7 +122,22 @@ public class ScribbleInputStream {
                     // An error wil result in zero being returned
                     // Eventually this will cause a DrawItem or ItemList error
                     // Item list should rewind and try to skip past the error
-                    ScribbleMainActivity.log("ScribbleInputStream", "Error reading number: "+s, e);
+                    ScribbleMainActivity.log("ScribbleInputStream", "Error reading number: "+s+" at line "+lineNumber, null);
+
+                    // A UTF string can be followed immediately by a new DrawItem code. Try decoding
+                    // this by reading from the end of the current line.
+                    if (s.length() > 0 ) {
+                        int i = s.length()-1;
+                        char c = s.charAt(i);
+                        while (c >= '0' && c <='9' && i > 0) {
+                            c = s.charAt(--i);
+                        }
+                        if (i < s.length()-1) {
+                            String numberString = s.substring(i+1);
+                            ScribbleMainActivity.log("ScribbleInputStream", "Trying: "+numberString, null);
+                            result = Long.valueOf(numberString);
+                        }
+                    }
                 }
             } else {
                 result = dis.readLong();
