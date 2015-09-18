@@ -3,6 +3,8 @@
  */
 package uk.org.platitudes.scribble.googledrive;
 
+import android.os.ParcelFileDescriptor;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -12,6 +14,8 @@ import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveId;
 
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 import uk.org.platitudes.scribble.ScribbleMainActivity;
@@ -31,7 +35,7 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
 
         ScribbleMainActivity.log("AsyncRead", "read requested "+gdf.toString(), null);
         DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
-        driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
+        driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_WRITE, null)
                 .setResultCallback(this);
     }
 
@@ -41,6 +45,7 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
         ScribbleMainActivity.log("AsyncRead", "read result "+mFile.toString()+" status = "+s.toString(), null);
         if (!s.isSuccess()) {
             // error
+            mFile.setReadRequest(null);
             return;
         }
         DriveContents driveContents = driveContentsResult.getDriveContents();
@@ -48,7 +53,10 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
         int size = (int) mFile.length();
         byte[] contents = new byte[size];
         try {
-            InputStream is = driveContents.getInputStream();
+//            InputStream is = driveContents.getInputStream();
+            ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+            FileDescriptor fd = parcelFileDescriptor.getFileDescriptor();
+            InputStream is = new FileInputStream(fd);
             int available = is.available();
             if (available != size) {
                 if (available > size) {
@@ -82,6 +90,15 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
                             // contents have changed
                             ScribbleMainActivity.log("AsyncRead", "File changed at byte "+i+" "+mFile.toString(), null);
                             updateContents = true;
+                            break;
+                        }
+                        if (i > 100) {
+                            // The file header consists of:
+                            // MAGIC_NUMBER long    8 bytes (15 + n/l .txt)
+                            // version      int     4 bytes ( 4 + n/l .txt)
+                            // changeByte   byte    1 byte  ( 3 + n/l .txt)
+                            // draw count   int     4 bytes (4? + n/l .txt)
+                            // After about 30 bytes unchanged there should be no more changes
                             break;
                         }
                     }
