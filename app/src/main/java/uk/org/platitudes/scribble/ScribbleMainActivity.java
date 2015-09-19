@@ -116,13 +116,6 @@ public class ScribbleMainActivity extends Activity  {
     }
 
     @Override
-    protected void onDestroy() {
-        ScribbleMainActivity.log ("ScribbleMainActivity", "onDestroy", null);
-        super.onDestroy();
-        mMainView.getDrawing().onDestroy();
-    }
-
-    @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         ScribbleMainActivity.log ("ScribbleMainActivity", "onSaveInstanceState", null);
         super.onSaveInstanceState(outState);
@@ -230,6 +223,34 @@ public class ScribbleMainActivity extends Activity  {
         ScribbleMainActivity.log("ScribbleMainActivity", "onStart", null);
         super.onStart();
         mGoogleStuff.connect();
+    }
+
+    @Override
+    protected void onResume() {
+        ScribbleMainActivity.log("ScribbleMainActivity", "onResume", null);
+        super.onResume();
+        mMainView.getDrawing().getBackgroundThread().interrupt(BackgroundThread.STATE_NEW_ACITIVY);
+    }
+
+    @Override
+    protected void onPause() {
+        ScribbleMainActivity.log("ScribbleMainActivity", "onPause", null);
+        super.onPause();
+        mMainView.getDrawing().getBackgroundThread().interrupt(BackgroundThread.STATE_PRORAM_PAUSE);
+    }
+
+    @Override
+    protected void onStop() {
+        ScribbleMainActivity.log("ScribbleMainActivity", "onStop", null);
+        super.onStop();
+        mMainView.getDrawing().getBackgroundThread().interrupt(BackgroundThread.STATE_PRORAM_PAUSE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        ScribbleMainActivity.log ("ScribbleMainActivity", "onDestroy", null);
+        super.onDestroy();
+        mMainView.getDrawing().onDestroy();
     }
 
 

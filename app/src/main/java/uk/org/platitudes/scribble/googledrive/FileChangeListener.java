@@ -45,8 +45,10 @@ public class FileChangeListener implements ChangeListener, ResultCallback<DriveR
 
     @Override
     public void onChange(ChangeEvent changeEvent) {
+        ScribbleMainActivity.log ("PFileChangeListener", "Change event received: "+mGoogleDriveFile.toString(), null);
         if (ignoreNextChangeEvent) {
             // change due to our own update
+            ScribbleMainActivity.log ("PFileChangeListener", "Change event ignored: "+mGoogleDriveFile.toString(), null);
             ignoreNextChangeEvent = false;
             return;
         }

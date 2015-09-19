@@ -10,6 +10,7 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
@@ -32,15 +33,30 @@ public class GoogleDriveFile extends File {
     private String mName;
 
     private GoogleDriveFolder mParentFolder;
+
+    /**
+     * Created by GoogleDriveStuff. Needed to make almost all calls to Google Drive.
+     */
     private GoogleApiClient mGoogleApiClient;
+
+    /**
+     * The definitive ID for a Drive resource - in this case, this file.
+     * A DriveFile object seems to be valid for an extended period as well.
+     * DriveContents objects only seem to be valid for one use. after a
+     * commit or discard they must be thrown away.
+     */
     private DriveId mDriveId;
+
     private byte[] mFileContents;
     private DriveOutputStream pendingWrite;
     private boolean dummyFile;
     private AsyncRead readRequest;
     private CheckMetadata metadataCheck;
     private long lastModifiedDate;
+
+//    public DriveFile mDriveFile;
     public boolean fileHasChanged;
+//    public FileChangeListener fileChangeListener;
 
     /**
      * Constructor for existing files.
@@ -60,6 +76,7 @@ public class GoogleDriveFile extends File {
 
     public void forceReRead() {
         if (readRequest == null && mDriveId != null) {
+            ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" adding read request", null);
             readRequest = new AsyncRead(this, mGoogleApiClient, mDriveId);
         }
     }
@@ -72,6 +89,7 @@ public class GoogleDriveFile extends File {
         if (mFileContents == null) {
             // file contents have not been fetched.
             ScribbleMainActivity.log("GoogleDriveFile", "file "+toString()+" cannot read, contents unavailable", null);
+            forceReRead();
             return null;
         }
         synchronized (mFileContents) {

@@ -119,4 +119,22 @@ public class LocalFileTest extends TestCase {
         assertTrue(circleCount == 12);
         assertTrue(textCount==15);
     }
+
+    @Test
+    public void loadBrokenFile () {
+        ScribbleMainActivity.log("-- LocalFileTest", "loadBrokenFile --", null);
+        Drawing drawing = scribbleView.getDrawing();
+        File f = new File("/home/pete/Dropbox/AndroidDev/testFiles/text.txt");
+        drawing.setmCurrentlyOpenFile(f);
+
+        drawing.openCurrentFile();
+        drawing.getmDrawItems().onDraw(canvas);
+        int lineCount = shadowCanvas.getLinePaintHistoryCount();
+        int circleCount = shadowCanvas.getCirclePaintHistoryCount();
+        int textCount = shadowCanvas.getTextHistoryCount();
+        assertTrue(lineCount==13231);
+        assertTrue(circleCount==12);
+        assertTrue(textCount==15);
+
+    }
 }

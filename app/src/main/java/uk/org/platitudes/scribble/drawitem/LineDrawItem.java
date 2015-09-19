@@ -113,6 +113,7 @@ public class LineDrawItem  extends DrawItem {
      */
     @Override
     public Handle handleEditEvent(PointF motionStart, float screenx, float screeny) {
+//        ScribbleMainActivity.log("LineDrawItem", "handleEditEvent", null);
         Handle result = updateUsingHandles(screenx, screeny);
         if (result != null) {
             mScribbleView.getDrawing().requestWrite();

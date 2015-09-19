@@ -45,6 +45,7 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
     }
 
     public void writeFile () {
+        ScribbleMainActivity.log("DriveOutputStream", "writeFile "+mGoogleDriveFile.toString(), null);
         DriveId id = mGoogleDriveFile.getmDriveId();
         if (id == null) {
             // File has just been created. Callback in constructor hasn't been called yet.
@@ -52,6 +53,7 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
             if (mGoogleDriveFile.isDummyFile()) {
                 // The file was created to test for existence but has now been written to.
                 // convert it into a real file.
+                ScribbleMainActivity.log("DriveOutputStream", "writeFile: creating file "+mGoogleDriveFile.toString(), null);
                 mGoogleDriveFile.createFileOnDrive();
                 mGoogleDriveFile.getmParentFolder().addFileToList(mGoogleDriveFile);
                 mGoogleDriveFile.setDummyFile(false);
@@ -61,6 +63,7 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
         }
 
         DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, id);
+        ScribbleMainActivity.log("DriveOutputStream", "writeFile: requesting open for write "+mGoogleDriveFile.toString(), null);
         driveFile.open(mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null)
                 .setResultCallback(this);
     }
@@ -69,7 +72,7 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
     public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
         Status s = driveContentsResult.getStatus();
         if (!s.isSuccess()) {
-            // error
+            ScribbleMainActivity.log("DriveOutputStream", "onResult error "+s.toString(), null);
             return;
         }
 
@@ -77,6 +80,7 @@ class DriveOutputStream extends ByteArrayOutputStream implements ResultCallback<
         OutputStream os = driveContents.getOutputStream();
         try {
             byte[] contents = mGoogleDriveFile.getmFileContents();
+            ScribbleMainActivity.log("DriveOutputStream", "writing contents to Google Drive file "+mGoogleDriveFile.toString(), null);
             synchronized (contents) {
                 os.write(contents, 0, contents.length);
             }

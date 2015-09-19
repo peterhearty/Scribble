@@ -37,6 +37,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
     // https://developers.google.com/android/guides/setup
     compile 'com.google.android.gms:play-services-drive:7.5.0'
+    // These are Maven Central coordinates, see for example https://search.maven.org/#search|ga|1|robolectric
+    // Libraries get downloaded and cached in ~/.gradle/caches
     testCompile 'junit:junit:4.12'
     testCompile "org.robolectric:robolectric:3.0"
     testCompile "org.robolectric:shadows-play-services:3.0"

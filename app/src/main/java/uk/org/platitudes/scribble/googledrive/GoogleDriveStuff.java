@@ -67,6 +67,7 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
             fileToReadWhenReady = null;
             Drawing drawing = mScribbleMainActivity.getmMainView().getDrawing();
             drawing.setmCurrentlyOpenFile(f);
+            f.forceReRead();
         }
     }
 

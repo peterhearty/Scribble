@@ -42,6 +42,10 @@ public class CheckMetadata implements ResultCallback<DriveResource.MetadataResul
         long modifiedDate = m.getModifiedDate().getTime();
         long prevModDate = mFile.getLastModifiedDate();
         // DOESN'T WORK - DATE DOESN'T SEEMS TO GET UPDATED
+        // TRY "PINNING" FILE
+        // TRY OPENING IN READ-WRITE MODE?
+        // NEITHER OF ABOVE WORKED
+        // TRY ALWAYS SETTING A NEW CHANGE LISTENER?
         if (modifiedDate > prevModDate) {
             // file has changed
             mFile.setLastModifiedDate(modifiedDate);

@@ -28,7 +28,7 @@ import uk.org.platitudes.scribble.io.ScribbleReader;
  * involves a lot of asynchronous activity. A separate background thread
  * handles most of this as well as file writes.
  */
-public class Drawing implements Runnable {
+public class Drawing {
 
     /**
      * The draw list, the list of DrawItems on this page.
@@ -50,13 +50,8 @@ public class Drawing implements Runnable {
     private ScribbleView mScribbleView;
     private ScribbleMainActivity mMainActivity;
     private File mCurrentlyOpenFile;
-
-    private Thread backgroundThread;
-    private volatile boolean stopBackgroundThread;
     boolean writeInProgress;
-    long mThreadWait;
-
-
+    private BackgroundThread mBackgroundThread;
 
 
     public Drawing (ScribbleView scribbleView) {
@@ -64,18 +59,7 @@ public class Drawing implements Runnable {
         mMainActivity = ScribbleMainActivity.mainActivity;
         mDrawItems = new ItemList();
         mUndoList = new ItemList();
-
-        mThreadWait = 1000;
-        backgroundThread = new Thread(this);
-        backgroundThread.start();
-    }
-
-    public boolean inBackgroundThread () {
-        Thread thisThread = Thread.currentThread();
-        if (thisThread.equals(backgroundThread)) {
-            return true;
-        }
-        return false;
+        mBackgroundThread= new BackgroundThread(this);
     }
 
     public void openCurrentFile () {
@@ -128,7 +112,7 @@ public class Drawing implements Runnable {
         if (f == null) return;
 
         mCurrentlyOpenFile = f;
-        mThreadWait = 1000;
+        mBackgroundThread.interrupt(BackgroundThread.STATE_NEW_ACITIVY);
 
         Context context = mScribbleView.getContext();
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -157,15 +141,13 @@ public class Drawing implements Runnable {
     }
 
     public void onDestroy () {
-        stopBackgroundThread = true;
-
         // Note that we always ensure the modifiedSinceLastWrite
         // flag is clear before stopping the IO thread.
         if (modifiedSinceLastWrite) {
             write();
-            backgroundThread.interrupt();
+            mBackgroundThread.interrupt(BackgroundThread.STATE_PROGRAM_EXIT);
         } else {
-            backgroundThread.interrupt();
+            mBackgroundThread.interrupt(BackgroundThread.STATE_PROGRAM_EXIT);
         }
     }
 
@@ -208,24 +190,30 @@ public class Drawing implements Runnable {
      * MoveItem, need to perform additional actions via their undo method.
      */
     public synchronized void undo () {
+        ScribbleMainActivity.log("Drawing", "undo", null);
         DrawItem movedItem = mDrawItems.moveLastTo(mUndoList);
         if (movedItem != null) {
             movedItem.undo();
         }
         modifiedSinceLastWrite = true;
+        mBackgroundThread.interrupt(BackgroundThread.STATE_NEW_ACITIVY);
     }
 
     public synchronized void redo () {
+        ScribbleMainActivity.log("Drawing", "redo", null);
         DrawItem movedItem = mUndoList.moveLastTo(mDrawItems);
         if (movedItem != null) {
             movedItem.redo();
         }
         modifiedSinceLastWrite = true;
+        mBackgroundThread.interrupt(BackgroundThread.STATE_NEW_ACITIVY);
     }
 
     public synchronized void addItem (DrawItem item) {
+        ScribbleMainActivity.log("Drawing", "addItem "+item.getClass(), null);
         mDrawItems.add(item);
         modifiedSinceLastWrite = true;
+        mBackgroundThread.interrupt(BackgroundThread.STATE_NEW_ACITIVY);
     }
 
     public synchronized void clear () {
@@ -239,19 +227,24 @@ public class Drawing implements Runnable {
     }
 
     public synchronized void clearUndos () {
+        ScribbleMainActivity.log("Drawing", "clearUndos", null);
         int numCleared = mUndoList.clear();
         numCleared += mDrawItems.clean();
         modifiedSinceLastWrite = true;
-        ScribbleMainActivity.makeToast ("Cleared "+numCleared);
+        mBackgroundThread.interrupt(BackgroundThread.STATE_NEW_ACITIVY);
+        ScribbleMainActivity.makeToast("Cleared " + numCleared);
     }
 
     public ItemList getmDrawItems() {return mDrawItems;}
     public ItemList getUndoItems() {return mUndoList;}
+    public boolean modified () {return modifiedSinceLastWrite;}
+    public File getCurrentlyOpenFile () {return mCurrentlyOpenFile;}
+    public BackgroundThread getBackgroundThread () {return mBackgroundThread;}
 
     public synchronized void write () {
         modifiedSinceLastWrite = false;
 // What's wrong with mMainActivity below???
-        ScribbleMainActivity activity = ScribbleMainActivity.mainActivity;
+//        ScribbleMainActivity activity = ScribbleMainActivity.mainActivity;
         if (mCurrentlyOpenFile != null) {
             ScribbleMainActivity.log("Drawing", "Writing file "+mCurrentlyOpenFile, null);
             if (writeInProgress) {
@@ -259,47 +252,16 @@ public class Drawing implements Runnable {
                 return;
             }
             writeInProgress = true;
-            FileScribbleWriter fsw = new FileScribbleWriter(activity, mCurrentlyOpenFile);
+            FileScribbleWriter fsw = new FileScribbleWriter(mMainActivity, mCurrentlyOpenFile);
             fsw.write();
             writeInProgress = false;
         }
     }
 
     public void requestWrite () {
+        ScribbleMainActivity.log("Drawing", "requestWrite", null);
         modifiedSinceLastWrite = true;
+        mBackgroundThread.interrupt(BackgroundThread.STATE_NEW_ACITIVY);
     }
 
-    @Override
-    public void run() {
-        while (!stopBackgroundThread) {
-            try {
-                Thread.sleep(mThreadWait);
-                if (modifiedSinceLastWrite) {
-                    ScribbleMainActivity.log("Background thread", "Writing file", null);
-                    write();
-                } else if (mCurrentlyOpenFile != null && mCurrentlyOpenFile instanceof GoogleDriveFile) {
-                    // Read the current file contents
-                    GoogleDriveFile gdf = (GoogleDriveFile) mCurrentlyOpenFile;
-                    if (gdf.fileHasChanged) {
-                        ScribbleMainActivity.log("Background thread", "File has changed, reading file "+gdf, null);
-                        FileScribbleReader fsr = new FileScribbleReader(mMainActivity, mCurrentlyOpenFile);
-                        fsr.read(this);
-                    }
-                    // Force another read of file contents.
-                    // NOTE - tried adding an update listener, a subscription, or checking for
-                    // metadata modifiedDate change. None of them worked properly. So while the file
-                    // is open, we keep rereading the contents, checking each time for a change.
-                    gdf.forceReRead();
-                }
-
-                if (mThreadWait < 4000) {
-                    mThreadWait *= 2;
-                    ScribbleMainActivity.log("Background thread", "Increased poll interval to "+mThreadWait, null);
-                }
-            } catch (InterruptedException e) {
-                ScribbleMainActivity.log("Background thread", "Interrupted: exiting", null);
-                stopBackgroundThread = true;
-            }
-        }
-    }
 }

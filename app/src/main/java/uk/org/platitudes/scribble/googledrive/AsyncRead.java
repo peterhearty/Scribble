@@ -27,36 +27,27 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
     private GoogleDriveFile mFile;
     private GoogleApiClient mGoogleApiClient;
     private DriveId mDriveId;
+    private DriveFile mDriveFile;
 
     public AsyncRead (GoogleDriveFile gdf, GoogleApiClient apiClient, DriveId id) {
         mFile = gdf;
         mGoogleApiClient = apiClient;
         mDriveId = id;
 
-        ScribbleMainActivity.log("AsyncRead", "read requested "+gdf.toString(), null);
-        DriveFile driveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
-        driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_WRITE, null)
+        ScribbleMainActivity.log("AsyncRead", "read requested " + gdf.toString(), null);
+        mDriveFile = Drive.DriveApi.getFile(mGoogleApiClient, mDriveId);
+        mDriveFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
                 .setResultCallback(this);
     }
 
-    @Override
-    public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
-        Status s = driveContentsResult.getStatus();
-        ScribbleMainActivity.log("AsyncRead", "read result "+mFile.toString()+" status = "+s.toString(), null);
-        if (!s.isSuccess()) {
-            // error
-            mFile.setReadRequest(null);
-            return;
-        }
-        DriveContents driveContents = driveContentsResult.getDriveContents();
-
+    private void readContents (DriveContents driveContents) {
         int size = (int) mFile.length();
         byte[] contents = new byte[size];
         try {
-//            InputStream is = driveContents.getInputStream();
-            ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
-            FileDescriptor fd = parcelFileDescriptor.getFileDescriptor();
-            InputStream is = new FileInputStream(fd);
+            InputStream is = driveContents.getInputStream();
+//            ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+//            FileDescriptor fd = parcelFileDescriptor.getFileDescriptor();
+//            InputStream is = new FileInputStream(fd);
             int available = is.available();
             if (available != size) {
                 if (available > size) {
@@ -116,6 +107,21 @@ public class AsyncRead implements ResultCallback<DriveApi.DriveContentsResult> {
         } catch (Exception e) {
             ScribbleMainActivity.log("GoogleDriveFile", "getInputStream", e);
         }
+
+    }
+
+    @Override
+    public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
+        Status s = driveContentsResult.getStatus();
+        ScribbleMainActivity.log("AsyncRead", "read result "+mFile.toString()+" status = "+s.toString(), null);
+        if (!s.isSuccess()) {
+            // error
+            mFile.setReadRequest(null);
+            return;
+        }
+
+        DriveContents  driveContents = driveContentsResult.getDriveContents();
+        readContents(driveContents);
     }
 
 }
