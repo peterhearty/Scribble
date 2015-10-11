@@ -1,5 +1,6 @@
 package uk.org.platitudes.scribble.file;
 
+import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
@@ -22,7 +23,8 @@ public class DirList extends SimpleList {
         mFileList = fileList;
         mDirectoryName = (TextView) v.findViewById(R.id.directory_name);
 
-        File startDir = v.getContext().getFilesDir();
+        Context c = v.getContext();
+        File startDir = c.getFilesDir();
         setOrderObjects(true);
         setContents(startDir);
 
