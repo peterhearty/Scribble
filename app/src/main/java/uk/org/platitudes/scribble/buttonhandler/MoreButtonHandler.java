@@ -31,6 +31,7 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
 
     private Button mMoreButton;
     private ScribbleMainActivity mActivity;
+    private PopupMenu mPopupMenu;
 
     public MoreButtonHandler (Button b, ScribbleMainActivity sma) {
         mMoreButton = b;
@@ -39,13 +40,14 @@ public class MoreButtonHandler implements View.OnClickListener, PopupMenu.OnMenu
         mMoreButton.setOnTouchListener(this);
     }
 
+    public PopupMenu getmPopupMenu() {return mPopupMenu;}
 
     private void createMenu () {
-        PopupMenu popup = new PopupMenu(mMoreButton.getContext(), mMoreButton);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.more_actions_menu, popup.getMenu());
-        popup.setOnMenuItemClickListener(this);
-        popup.show();
+        mPopupMenu = new PopupMenu(mMoreButton.getContext(), mMoreButton);
+        MenuInflater inflater = mPopupMenu.getMenuInflater();
+        inflater.inflate(R.menu.more_actions_menu, mPopupMenu.getMenu());
+        mPopupMenu.setOnMenuItemClickListener(this);
+        mPopupMenu.show();
     }
 
     /**
