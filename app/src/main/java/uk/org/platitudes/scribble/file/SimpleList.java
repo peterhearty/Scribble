@@ -130,7 +130,7 @@ public class SimpleList implements AdapterView.OnItemClickListener, AdapterView.
         if (data.length < 2) return;
 
         for (int i=1; i<data.length; i++) {
-            // On each pass of the loop, assume that all precious objects are already ordered.
+            // On each pass of the loop, assume that all previous objects are already ordered.
             Object cur = data[i];
             for (int j=i-1; j >=0; j--) {
                 // compare cur to all prev objects
