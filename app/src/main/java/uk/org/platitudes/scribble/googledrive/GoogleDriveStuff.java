@@ -58,6 +58,12 @@ public class GoogleDriveStuff implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
+    public void destroy() {
+        mGoogleApiClient.disconnect();
+        mGoogleApiClient.unregisterConnectionCallbacks(this);
+        mGoogleApiClient.unregisterConnectionFailedListener(this);
+    }
+
     public void checkFileLoadPending (GoogleDriveFile f) {
         ScribbleMainActivity.log("GoogleDriveStuff", "checkFileLoadPending: "+f.toString(), null);
         if (fileToReadWhenReady == null) return;
