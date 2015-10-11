@@ -90,6 +90,10 @@ public class BackgroundThread implements Runnable {
 
     }
 
+    // TODO New appraoch - always save/load from local file
+    // Separate service monitors file changes on disk and on Google Drive
+    // File on Google Drive: __scribble__current_file gives name of current file and maybe more
+
     @Override
     public void run() {
         while (!stopBackgroundThread) {
