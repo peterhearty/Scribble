@@ -1,25 +1,15 @@
 /**
  * This source code is not owned by anybody. You can can do what you like with it.
  */
-package drawItem;
+package uk.org.platitudes.scribble;
 
 import android.graphics.PointF;
-import android.os.Build;
+import android.test.ActivityInstrumentationTestCase2;
 
 import junit.framework.TestCase;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
-
-import mockClasses.TestCanvas;
-import uk.org.platitudes.scribble.BuildConfig;
-import uk.org.platitudes.scribble.ScribbleMainActivity;
-import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.Handle;
+import uk.org.platitudes.scribble.mock.TestCanvas;
 
 /**
  * This has to be in a subdirectory of app/src/test (created using right click New directory as
@@ -45,36 +35,31 @@ import uk.org.platitudes.scribble.drawitem.Handle;
  * double r = cos(PI * theta);
  */
 
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(sdk = Build.VERSION_CODES.JELLY_BEAN, constants = BuildConfig.class)
-public class HandleTest extends TestCase {
+public class HandleTest extends AbstractDrawItem {
 
-    private ScribbleView scribbleView;
-    private ScribbleMainActivity activity;
+    public HandleTest () {
+        super();
+    }
 
-    @Before
+
     @Override
     public void setUp() throws Exception {
         ScribbleMainActivity.log ("<<<<<<<<<< HandleTest", "setUp >>>>>>>>>>>>>", null);
         super.setUp();
-        activity = Robolectric.buildActivity(ScribbleMainActivity.class).create().get();
-        scribbleView = activity.getmMainView();
     }
 
-    @Test
     public void testNearHandle () {
         ScribbleMainActivity.log ("-- testNearHandle", "setUp --", null);
         PointF p = new PointF(20f, 20f);
-        uk.org.platitudes.scribble.drawitem.Handle h = new uk.org.platitudes.scribble.drawitem.Handle(p, scribbleView);
+        Handle h = new Handle(p, scribbleView);
         boolean result = h.nearPoint(21f, 21f);
         assertTrue(result);
     }
 
-    @Test
     public void testHandleDraw () {
         ScribbleMainActivity.log ("-- testHandleDraw", "setUp --", null);
         PointF p = new PointF(20f, 20f);
-        uk.org.platitudes.scribble.drawitem.Handle h = new uk.org.platitudes.scribble.drawitem.Handle(p, scribbleView);
+        Handle h = new Handle(p, scribbleView);
 
         TestCanvas c = new TestCanvas();
         h.drawSelectionHandle(c);

@@ -1,27 +1,14 @@
 /**
  * This source code is not owned by anybody. You can can do what you like with it.
  */
-package drawItem;
+package uk.org.platitudes.scribble;
 
-import android.os.Build;
-
-import junit.framework.TestCase;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowEnvironment;
+import android.test.ActivityInstrumentationTestCase2;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import uk.org.platitudes.scribble.BuildConfig;
-import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.drawitem.freehand.floatAndDeltas;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
@@ -29,30 +16,16 @@ import uk.org.platitudes.scribble.io.ScribbleReader;
 
 /**
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(sdk = Build.VERSION_CODES.JELLY_BEAN, constants = BuildConfig.class)
-public class FloatAndDeltasTest extends TestCase {
+public class FloatAndDeltasTest extends AbstractDrawItem {
 
 
-//    private ScribbleView scribbleView;
-//    private ScribbleMainActivity activity;
+    public FloatAndDeltasTest () {
+        super();
+    }
 
-    @Before
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ScribbleMainActivity.log("<<<<<<<<<< FloatAndDeltasTest", "setUp >>>>>>>>>>>>>", null);
-//        activity = Robolectric.buildActivity(ScribbleMainActivity.class).create().get();
-//        scribbleView = activity.getmMainView();
-    }
-
-    private boolean closeTo (float value, float target, float allowedDelta) {
-        boolean result = true;
-        float delta = Math.abs(value-target);
-        if (delta > allowedDelta) {
-            result = false;
-        }
-        return result;
     }
 
     private floatAndDeltas addFloats (float[] values) {
@@ -99,8 +72,7 @@ public class FloatAndDeltasTest extends TestCase {
     private static final float[] basicFloatTolerances   = {  0.01f,    0.01f,    1,   1,   1, 0.1f, 0.1f, 0.1f, 0.01f};
 
 
-    @Test
-    public void basicTest () {
+    public void testBasicTest () {
         ScribbleMainActivity.log ("-- FloatAndDeltasTest", "basicTest --", null);
         // start with a single point
         floatAndDeltas floats = addFloats(basicFloats);
@@ -118,8 +90,7 @@ public class FloatAndDeltasTest extends TestCase {
     /**
      * Tests larger numbers
      */
-    @Test
-    public void basicLargeTest () {
+    public void testBasicLargeTest () {
         ScribbleMainActivity.log ("-- FloatAndDeltasTest", "basicLargeTest --", null);
         // start with a single point
         floatAndDeltas floats = addFloats(largeFloats);
@@ -130,8 +101,7 @@ public class FloatAndDeltasTest extends TestCase {
         assertTrue(closeTo(min, 0, 0.1f));
     }
 
-    @Test
-    public void saveRestore () throws IOException {
+    public void testSaveRestore () throws IOException {
         ScribbleMainActivity.log ("-- FloatAndDeltasTest", "saveRestore --", null);
         // Use another test to setup some data
         floatAndDeltas floats = addFloats(basicFloats);
