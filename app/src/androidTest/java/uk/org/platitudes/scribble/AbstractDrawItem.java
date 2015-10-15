@@ -36,6 +36,7 @@ public class AbstractDrawItem extends ActivityInstrumentationTestCase2 {
         setActivityInitialTouchMode(false);
         activity = (ScribbleMainActivity) getActivity();
         scribbleView = activity.getmMainView();
+        ScribbleMainActivity.testInProgress = true;
         motionEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 10f, 10f, 0);
         canvas = new TestCanvas();
         instrumentation = getInstrumentation();

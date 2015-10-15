@@ -5,6 +5,7 @@ package uk.org.platitudes.scribble.drawitem.freehand;
 
 import java.io.IOException;
 
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
 import uk.org.platitudes.scribble.io.ScribbleOutputStream;
 
@@ -204,19 +205,24 @@ public class floatAndDeltas {
     }
 
     public float nextFloat(float zoom) {
-        byte b = mDeltas[mPointer++];
-        while (b == 127) {
-            mCurrentMultiplier *= 10;
-            b = mDeltas[mPointer++];
+        try {
+            byte b = mDeltas[mPointer++];
+            while (b == 127) {
+                mCurrentMultiplier *= 10;
+                b = mDeltas[mPointer++];
+            }
+            while (b == -127) {
+                mCurrentMultiplier /= 10;
+                b = mDeltas[mPointer++];
+            }
+            float result = mLastCalculated + b * mCurrentMultiplier * zoom;
+            mLastCalculated = result;
+            checkMinMax();
+            return result;
+        } catch (Exception e) {
+            ScribbleMainActivity.log("floatAndDeltas", "nextFloat", e);
         }
-        while (b == -127) {
-            mCurrentMultiplier /= 10;
-            b = mDeltas[mPointer++];
-        }
-        float result = mLastCalculated + b * mCurrentMultiplier * zoom;
-        mLastCalculated = result;
-        checkMinMax();
-        return result;
+        return 0;
     }
 
 }

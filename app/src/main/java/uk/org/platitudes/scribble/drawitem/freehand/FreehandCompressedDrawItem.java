@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 
 import java.io.IOException;
 
+import uk.org.platitudes.scribble.ScribbleMainActivity;
 import uk.org.platitudes.scribble.ScribbleView;
 import uk.org.platitudes.scribble.drawitem.DrawItem;
 import uk.org.platitudes.scribble.io.ScribbleInputStream;
@@ -51,8 +52,7 @@ public class FreehandCompressedDrawItem extends DrawItem {
         return result;
     }
 
-    @Override
-    public void draw(Canvas c) {
+    private void privateDraw (Canvas c) {
         drawBounds(c);
 
         float x_val = x.firstFloat();
@@ -67,16 +67,32 @@ public class FreehandCompressedDrawItem extends DrawItem {
             return;
         }
 
-        for (int i=0; i<numPoints-1; i++) {
+        for (int i = 0; i < numPoints - 1; i++) {
             float nextX = x.nextFloat(mZoom);
             float nextY = y.nextFloat(mZoom);
 
-            float endX   = mScribbleView.storedXtoScreen(nextX);
-            float endY   = mScribbleView.storedYtoScreen(nextY);
+            float endX = mScribbleView.storedXtoScreen(nextX);
+            float endY = mScribbleView.storedYtoScreen(nextY);
             c.drawLine(startX, startY, endX, endY, mPaint);
 
             startX = endX;
             startY = endY;
+        }
+    }
+
+    @Override
+    public void draw(Canvas c) {
+        // Usually the UI thread is the only thing that performs drawing. However, during testing
+        // we can draw onto a test canvas as well. Each floatAndDeltas expects to be called from
+        // first to last float in strict order. Two threads drawing will muck this up, so we
+        // synchonize access to the object when testing.
+        if (ScribbleMainActivity.testInProgress) {
+            synchronized (this) {
+                privateDraw (c);
+            }
+        } else {
+            // no test in progress, don't slow things down getting locks
+            privateDraw (c);
         }
     }
 

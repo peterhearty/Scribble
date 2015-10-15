@@ -71,6 +71,7 @@ public class ItemList {
         int numItems = dis.readInt();
         if (numItems > 100000) {
             // assume this to be an error
+            ScribbleMainActivity.log("ItemList", "#items="+numItems+", resetting to 10000", null);
             numItems = 10000;
         }
         mList = new ArrayList<>(numItems+20);

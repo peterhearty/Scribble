@@ -4,29 +4,25 @@
 package uk.org.platitudes.scribble;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Display;
-import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Calendar;
-import java.util.Date;
 
 import uk.org.platitudes.scribble.buttonhandler.DrawToolButtonHandler;
 import uk.org.platitudes.scribble.buttonhandler.GridButtonHandler;
@@ -38,7 +34,6 @@ import uk.org.platitudes.scribble.googledrive.GoogleDriveStuff;
 import uk.org.platitudes.scribble.io.BundleScribbleReader;
 import uk.org.platitudes.scribble.io.BundleScribbleWriter;
 
-
 public class ScribbleMainActivity extends Activity  {
 
     public static final int RESOLVE_CONNECTION_REQUEST_CODE = 10000;
@@ -46,10 +41,18 @@ public class ScribbleMainActivity extends Activity  {
     // Button background color
     public static final int grey = Color.argb(255, 222, 222, 222);
 
+    /**
+     * This flag gets set true when a test is in progress. It is used by FreehandCompressedDrawItem
+     * to synchonise access to floatAndDeltas objects when a test thread might try to draw them as
+     * well as the UI thread.
+     */
+    public static boolean testInProgress;
+
     private ScribbleView mMainView;
     private Button mDrawToolButton;
     private ZoomButtonHandler mZoomButtonHandler;
     private DrawToolButtonHandler mDrawToolButtonHandler;
+    private MoreButtonHandler mMoreButtonHandler;
     private GoogleDriveStuff mGoogleStuff;
     private static PrintWriter logFile ;
     public Point mDisplaySize;
@@ -97,7 +100,8 @@ public class ScribbleMainActivity extends Activity  {
 
     private void setupButtonHandlers () {
         Button b = (Button) findViewById(R.id.more_button);
-        b.setOnClickListener(new MoreButtonHandler(b, this));
+        mMoreButtonHandler = new MoreButtonHandler(b, this);
+        b.setOnClickListener(mMoreButtonHandler);
 
         b = (Button) findViewById(R.id.undo_button);
         b.setOnClickListener(new UndoButtonHandler(mMainView, b));
@@ -144,6 +148,8 @@ public class ScribbleMainActivity extends Activity  {
     public ScribbleView getmMainView() {return mMainView;}
     public ZoomButtonHandler getmZoomButtonHandler() {return mZoomButtonHandler;}
     public DrawToolButtonHandler getmDrawToolButtonHandler() {return mDrawToolButtonHandler;}
+    public MoreButtonHandler getmMoreButtonHandler() {return mMoreButtonHandler;}
+
 
     public static void makeToast (String s) {
         if (mainActivity != null) {
@@ -251,6 +257,7 @@ public class ScribbleMainActivity extends Activity  {
         ScribbleMainActivity.log ("ScribbleMainActivity", "onDestroy", null);
         super.onDestroy();
         mMainView.getDrawing().onDestroy();
+        mGoogleStuff.destroy();
     }
 
 

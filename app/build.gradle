@@ -4,6 +4,12 @@ android {
     compileSdkVersion 22
     buildToolsVersion "21.1.2"
 
+    // See http://tools.android.com/tech-docs/unit-testing-support.
+    // Otherwise get a "Not mocked" exception.
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     defaultConfig {
         applicationId "uk.org.platitudes.scribble"
         minSdkVersion 15
@@ -40,6 +46,7 @@ dependencies {
     // These are Maven Central coordinates, see for example https://search.maven.org/#search|ga|1|robolectric
     // Libraries get downloaded and cached in ~/.gradle/caches
     testCompile 'junit:junit:4.12'
-    testCompile "org.robolectric:robolectric:3.0"
-    testCompile "org.robolectric:shadows-play-services:3.0"
+    testCompile "org.mockito:mockito-core:1.9.5"
+//    testCompile "org.robolectric:robolectric:3.0"
+//    testCompile "org.robolectric:shadows-play-services:3.0"
 }

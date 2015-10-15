@@ -61,17 +61,17 @@ public class LocalFileTest extends AbstractDrawItem {
         assertTrue(canvas.textCount==15);
     }
 
-    public void xtestLoadBrokenFile () {
+    public void testLoadBrokenFile () {
         ScribbleMainActivity.log("-- LocalFileTest", "loadBrokenFile --", null);
         Drawing drawing = scribbleView.getDrawing();
-        File f = getTestFile("text.txt");
+        File f = getTestFile("broken_text.txt");
         drawing.setmCurrentlyOpenFile(f);
 
         drawing.openCurrentFile();
         drawing.getmDrawItems().onDraw(canvas);
-        assertTrue(canvas.lineCount==13231);
-        assertTrue(canvas.circleCount==12);
-        assertTrue(canvas.textCount == 15);
+        assertTrue(canvas.lineCount==321);
+        assertTrue(canvas.circleCount==0);
+        assertTrue(canvas.textCount == 0);
 
     }
 }

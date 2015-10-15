@@ -3,6 +3,8 @@
  */
 package uk.org.platitudes.scribble.googledrive;
 
+import android.support.annotation.NonNull;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -38,6 +40,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
         // Need to cal a super of some kind.
         super("/");
         mGoogleApiClient = activity.getmGoogleStuff().getmGoogleApiClient();
+        // TODO - have to reread this to learn about new files
         mDriveFolder = Drive.DriveApi.getRootFolder(mGoogleApiClient);
         mContents = new GoogleDriveFile[0];
         requestContents();
@@ -62,6 +65,7 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
     public boolean canRead () {return true;}
     public boolean exists () {return true;}
     public File[] listFiles () {return mContents;}
+    @NonNull
     public String getCanonicalPath() throws IOException {return PATH_PREFIX;}
 
     public GoogleDriveFile createFile (String name) {
@@ -110,8 +114,6 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
         return null;
     }
 
-
-
     private void requestContents () {
         // Start off an async request to get the children.
         ScribbleMainActivity.log("GoogleDriveFolder", "requesting countents", null);
@@ -128,14 +130,26 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
             int count = mtb.getCount();
             ArrayList<GoogleDriveFile> files = new ArrayList<>(count);
             for (Metadata m : mtb) {
-                if (m.isTrashed()) {
-                    continue;
-                }
-                if (m.isFolder()) {
-                    // create a GoogleDriveFolder
+                // First check to see if we already know about this file from a previous request
+                // for folder contents.
+                String filename = m.getTitle();
+                GoogleDriveFile existingFile = getFile(filename);
+                if (existingFile == null) {
+                    // file is new. Note we do nothing to check for existing files that have
+                    // been trashed. Not sure what the semantics of this are.
+                    if (m.isTrashed()) {
+                        continue;
+                    }
+                    if (m.isFolder()) {
+                        ScribbleMainActivity.log("GoogleDriveFolder", "Ignoring folder "+m.toString(), null);
+                        // create a GoogleDriveFolder
+                    } else {
+                        GoogleDriveFile f = new GoogleDriveFile(this, m);
+                        files.add(f);
+                    }
                 } else {
-                    GoogleDriveFile f = new GoogleDriveFile(this, m);
-                    files.add(f);
+                    // file is already known about
+                    files.add(existingFile);
                 }
             }
             mtb.release();
@@ -146,5 +160,12 @@ public class GoogleDriveFolder extends File implements ResultCallback<DriveApi.M
         }
         metadataBufferResult.release();
         mPendingResult = null;
+    }
+
+    /**
+     *
+     */
+    public interface RequestNewFileNotification {
+        public void newFileAdded (GoogleDriveFile f);
     }
 }
